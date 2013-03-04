@@ -274,7 +274,7 @@
               (filename)) ;;
           (multiple-value-bind (phone delivery-type name email city addr courier_comment pickup pickup_comment payment bankaccount ekk family)
               (newcart-user user)
-            (declare (ignore city))
+            (declare (ignore))
             ;; Временно доставка 300 на все
             ;; существует два вида доставки: курьером и самовывоз (express | pickup)
             (if  (string= delivery-type "express")
@@ -288,6 +288,7 @@
                          :order_id order-id
                          :name (report.convert-name (format nil "~a ~a" name family))
                          :family "" ;; Фамилия не передается отдельно
+                         :city city
                          :paytype (string-case payment
                                     ("payment_method-1" "Наличными")
                                     ("payment_method-2" "Кредитной картой")

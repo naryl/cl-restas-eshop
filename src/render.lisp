@@ -365,7 +365,11 @@
                                                     (if (= 400 (yml.get-product-delivery-price1 object))
                                                         " Акция: скидка на доставку 20. Закажи сейчас!")))))
             :keyopts (render.get-catalog-keyoptions object)
-            :ymlname (render.get-special-yml-name object)
+            :ymlname (aif (get-option object "Общие характеристики" "Код производителя")
+                         (if (string= "" it)
+                             nil
+                             it)
+                            nil)
             :oneclickbutton  (unless (preorder object)
                                (soy.buttons:add-one-click (list :articul (articul object))))
             :addbutton (render.%add-button object)))))
@@ -488,7 +492,13 @@
                              :breadcrumbs (soy.product:breadcrumbs (render.breadcrumbs object))
                              :articul (articul object)
                              :name (name-seo object)
-                             :ymlname (render.get-special-yml-name object)
+                             :ymlname (aif (get-option object
+                                                       "Общие характеристики"
+                                                       "Код производителя")
+                                           (if (string= "" it)
+                                               nil
+                                               it)
+                                           nil)
                              :siteprice (siteprice object)
                              :storeprice (price object)
                              :bestprice (plusp (delta-price object))
@@ -496,7 +506,7 @@
                              :groupd_holiday (groupd.holiday.is-groupd object)
                              :bonuscount (when (and (bonuscount object)
                                                     (plusp (bonuscount object)))
-                                           (* 10 (bonuscount object)))
+                                           (* 5 (bonuscount object)))
                              :formatsiteprice  (if (= 0 (siteprice object))
                                                      nil
                                                      (get-format-price (siteprice object)))
@@ -558,6 +568,9 @@
                                                       (yml.available-for-order-p object))
                                             (soy.buttons:add-one-click (list :articul (articul object)
                                                                              :available is-available)))))
+    (unless (groupd.is-groupd object)
+      (aif (getf product-view :bonuscount)
+           (setf it (* 2 it))))
     (default-page
         (soy.product:content product-view)
         :line-banner (when (and group
