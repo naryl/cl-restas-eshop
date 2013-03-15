@@ -353,7 +353,6 @@ list of conses (column-header . column-specifier).
                   (setobj v p)
                   (setf (gethash v *special-products*) p))))
           (list
-           "555555"
            "666616"
            "711265"
            "834786"
