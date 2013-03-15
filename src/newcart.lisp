@@ -352,6 +352,7 @@
             (email.send-order-details order-id (soy.sendmail:tks-clientmail-wrapper
                                                 (list :body client-mail
                                                       :ip (tbnl:real-remote-addr)
+                                                      :city city
                                                       :agent (tbnl:user-agent)))
                                       filename tks-mail)
             (when (email.valid-email-p email)
