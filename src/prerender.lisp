@@ -109,6 +109,37 @@
                                        :name (name-seo product)
                                        :siteprice (siteprice product)
                                        :pic (car (get-pics articul))))))))
+      ((string= type "marth8")
+       (let* ((articul (nth 1 args))
+              (product (getobj articul 'product)))
+         (when product
+           (soy.product:marth8
+            (list :pic (car (get-pics articul))
+                  :articul articul
+                  :name (name-seo product)
+                  :keyoptions (subseq (render.get-keyoptions product) 0 4)
+                  :price (get-format-price (siteprice product)))))))
+      ((string= type "patric")
+       (let* ((type (nth 1 args))
+              (articul (nth 2 args))
+              (product (getobj articul 'product)))
+         (when product
+           (string-case type
+             ("green" (soy.product:green_item (list :item (prerender.product-view (articul product)))))
+             ("yellow" (soy.product:yellow_item (list :item (prerender.product-view (articul product)))))))))
+      ((string= type "freedelivery")
+       (let* ((products '(200206 198039 202561 194840 174088 172230 202495 188653 172222 174086 185908
+                          194785 164746 194842 172604 164743 190959 164741 182701 169431 172859 198050
+                          202528 165040 171003 197761 192971 164939 181880 165058 181402 165038 169343
+                          167665 188683 181403 197762 205304 188694 192298 181404 186404 190919 192892
+                          170321 190920 198045 197729 186374 166684 171547 188640 190938 167210 165027
+                          165768 174093 183861 174092 164588 164591 165033 165788 164416 188692 165037
+                          198040 167362 192297 167757 181885 164964 167321 197730 164823 172884 198123
+                          192903)))
+         (soy.product:free_delivery_items
+          (list :items
+                (mapcar #'prerender.product-view
+                           products)))))
       ((string= type "price")
        (let* ((articul (nth 1 args))
               (product (getobj articul 'product)))
@@ -118,6 +149,16 @@
                      (get-format-price siteprice))))))
       (t
        (format nil "<!-- unknown format -->~%")))))
+
+(defun prerender.product-view (key)
+  (let ((product (getobj (write-to-string key))))
+  (when product
+    (list :pic (car (get-pics (key product)))
+          :articul (articul product)
+          :name (name-seo product)
+          :keyoptions (subseq (render.get-keyoptions product) 0 4)
+          :price (get-format-price (siteprice product))))))
+
 
 (defun prerender-string-replace (string)
   (let* ((start (search "<!--#" string)) (end (search ";-->" string)))
