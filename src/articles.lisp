@@ -250,7 +250,7 @@
                                   :description "" ;;description
                                   :headeraddition (header object)
                                   :title (name object)
-                                  :content  (body object))))
+                                  :content  (prerender-string-replace (body object)))))
 
 ;; отображение страницы статьи
 (defmethod restas:render-object ((designer eshop-render) (object article))
