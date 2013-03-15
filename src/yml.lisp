@@ -61,74 +61,6 @@
     result))
 
 
-(defun yml.get-product-delivery-price1 (product)
-  (let ((parent (if product (parent product)))
-        (key)
-        (result 300))
-    (when parent
-      (setf key (key parent))
-      (if (or
-           ;; (equal key "krupnaya-bitivaya-tehnika")
-           ;;    (equal key "vstraivaemye-rabochie-poverhnosti")
-           ;;    (equal key "vstraivaemye-rabochie-komplekti")
-           ;;    (equal key "vityajki")
-           ;;    (equal key "stiralnie-mashiny")
-           ;;    (equal key "posudomoechnie-mashiny")
-           ;;    (equal key "plity")
-           ;;    (equal key "holodilniki-i-morozilniki")
-           ;;    (equal key "duhovki")
-					 ;;  	(equal key "kondicioneri")
-           ;;    (let ((diagonal (get-option product "Экран" "Диагональ экрана, дюйм")))
-           ;;      (if (equal diagonal "")
-           ;;          (setf diagonal nil))
-           ;;      (setf diagonal (ceiling (arnesi:parse-float diagonal)))
-           ;;      (> diagonal 32))
-              )
-          (setf result 500)
-          (if (or
-               ;; (< 3000 (siteprice product))
-               (equal key "krupnaya-bitivaya-tehnika")
-               (equal key "vstraivaemye-rabochie-poverhnosti")
-               (equal key "vstraivaemye-rabochie-komplekti")
-               (equal key "vityajki")
-               (equal key "stiralnie-mashiny")
-               (equal key "posudomoechnie-mashiny")
-               (equal key "plity")
-               (equal key "holodilniki-i-morozilniki")
-               (equal key "duhovki")
-               (equal key "kondicioneri")
-               (equal key "lcd-televizory")
-               (equal key "netbuki")
-               (equal key "noutbuki")
-               (equal key "planshetnie-komputery")
-               ;; (equal key "komputery")
-               ;; (and (equal (vendor product) "Brother")
-               ;;      (or (equal key "printery")
-               ;;          (equal key "mfu")
-               ;;          (equal key "faxes")))
-               (yml.is-daily-product product))
-              (setf result 0)
-              (if (or
-                   ;; (equal key "cifrovye-fotoapparaty")
-                   ;; (equal key "mobilephones")
-                   ;; (equal key "planshetnie-komputery")
-                   ;; (equal key "ustroistva-dlya-chtenia-electronnyh-knig")
-                   ;; (equal key "mp3-pleery")
-                   ;; (equal key "fotoramki")
-                   ;; (equal key "gps-navigatory")
-                   ;; (equal key "eholoti")
-                   ;; (equal key "marshrutizatory-i-tochki-dostupa")
-                   ;; (equal key "vneshnie-zhostkie-diski")
-                   ;; (equal key "myshki")
-                   ;; (equal key "klaviatury")
-                   ;; (equal key "joystiki-ruli-gamepady")
-                   ;; (equal key "web-camery")
-                   ;; (equal key "graficheskie-planshety")
-                   ;; (equal key "cartridge-dlya-printerov")
-                   )
-                  (setf result 200)))))
-    result))
-
 (defun yml.%offers ()
   (format nil "~{~a~}"
           (collect-storage
@@ -154,6 +86,52 @@
                                         (name-seo product)
                                         yml-name))
                             :description nil))))))
+
+(defun yml.get-product-delivery-price1 (product)
+  (let ((parent (if product (parent product)))
+        (key)
+        (result 300))
+    (when parent
+      (setf key (key parent))
+      (if (or
+           (search (list (articul product))
+                   '(200206 198039 202561 194840 174088 172230 202495 188653 172222 174086 185908
+                     194785 164746 194842 172604 164743 190959 164741 182701 169431 172859 198050
+                     202528 165040 171003 197761 192971 164939 181880 165058 181402 165038 169343
+                     167665 188683 181403 197762 205304 188694 192298 181404 186404 190919 192892
+                     170321 190920 198045 197729 186374 166684 171547 188640 190938 167210 165027
+                     165768 174093 183861 174092 164588 164591 165033 165788 164416 188692 165037
+                     198040 167362 192297 167757 181885 164964 167321 197730 164823 172884 198123
+                     192903))
+           ;; (< 3000 (siteprice product))
+           ;; (equal key "komputery")
+           ;; (and (equal (vendor product) "Brother")
+           ;;      (or (equal key "printery")
+           ;;          (equal key "faxes")))
+           (yml.is-daily-product product))
+          (setf result 0)
+          (if (or
+               (equal key "krupnaya-bitivaya-tehnika")
+               (equal key "vstraivaemye-rabochie-poverhnosti")
+               (equal key "vstraivaemye-rabochie-komplekti")
+               (equal key "vityajki")
+               (equal key "stiralnie-mashiny")
+               (equal key "posudomoechnie-mashiny")
+               (equal key "plity")
+               (equal key "holodilniki-i-morozilniki")
+               (equal key "duhovki")
+               (equal key "kondicioneri")
+               (let ((diagonal (get-option product "Экран" "Диагональ экрана, дюйм")))
+                 (if (equal diagonal "")
+                     (setf diagonal nil))
+                 (setf diagonal (ceiling (arnesi:parse-float diagonal)))
+                 (> diagonal 32)))
+              (setf result 500)
+              (if (or
+                   ;; (equal key "cifrovye-fotoapparaty")
+                   )
+                  (setf result 200)))))
+    result))
 
 (defun yml.%category ()
   (loop
