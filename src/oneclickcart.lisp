@@ -65,7 +65,7 @@
     order-id))
 
 
-(defclass oneclickcart.answer ()
+(defclass oneclickcartanswer ()
   ((phone     :initarg :phone     :initform nil   :accessor phone)
    (orderid   :initarg :orderid   :initform nil   :accessor orderid)
    (errorid   :initarg :errorid   :initform nil   :accessor errorid)
@@ -84,7 +84,7 @@
          (pr (getobj articul 'product))
          (order-id)
          (error-id 0)
-         (answer (make-instance 'oneclickcart.answer :phone telef)))
+         (answer (make-instance 'oneclickcartanswer :phone telef)))
     (if telef
         (if articul
             (if pr

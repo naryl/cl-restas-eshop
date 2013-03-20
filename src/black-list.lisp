@@ -66,6 +66,9 @@
   (maphash #'(lambda (key item)
                (awhen (black-list.item-item item)
                  (when (> (count-total it) (count-transit it))
+                   (remhash key black-list.*storage*))
+                 (when (< (black-list.item-add-ts item)
+                          (- (get-universal-time) (* 60 60 24 7)))
                    (remhash key black-list.*storage*))))
            black-list.*storage*))
 
