@@ -56,13 +56,15 @@
 
 (define-tracing-route request-static-route-img ("/img/*")
   (let ((full-uri (format nil "~A" (restas:request-full-uri))))
-    (merge-pathnames (concatenate 'string "htimgs/" (subseq full-uri (search "/img/" full-uri)))
-                     (config.get-option :paths :path-to-dropbox))))
+    (hunchentoot:redirect (concatenate 'string "http://320-8080.ru"
+                                       (subseq full-uri (search "/img/" full-uri)))
+                          :code 301)))
 
 (define-tracing-route request-static-route-pic ("/pic/*")
-  (let* ((full-uri (format nil "~A" (restas:request-full-uri)))
-         (path-to-img (ppcre:regex-replace ".*/pic/(\\w{1,})/(\\d{1,3})(\\d{0,})/(.*)$" full-uri "\\1/\\2/\\2\\3/\\4")))
-    (pathname (format nil "~A/~A" (config.get-option :paths :path-to-pics) path-to-img))))
+  (let* ((full-uri (format nil "~A" (restas:request-full-uri))))
+    (hunchentoot:redirect (concatenate 'string "http://320-8080.ru"
+                                       (subseq full-uri (search "/pic/" full-uri)))
+                          :code 301)))
 
 (define-tracing-route request-static-route-css ("/css/*")
   (let ((full-uri (format nil "~A" (restas:request-full-uri))))
@@ -273,7 +275,7 @@
 (define-tracing-route article-akcii-route ("/articles/akcii" :requirement #'test-article-get-parameters)
   (let ((request-get-plist (request-get-plist)))
     (if (null (getf request-get-plist :tags))
-        (setf (getf request-get-plist :tags) "Акции"))
+        (setf (getf request-get-plist :tags) "текущии акции"))
     (articles-page request-get-plist)))
 
 ;;список новостей
@@ -328,10 +330,10 @@
 
 (define-tracing-route compare-route ("/compare")
   (debug-slime-format "IP:~A" (tbnl:real-remote-addr))
-	 (soy.compare:compare-page
-		(list :keywords "" ;;keywords
-					:description "" ;;description
-					:title ""
-					:header (soy.header:header (append (list :cart (soy.index:cart))
-																			 (main-page-show-banner "line" (banner *main-page.storage*))))
-					:footer (soy.footer:footer))))
+     (soy.compare:compare-page
+        (list :keywords "" ;;keywords
+                    :description "" ;;description
+                    :title ""
+                    :header (soy.header:header (append (list :cart (soy.index:cart))
+                                                                             (main-page-show-banner "line" (banner *main-page.storage*))))
+                    :footer (soy.footer:footer))))

@@ -344,7 +344,8 @@
                               'product
                               :when-fn
                               #'(lambda (item)
-                                  (and (null (parent item))
+                                  (and (active item)
+                                       (null (parent item))
                                        (not (special-p item)))))))
     (soy.class_forms:parenting-page
      (list :products (mapcar #'(lambda (product)

@@ -5,3 +5,4 @@ cl-cron.log
 /backup
 /eshop-logs
 /last-backup
+src/migrate.lisp

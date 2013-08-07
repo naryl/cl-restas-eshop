@@ -100,6 +100,8 @@ list of conses (column-header . column-specifier).
   (report.%rsc 'product-name-real #'name-seo)
   (report.%rsc 'product-erp-price #'erp-price)
   (report.%rsc 'product-erp-class #'erp-class)
+  (report.%rsc 'product-count-total #'count-total)
+  (report.%rsc 'product-count-transit #'count-transit)
   (report.%rsc
    'product-yml-name
    (rcurry #'get-option "Secret" "Yandex"))
@@ -229,7 +231,9 @@ list of conses (column-header . column-specifier).
          (cons "дубль" 'product-double)
          (cons "гарантия" 'product-warranty)
          (cons "1с группа" 'product-erp-class)
-         (cons "1с цена" 'product-erp-price))
+         (cons "1с цена" 'product-erp-price)
+         (cons "total" 'product-count-total)
+         (cons "transit" 'product-count-transit))
    'product))
 
 (defun report.group-report (stream)

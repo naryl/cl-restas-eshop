@@ -173,12 +173,13 @@
 
 ;; корзина товаров
 (defun cart-page ()
-  (let ((cart-cookie (hunchentoot:url-decode (hunchentoot:cookie-in "cart")))
+  (let ((cart-cookie (hunchentoot:cookie-in "cart"))
         (cart)
         (products)
         (count)
         (pricesum))
     (when cart-cookie
+      (setf cart-cookie (hunchentoot:url-decode cart-cookie))
       (setf cart (json:decode-json-from-string cart-cookie))
       (multiple-value-bind (lst cnt sm) (newcart-cart-products cart)
         (setf products (remove-if #'null lst))

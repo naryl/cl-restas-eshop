@@ -165,7 +165,8 @@
     (setf *xls.product-table* (make-hash-table :test #'equal))
     (xls.process-all-dtd px px)
     (setf *xls.errors* (concatenate 'string "</table>" *xls.errors*))
-    (email.send-xls-doubles-warn *xls.errors-num* *xls.errors*)))
+    ;(email.send-xls-doubles-warn *xls.errors-num* *xls.errors*)
+    ))
 
 (defun xls.restore-from-xls (filepath line-processor &optional (restore-name "restore-from-xls"))
   (log5:log-for info "Start ~a from file ~a" restore-name filepath)
