@@ -7,7 +7,7 @@
   `(defclass ,name ()
      ,(mapcar #'(lambda (field)
                   `(,(getf field :name)
-                     :initarg ,(anything-to-keyword (getf field :name))
+                     :initarg ,(make-keyword (getf field :name))
                      :initform ,(getf field :initform)
                      :accessor ,(getf field :name)))
               slot-list)))
@@ -64,7 +64,7 @@ Note: function must be called during request, so functions like
       :key (hunchentoot:post-parameter "key")
       ,@(mapcan #'(lambda (slot)
            (unless (getf slot :disabled)
-             `(,(anything-to-keyword (getf slot :name))
+             `(,(make-keyword (getf slot :name))
                 (slots.%get-data ',(getf slot :type)
                                  (hunchentoot:post-parameter
                                   ,(format nil "~(~A~)" (getf slot :name)))))))
@@ -97,7 +97,7 @@ Note: function must be called during request, so functions like
         ',name
         ,@(mapcan
            #'(lambda (field)
-               (let ((name (anything-to-keyword (getf field :name)))
+               (let ((name (make-keyword (getf field :name)))
                      (initform (getf field :initform)))
                  `(,name
                    (let ((val (cdr (assoc ,name raw))))
@@ -288,7 +288,7 @@ such as pointer to storage, serialize flag, etc.")
   (getf (gethash type *classes*) :instance))
 
 (defmethod get-instance ((type string))
-  (get-instance (anything-to-symbol type)))
+  (get-instance (symbolicate type)))
 
 (defun get-last-bakup-pathname (type)
   "Return pathname for file of last backup objects of given type"
@@ -309,7 +309,7 @@ such as pointer to storage, serialize flag, etc.")
 
 (defmacro class-core.define-slot-type-getter (name slots)
   `(defmethod slot-type ((class (eql ',name)) slot)
-     (case (anything-to-symbol slot)
+     (case (symbolicate slot)
        ,@(mapcar #'(lambda (slot-plist)
                      `(',(getf slot-plist :name) ',(getf slot-plist :type)))
                  slots))))

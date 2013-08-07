@@ -580,14 +580,6 @@
                 (closure-template:compile-template :common-lisp-backend pathname)))
           tmpl-name))
 
-(defun anything-to-keyword (anything)
-  "Convert anything that has print method to keyword; Case insensitive"
-  (intern (format nil "~:@(~A~)" anything) :keyword))
-
-(defun anything-to-symbol (anything &optional (package (find-package :eshop)))
-  "Convert anything that has print method to symbol; Case insensitive"
-  (intern (format nil "~:@(~A~)" anything) package))
-
 (defun alistp (obj)
   "Checks whether object is association list (e.g. list of conses)"
   (when (listp obj) (every #'consp obj)))
@@ -601,7 +593,7 @@
   (loop
      :for (key . value)
      :in alist
-     :collect (anything-to-keyword key)
+     :collect (make-keyword key)
      :collect value))
 
 (defun servo.recursive-alist-to-plist (alist)
@@ -610,7 +602,7 @@
   (loop
      :for (key . value)
      :in alist
-     :collect (anything-to-keyword key)
+     :collect (make-keyword key)
      :collect (if (alistp value)
                   (servo.recursive-alist-to-plist value)
                   value)))
