@@ -181,6 +181,8 @@ list of conses (column-header . column-specifier).
                          (name it)
                          "no")))
   ;; marketing filters
+  (report.%rsc 'filter-key #'key)
+  (report.%rsc 'filter-active #'(lambda (item) (if (active item) "да" "нет")))
   (report.%rsc 'filter-vendor #'(lambda (item) (getf (data item) :vendor)))
   (report.%rsc 'filter-seria #'(lambda (item) (getf (data item) :seria)))
   (report.%rsc 'filter-name #'(lambda (item) (getf (data item) :name)))
@@ -191,91 +193,149 @@ list of conses (column-header . column-specifier).
    'filter-url
    #'(lambda (item)
        ;; TODO: use restas url designator
-       (format nil "http://www.320-8080.ru/~A/~A"
-               (key (parent item))
-               (key item))))
+       (if (parent item)
+           (format nil "http://www.320-8080.ru/~A/~A"
+                   (key (parent item))
+                   (key item))
+           ;; else
+           "no url")))
   (report.%rsc
    'filter-products
    #'(lambda (item) (length (filters.filter item))))
   (report.%rsc
    'filter-active-products
-   #'(lambda (item) (count-if #'active (filters.filter item)))))
+   #'(lambda (item) (count-if #'active (filters.filter item))))
+  ;; printers/cartriges
+  (report.%rsc 'printer-name #'name)
+  (report.%rsc 'printer-vendor #'vendor)
+  (report.%rsc 'printer-type #'printer-type)
+  (report.%rsc 'printer-original-cartr-count
+               #'(lambda (printer) (format nil "~D" (length (original-cartriges printer)))))
+  (report.%rsc 'printer-original-cartr-active
+               #'(lambda (printer) (format nil "~D" (count-if #'active (original-cartriges printer)
+                                                         :key (alexandria:rcurry #'getobj 'product)))))
+  (report.%rsc 'printer-other-cartr-count
+               #'(lambda (printer) (format nil "~D" (length (other-cartriges printer)))))
+  (report.%rsc 'printer-other-cartr-active
+               #'(lambda (printer) (format nil "~D" (count-if #'active (other-cartriges printer)
+                                                         :key (alexandria:rcurry #'getobj 'product)))))
+  (report.%rsc 'printer-all-cartr-count
+               #'(lambda (printer) (format nil "~D"
+                                      (+ (length (original-cartriges printer))
+                                         (length (other-cartriges printer))))))
+  (report.%rsc 'printer-all-cartr-active
+               #'(lambda (printer) (format nil "~D"
+                                      (+ (count-if #'active (original-cartriges printer)
+                                                   :key (alexandria:rcurry #'getobj 'product))
+                                         (count-if #'active (other-cartriges printer)
+                                                   :key (alexandria:rcurry #'getobj 'product))))))
+  (report.%rsc 'printer-original-cartriges
+               #'(lambda (printer) (format nil "~{~A~^,~}" (original-cartriges printer))))
+  (report.%rsc 'printer-other-cartriges
+               #'(lambda (printer) (format nil "~{~A~^,~}" (other-cartriges printer)))))
 
 (report.register-standard-columns)
 
 (defun report.product-report (stream)
   (report.write-report-with-standard-columns
    stream
-   (list (cons "артикул" 'product-articul)
-         (cons "цена магазина" 'product-price)
-         (cons "цена сайта" 'product-siteprice)
-         (cons "имя" 'product-name)
-         (cons "имя real" 'product-name-real)
-         (cons "имя yml" 'product-yml-name)
-         (cons "is-yml-show" 'product-yml-show)
-         (cons "seo текст" 'product-seo-text-exists)
-         (cons "фотографии" 'product-num-pics)
-         (cons "характеристики" 'product-valid-options)
-         (cons "активный" 'product-active)
-         (cons "группа" 'product-group)
-         (cons "родительская группа" 'product-grandparent)
-         (cons "группа 2-го уровня" 'product-2-lvl-group)
-         (cons "secret" 'product-secret)
-         (cons "DTD" 'product-dtd)
-         (cons "vendor" 'product-vendor)
-         (cons "доставка" 'product-delivery)
-         (cons "серия" 'product-seria)
-         (cons "direct-name" 'product-direct-name)
-         (cons "дубль" 'product-double)
-         (cons "гарантия" 'product-warranty)
-         (cons "1с группа" 'product-erp-class)
-         (cons "1с цена" 'product-erp-price))
+   '(("артикул" . product-articul)
+     ("цена магазина" . product-price)
+     ("цена сайта" . product-siteprice)
+     ("имя" . product-name)
+     ("имя real" . product-name-real)
+     ("имя yml" . product-yml-name)
+     ("is-yml-show" . product-yml-show)
+     ("seo текст" . product-seo-text-exists)
+     ("фотографии" . product-num-pics)
+     ("характеристики" . product-valid-options)
+     ("активный" . product-active)
+     ("группа" . product-group)
+     ("родительская группа" . product-grandparent)
+     ("группа 2-го уровня" . product-2-lvl-group)
+     ("secret" . product-secret)
+     ("DTD" . product-dtd)
+     ("vendor" . product-vendor)
+     ("доставка" . product-delivery)
+     ("серия" . product-seria)
+     ("direct-name" . product-direct-name)
+     ("дубль" . product-double)
+     ("гарантия" . product-warranty)
+     ("1с группа" . product-erp-class)
+     ("1с цена" . product-erp-price))
    'product))
 
 (defun report.group-report (stream)
   (report.write-report-with-standard-columns
    stream
-   (list (cons "Название категории" 'group-name)
-         (cons "url страницы" 'group-url)
-         (cons "Active" 'group-active)
-         (cons "YmlShow" 'group-ymlshow)
-         (cons "seo-text" 'group-seo-text)
-         (cons "продуктов" 'group-count-products)
-         (cons "активных" 'group-count-active-products))
+   '(("Название категории" . group-name)
+     ("url страницы" . group-url)
+     ("Active" . group-active)
+     ("YmlShow" . group-ymlshow)
+     ("seo-text" . group-seo-text)
+     ("продуктов" . group-count-products)
+     ("активных" . group-count-active-products))
    'group))
 
 (defun report.seo-seria-filters (stream)
   (report.write-report-with-standard-columns
    stream
-   (list (cons "Брэнд" 'filter-vendor)
-         (cons "Серия" 'filter-seria)
-         (cons "Имя" 'filter-name)
-         (cons "URL" 'filter-url)
-         (cons "продуктов" 'filter-products)
-         (cons "активных" 'filter-active-products)
-         (cons "описание" 'filter-seotext))
+   '(("Брэнд" . filter-vendor)
+     ("Серия" . filter-seria)
+     ("Имя" . filter-name)
+     ("URL" . filter-url)
+     ("продуктов" . filter-products)
+     ("активных" . filter-active-products)
+     ("описание" . filter-seotext))
    (marketing-filters.get-seria-filters)))
 
 (defun report.groups-products-report (stream)
   (report.write-report-with-standard-columns
    stream
-   (list (cons "Ключ" 'item-key)
-         (cons "Название root категории" 'group-rootgroup-name)
-         (cons "Название группы" 'group-name)
-         (cons "Продуктов" 'group-count-products)
-         (cons "Активных продуктов" 'group-count-active-products))
-         'group))
+   '(("Ключ" . item-key)
+     ("Название root категории" . group-rootgroup-name)
+     ("Название группы" . group-name)
+     ("Продуктов" . group-count-products)
+     ("Активных продуктов" . group-count-active-products))
+   'group))
 
 (defun report.product-vendor-report (stream)
   (report.write-report-with-standard-columns
    stream
-   (list (cons "Название категории" 'product-group)
-         (cons "Брэнд" 'product-vendor)
-         (cons "Название товара" 'product-name-real)
-         (cons "url страницы" 'product-url)
-         (cons "Active" 'product-active)
-         (cons "seo-text" 'product-seo-text-exists))
+   '(("Название категории" . product-group)
+     ("Брэнд" . product-vendor)
+     ("Название товара" . product-name-real)
+     ("url страницы" . product-url)
+     ("Active" . product-active)
+     ("seo-text" . product-seo-text-exists))
    'product))
+
+(defun report.printers-report (stream)
+  (report.write-report-with-standard-columns
+   stream
+   '(("Название принтера" . printer-name)
+     ("Производитель" . printer-vendor)
+     ("Тип" . printer-type)
+     ("Количество (оригинальные)" . printer-original-cartr-count)
+     ("Активных (оригинальные)" . printer-original-cartr-active)
+     ("Количество (другие)" . printer-other-cartr-count)
+     ("Активных (другие)" . printer-other-cartr-active)
+     ("Количество (все)" . printer-all-cartr-count)
+     ("Активных (все)" . printer-all-cartr-active)
+     ("Оригинальные картриджи" . printer-original-cartriges)
+     ("Другие картриджи" . printer-other-cartriges))
+   (alexandria:hash-table-values *printer-storage*)))
+
+(defun report.filters-report (stream)
+  (report.write-report-with-standard-columns
+   stream
+   '(("Key" . filter-key)
+     ("Имя" . filter-name)
+     ("Url" . filter-url)
+     ("Активный" . filter-active)
+     ("Количество продуктов" . filter-products)
+     ("Количество активных продуктов" . filter-active-products))
+   'filter))
 
 (defun report.pics-report (stream &optional (products nil products-supplied-p))
   (cl-csv:write-csv-row (list "Продукт"
@@ -408,8 +468,12 @@ list of conses (column-header . column-specifier).
   (let ((time (time.encode.backup-filename)))
     (create-report (format nil "seo-report-groups-~A.csv" time) #'report.group-report)
     (create-report (format nil "seo-report-vendors-~A.csv" time) #'write-vendors)
+    ;; FIXME: wrong names for reports
     (create-report (format nil "seo-report-products-~A.csv" time) #'report.seo-seria-filters)
-    (create-report (format nil "seo-report-seria-filters-~A.csv" time) #'report.product-vendor-report)))
+    (create-report (format nil "seo-report-seria-filters-~A.csv" time) #'report.product-vendor-report)
+    ;; FIXME: do own button and fuction for the printers and filters reports
+    (create-report (format nil "printer-report-~A.csv" time) #'report.printers-report)
+    (create-report (format nil "filter-report-~A.csv" time) #'report.filters-report)))
 
 
 (defun report.write-alias (&optional (stream *standard-output*))
@@ -453,3 +517,52 @@ list of conses (column-header . column-specifier).
 (defun report.do-groups-products-report ()
   (create-report (format nil "groups-products-~a.csv" (time.encode.backup-filename))
                  #'report.groups-products-report))
+
+
+;;;; fullfilter report
+;; temp
+(defun fullfilter-keyword-t (keyword)
+  (alexandria:make-keyword (format nil "~A-T" keyword)))
+
+(defun fullfilter-keyword-f (keyword)
+  (alexandria:make-keyword (format nil "~A-F" keyword)))
+
+(defun fullfilter-keyword-n (keyword num)
+  (alexandria:make-keyword (format nil "~A-~D" keyword num)))
+
+(defun get-advanced-filters (group)
+  (loop :for filter-group :in (advanced (fullfilter group))
+     :appending (second filter-group) :into filters
+     :finally (return filters)))
+
+(defun fullfilter-report (stream)
+  (format stream "Группа;Ключ группы;Фильтр;Значение;Продуктов;Активных;~%")
+  (process-storage
+   #'(lambda (group)
+       (when (fullfilter group)
+         (let ((filters (append (base (fullfilter group)) (get-advanced-filters group)))
+               res)
+           (mapcar #'(lambda (param-list)
+                       (let ((kw (first param-list))
+                             (name (second param-list)))
+                         (if (or (equal :slider (third param-list))
+                                 (equal :range (third param-list)))
+                             (let ((products (fullfilter-controller (products group) group
+                                                                    (list (fullfilter-keyword-f kw) "0"
+                                                                          (fullfilter-keyword-t kw) "100000000"))))
+                               (push (list name (length products) (count-if #'active products))
+                                     res))
+                             ;; else
+                             (loop :for opt :in (fourth param-list)
+                                :for i :from 0 to (1- (length (fourth param-list)))
+                                :do
+                                (let ((products (fullfilter-controller (products group) group
+                                                                       (list (fullfilter-keyword-n kw i) "1"))))
+                                  (push (list name opt (length products) (count-if #'active products))
+                                        res))))))
+                   filters)
+           (mapcar #'(lambda (res-val)
+                       (format stream "~A;~A;~{~A;~}~%"
+                               (name group) (key group) res-val))
+                   res))))
+   'group))
