@@ -340,7 +340,7 @@ list of conses (column-header . column-specifier).
    'group))
 
 (defun create-report (file-name report-func)
-  (log5:log-for info "Create report ~A ..." file-name)
+  (log:info "Create report ~A ..." file-name)
   (let ((filepath (merge-pathnames file-name (config.get-option :paths :path-to-reports))))
     (with-open-file
         (stream filepath :direction :output :if-exists :supersede :external-format :cp1251)

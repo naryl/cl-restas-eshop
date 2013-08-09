@@ -130,7 +130,7 @@
              oldprice
              (zerop (delta-price product))
              (plusp oldprice))
-    ;; (log5:log-for info-console "old: ~A" product)
+    ;; (log:info "old: ~A" product)
     (setf (delta-price product) (- oldprice (siteprice product)))))
 
 (defun %product-update-bonuscount (product bonuscount)
@@ -303,4 +303,3 @@
                 ("1" (%gateway.processing-single-package it))
                 (t (%gateway.processing-package it)))))
          "NIL")))
-

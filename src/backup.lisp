@@ -54,7 +54,7 @@
                          (format file "~A~%" (backup.serialize-entity obj)))
                      type
                      #'serialize-p))
-  (log5:log-for info "Total serialized: ~A" (count-storage type)))
+  (log:info "Total serialized: ~A" (count-storage type)))
 
 (defun backup.serialize-storage-to-mongo (type db)
   (declare (symbol type) (mongo:database db))
@@ -78,10 +78,10 @@
                         (format nil "~(~A~)/~(~:*~A~)-~A.bkp"
                                 class date-time) backup-dir)))
              (ensure-directories-exist path)
-             (log5:log-for info "Start ~(~A~) serialize to ~A" class path)
+             (log:info "Start ~(~A~) serialize to ~A" class path)
              (backup.serialize-storage-to-file class path)
              (when make-copy
-               (log5:log-for info "Making backup copy to ~A" copy-path)
+               (log:info "Making backup copy to ~A" copy-path)
                (ensure-directories-exist copy-path)
                (cl-fad:copy-file
                 path (merge-pathnames (format nil "~(~A~).bkp" class) copy-path)

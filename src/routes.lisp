@@ -301,7 +301,7 @@
 
 ;;необходимо отдавать 404 ошибку для несуществеющих страниц
 (define-tracing-route not-found-route ("*any")
-  ;; (log5:log-for info "error 404: ~A" any)
+  ;; (log:info "error 404: ~A" any)
   (restas:abort-route-handler
    (babel:string-to-octets
     (default-page
@@ -329,7 +329,7 @@
   (oneclickcart.make-common-order (request-get-plist)))
 
 (define-tracing-route compare-route ("/compare")
-  (debug-slime-format "IP:~A" (tbnl:real-remote-addr))
+  (log:debug "IP:~A" (tbnl:real-remote-addr))
      (soy.compare:compare-page
         (list :keywords "" ;;keywords
                     :description "" ;;description

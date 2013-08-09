@@ -122,7 +122,7 @@ Note: function must be called during request, so functions like
              (when (> cur-pos percent)
                (setf percent cur-pos)
                (when (zerop (mod percent 10))
-                 (log5:log-for info-console "Done percent: ~a%" percent)))
+                 (log:info "Done percent: ~a%" percent)))
              (setf (gethash (key item) storage) item)))))))
 
 (defun class-core.bind-product-to-group (product group)
@@ -260,7 +260,7 @@ Reloaded standard method %post-unserialize"
        ;; unserialize from file, only if class has storage
        (when (getf properties :storage)
          (let ((t-storage (make-hash-table :test #'equal))) ; storage for temp instances
-           (log5:log-for info "Unserialize ~A..." class)
+           (log:info "Unserialize ~A..." class)
            (%unserialize-from-file (get-last-bakup-pathname class)
                                    class
                                    t-storage)

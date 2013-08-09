@@ -5,8 +5,6 @@
     (mapcar #'(lambda (lib-name)
                 (push (truename (merge-pathnames lib-name *path-to-libs*)) asdf:*central-registry*))
             (list
-             ;; "slime-2011-09-01" ;; актуальный swank
-             "slime-archimag" ;; SWANK
              ;; WEB Server
              "hunchentoot" ;; HUNCH restas
              "cl-fad" ;; hunch (test ok)
@@ -33,7 +31,7 @@
              "iterate" ;; cl-routes
              "data-sift" ;; restas
              "parse-number" ;; data-sift
-					   "closer-mop" ;;restas
+             "closer-mop" ;;restas
              ;; CLOP (ESHOP)
              "cl-json" ;; eshop JSON сериализатор
              "cl-closure-template" ;; eshop шаблонизатор
@@ -42,13 +40,14 @@
              "anaphora" ;; parenscript | macro collection from Hell http://www.cliki.net/Anaphora
              "esrap" ;; closure-template
              "arnesi" ;; eshop parse-float
-             "log5" ;; eshop
+             "log4cl" ;; eshop
              "string-case" ;; eshop
              "cl-csv" ;; eshop
              "cl-interpol" ;; cl-csv
              "cl-unicode" ;; cl-csv
              "cl-mime" ;; eshop
              "cl-qprint" ;; cl-mime
+             "mongo-cl-driver" ;; mongodb
 
              ;; WEB Server test
              "cl-who" ;; hunch-test

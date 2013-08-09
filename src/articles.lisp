@@ -28,38 +28,38 @@
             words)))
 
 (defmethod unserialize (filepath (dummy article))
-	(let* ((file-content (alexandria:read-file-into-string filepath))
-				 (raw (decode-json-from-string file-content))
-				 (key (pathname-name filepath))
-				 (body (cdr (assoc :body raw)))
-				 (breadcrumbs (cdr (assoc :breadcrumbs raw)))
-				 (rightblock (cdr (assoc :rightblock raw)))
-				 (name (cdr (assoc :name raw)))
-				 (date (time.article-decode-date (cdr (assoc :date raw))))
-				 (descr (cdr (assoc :descr raw)))
-				 (tags-line (cdr (assoc :tags raw)))
-				 (title (cdr (assoc :title raw)))
-				 (ctype (cdr (assoc :ctype raw)))
+  (let* ((file-content (alexandria:read-file-into-string filepath))
+         (raw (decode-json-from-string file-content))
+         (key (pathname-name filepath))
+         (body (cdr (assoc :body raw)))
+         (breadcrumbs (cdr (assoc :breadcrumbs raw)))
+         (rightblock (cdr (assoc :rightblock raw)))
+         (name (cdr (assoc :name raw)))
+         (date (time.article-decode-date (cdr (assoc :date raw))))
+         (descr (cdr (assoc :descr raw)))
+         (tags-line (cdr (assoc :tags raw)))
+         (title (cdr (assoc :title raw)))
+         (ctype (cdr (assoc :ctype raw)))
          (header (cdr (assoc :header raw)))
          (pic (cdr (assoc :pic raw)))
-				 (new (make-instance 'article
-														 :key key
-														 :name name
-														 :descr descr
-														 :bredcrumbs breadcrumbs
-														 :body body
-														 :rightblock rightblock
-														 :title title
-														 :ctype (if ctype
-																				ctype
-																				(ctype dummy))
+         (new (make-instance 'article
+                             :key key
+                             :name name
+                             :descr descr
+                             :bredcrumbs breadcrumbs
+                             :body body
+                             :rightblock rightblock
+                             :title title
+                             :ctype (if ctype
+                                        ctype
+                                        (ctype dummy))
                              :header header
                              :pic pic
-														 :date date)))
-		(make-tags-table (tags new) tags-line)
-		(setf (gethash key *storage-articles*) new)
-		;; Возвращаем key статьи
-		key))
+                             :date date)))
+    (make-tags-table (tags new) tags-line)
+    (setf (gethash key *storage-articles*) new)
+    ;; Возвращаем key статьи
+    key))
 
 (defun process-articles-dir (path &optional (ctype "article"))
   "Unserialize articles from directory"
@@ -67,20 +67,20 @@
      :for file :in (directory (merge-pathnames "*" path))
      :unless (cl-fad:directory-pathname-p file)
      :do
-     (log5:log-for info-console "Load article: ~a" file)
+     (log:info "Load article:" file)
      (unserialize file (make-instance 'article :ctype ctype))))
 
 
 (defun articles.restore ()
   (let ((t-storage))
-    (log5:log-for info "Start load articles...")
+    (log:info "Start load articles...")
     (sb-ext:gc :full t)
     (let ((*storage-articles* (make-hash-table :test #'equal)))
       (process-articles-dir (config.get-option :paths :path-to-articles) "article")
       (setf t-storage *storage-articles*))
     (setf *storage-articles* t-storage)
     (sb-ext:gc :full t)
-    (log5:log-for info "Finish load articles")))
+    (log:info "Finish load articles")))
 
 ;;шаблоны
 (defun articles.update ()
@@ -184,7 +184,7 @@
                ~a " (name article)))
 
 (defmethod articles.show-static ((object article))
-	(soy.index:main (list :keywords "" ;;keywords
+  (soy.index:main (list :keywords "" ;;keywords
                         :description "" ;;description
                         :title  (if (title object)
                                     (title object)
@@ -202,7 +202,7 @@
                                          :rightblock  (rightblock object))))))
 
 (defmethod articles.show-article  ((object article))
-	(soy.index:main (list :keywords "" ;;keywords
+  (soy.index:main (list :keywords "" ;;keywords
                         :description "" ;;description
                         :title  (if (title object)
                                     (title object)
@@ -246,7 +246,7 @@
                                                                          (articles-view-articles (filters.limit-end arts 5))))))))))
 
 (defmethod articles.show-landscape  ((object article))
-	(soy.index:main-landscape (list :keywords "" ;;keywords
+  (soy.index:main-landscape (list :keywords "" ;;keywords
                                   :description "" ;;description
                                   :headeraddition (header object)
                                   :title (name object)
