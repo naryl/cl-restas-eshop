@@ -6,24 +6,40 @@
 
 (defmacro backup.define-serialize-method (name class-slots)
   "Macros for creating serialize method"
-  `(defmethod backup.serialize-entity ((object ,name))
-     (format nil "{~{~A~^,~}}"
-             (remove-if #'null
-                        (list
-                         ,@(mapcar #'(lambda (slot)
-                                       `(let ((slot-value (,(getf slot :name) object)))
-                                          (when (slots.%serialize-p
-                                                 ',(getf slot :type)
-                                                 ;; initform should be passed unevaluated
-                                                 slot-value ',(getf slot :initform))
-                                            (format nil "~A:~A"
-                                                    (encode-json-to-string ',(getf slot :name))
-                                                    (encode-json-to-string (slots.%encode-to-string
-                                                                            ',(getf slot :type)
-                                                                            slot-value))))))
-                                   (remove-if-not #'(lambda (slot)
-                                                      (getf slot :serialize))
-                                                  class-slots)))))))
+  `(progn
+     (defmethod backup.serialize-entity-to-hashtable ((object ,name))
+       (let ((ht (make-hash-table)))
+         ,@(mapcar #'(lambda (slot)
+                       `(let ((slot-value (,(getf slot :name) object)))
+                          (when (slots.%serialize-p
+                                 ',(getf slot :type)
+                                 ;; initform should be passed unevaluated
+                                 slot-value ',(getf slot :initform))
+                            (setf (gethash (string',(getf slot :name)) ht)
+                                  (slots.%encode-to-string ',(getf slot :type)
+                                                           slot-value)))))
+                   (remove-if-not #'(lambda (slot)
+                                      (getf slot :serialize))
+                                  class-slots))
+         ht))
+    (defmethod backup.serialize-entity ((object ,name))
+       (format nil "{~{~A~^,~}}"
+               (remove-if #'null
+                          (list
+                           ,@(mapcar #'(lambda (slot)
+                                         `(let ((slot-value (,(getf slot :name) object)))
+                                            (when (slots.%serialize-p
+                                                   ',(getf slot :type)
+                                                   ;; initform should be passed unevaluated
+                                                   slot-value ',(getf slot :initform))
+                                              (format nil "~A:~A"
+                                                      (encode-json-to-string ',(getf slot :name))
+                                                      (encode-json-to-string (slots.%encode-to-string
+                                                                              ',(getf slot :type)
+                                                                              slot-value))))))
+                                     (remove-if-not #'(lambda (slot)
+                                                        (getf slot :serialize))
+                                                    class-slots))))))))
 
 
 (defun backup.serialize-storage-to-file (type filepath)
@@ -40,6 +56,13 @@
                      #'serialize-p))
   (log5:log-for info "Total serialized: ~A" (count-storage type)))
 
+(defun backup.serialize-storage-to-mongo (type db)
+  (declare (symbol type) (mongo:database db))
+  (let ((coll (mongo:collection db (string type))))
+    (process-storage #'(lambda (obj)
+                         (mongo:insert-op coll (backup.serialize-entity-to-hashtable obj)))
+                     type
+                     #'serialize-p)))
 
 (defun backup.serialize-all (&key (backup-dir (config.get-option :paths :path-to-backups))
                              (make-copy (config.get-option :start-options :release))
