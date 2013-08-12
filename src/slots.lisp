@@ -178,7 +178,7 @@ Type: ~A" type))
   (declare (string post-data-string))
   (loop :for pair :in (decode-json-from-string post-data-string)
      :for pair-plist := (servo.alist-to-plist pair)
-     :collect (anything-to-keyword (getf pair-plist :name))
+     :collect (make-keyword (getf pair-plist :name))
      :collect (getf pair-plist :value)))
 
 (defmethod slots.%encode-to-string ((type (eql 'string-plist)) value)
@@ -195,7 +195,7 @@ Type: ~A" type))
 
 (defmethod slots.%get-value ((type (eql 'symbol)) post-data-string)
   (declare (string post-data-string))
-  (anything-to-symbol (slots.%get-data 'string post-data-string)))
+  (symbolicate (slots.%get-data 'string post-data-string)))
 
 (defmethod slots.%encode-to-string ((type (eql 'symbol)) value)
   ;; doesn't work with symbols starting with digits
@@ -204,7 +204,7 @@ Type: ~A" type))
 
 (defmethod slots.%decode-from-string ((type (eql 'symbol)) string)
   (declare (string string))
-  (anything-to-symbol string))
+  (symbolicate string))
 
 (defmethod slots.%serialize-p ((type (eql 'symbol)) value &optional initform)
   ;; symbol always should be serializable
@@ -240,7 +240,7 @@ Type: ~A" type))
   (declare (string string))
   (let ((decoded-list (decode-json-from-string string)))
     (string-case (first decoded-list)
-      ("symbol" (anything-to-symbol (second decoded-list)))
+      ("symbol" (symbolicate (second decoded-list)))
       ("list" (keys-to-objects (second decoded-list)))
       ("filter" (getobj (second decoded-list) 'filter)))))
 
@@ -251,14 +251,14 @@ Type: ~A" type))
              (loop
                 :for i :from 0
                 :for variant := (format nil "~A~D" prefix i)
-                :for variant-value := (getf data (anything-to-keyword variant))
+                :for variant-value := (getf data (make-keyword variant))
                 :while variant-value
                 :collect (list :name variant
                                :value variant-value
                                ;; empty for now rewrite later
                                :placeholder (format nil "Variant ~A" i))))
            (prepare-fields (filter-type data)
-             (let ((filter-data (gethash (anything-to-symbol filter-type)
+             (let ((filter-data (gethash (symbolicate filter-type)
                                          *basic-filters-data*)))
                (loop :for key :being :the hash-keys :in (fields filter-data)
                   :using (hash-value field-params)
@@ -268,7 +268,7 @@ Type: ~A" type))
                                ;; else
                                (list :type "single" :label (getf field-params :name)
                                      :name (format nil "~(~A~)" key)
-                                     :value (getf data (anything-to-keyword key))))))))
+                                     :value (getf data (make-keyword key))))))))
     (soy.class_forms:filter-hash-table-field
      (list :disabled disabled
            :name name
@@ -287,7 +287,7 @@ Type: ~A" type))
         (key filter) basics
         (setf (gethash key result)
               (apply #'filters.create-basic-filter
-                     (anything-to-symbol (getf filter :type))
+                     (symbolicate (getf filter :type))
                      (getf filter :data))))
     result))
 
@@ -310,7 +310,7 @@ Type: ~A" type))
     (loop
        :for (key . value) :in decoded-list
        :do (let ((decoded-list (decode-json-from-string value)))
-             (setf (gethash (anything-to-symbol key) hash-table)
+             (setf (gethash (symbolicate key) hash-table)
                    (%unserialize 'basic-filter decoded-list))))
     hash-table))
 
