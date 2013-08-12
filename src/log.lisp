@@ -8,3 +8,9 @@
             :time ; Include time in log messages
             :nofile ; Don't include source file name
             )
+
+(defvar *eshop-access-log-lock* (bt:make-lock "eshop-request-log-lock"))
+
+(defun request-log-message (control-string &rest args)
+ (tbnl::with-log-stream (stream (merge-pathnames "request.log" (config.get-option :paths :path-to-logs)) *eshop-access-log-lock*)
+   (apply #'format stream control-string args)))
