@@ -78,12 +78,12 @@
       (let* ((key (key product))
              (name (name-seo product))
              (path-art (pics.make-articul-subpath key)))
-        (log5:log-for info "Start converting images for product ~a from folder ~a" key path-to-folder)
+        (log:info "Start converting images for product ~a from folder ~a" key path-to-folder)
         (loop
            :for pic :in (directory (format nil "~a/*.jpg" path-to-folder))
            :for counter :from 1
            :do
-           (log5:log-for info-console "Converting file ~a" pic)
+           (log:info "Converting file ~a" pic)
            (let ((new-name (rename-new-name name counter)))
              (loop
                 :for folder :in *pics-dir-names*
@@ -99,8 +99,8 @@
                          new-name)
                  size-w
                  size-h))
-             (log5:log-for info-console "converted to ~a" new-name))))
-      (log5:log-for warning "Directory ~a doesn't exist!" path-to-folder)))
+             (log:info "converted to ~a" new-name))))
+      (log:warn "Directory ~a doesn't exist!" path-to-folder)))
 
 (defun rename-convert (path-from path-to &optional size-w size-h)
   "Convert picture to given dimensions and put it to given directory"
@@ -132,7 +132,7 @@
       (loop
          :for line := (read-line in nil)
          :while line
-         :do (log5:log-for info-console line)))))
+         :do (log:info line)))))
 
 (defun rename-recursive-get-files (path)
   "Return list of all nested files"
@@ -148,11 +148,11 @@
 (defun rename-copy-folder (from to)
   "Copy folder and all its contents"
   (if (not (directory-exists-p from))
-    (log5:log-for warning "Directory doesn't exist!")
+    (log:warn "Directory doesn't exist!")
     ;;else
     (progn
       (ensure-directories-exist to)
-      (log5:log-for info "Start copy folder ~a to ~a" from to)
+      (log:info "Start copy folder ~a to ~a" from to)
       (let ((files-list (rename-recursive-get-files from))
             (len (length from))
             (counter 0))
@@ -167,8 +167,8 @@
                    (copy-file file-or-dir new-to)
                    (incf counter))
                  (unless (directory-pathname-p new-to)
-                   (log5:log-for warning "File ~a already exists!" new-to)))))
-        (log5:log-for info "Copying finished! ~a files were copied." counter)))))
+                   (log:warn "File ~a already exists!" new-to)))))
+        (log:info "Copying finished! ~a files were copied." counter)))))
 
 
 (defun rename-convert-all (&key (from (merge-pathnames "big-images/" (config.get-option :paths :path-to-dropbox)))
@@ -177,7 +177,7 @@
   (if (and (directory-exists-p from)
            (directory-exists-p backup))
       (progn
-        (log5:log-for info "Start converting from \"~a\"  Backup folder : \"~a\"" from backup)
+        (log:info "Start converting from \"~a\"  Backup folder : \"~a\"" from backup)
         (loop
            :for folder :in (directory (format nil "~a*" from))
            :do (let* ((path (format nil "~a" folder)))
@@ -191,10 +191,10 @@
                          ;; update pics cache for product
                          (drop-pics-cache (key product))))))))
       ;;else
-      (log5:log-for warning "Folder ~a or ~a doesn't exist!" from backup)))
+      (log:warn "Folder ~a or ~a doesn't exist!" from backup)))
 
 (defun rename-remove-folder (path)
-  (log5:log-for info "Start removing folder ~a" path)
+  (log:info "Start removing folder ~a" path)
   (let ((proc (sb-ext:run-program "/bin/rm"
                                   (list "-r" path) ; args
                                   :wait nil :output :stream)))
@@ -202,8 +202,8 @@
       (loop
          :for line := (read-line in nil)
          :while line
-         :do (log5:log-for info line))))
-  (log5:log-for info "Finish removing folder"))
+         :do (log:info line))))
+  (log:info "Finish removing folder"))
 
 (defmethod rename-remove-product-pics ((product product))
   (let ((path-art (pics.make-articul-subpath (key product))))
@@ -216,8 +216,7 @@
   (let ((product-object (getobj product 'product)))
     (if product-object
         (rename-remove-product-pics product-object)
-        (log5:log-for warning
-                      "Attempt to remove pics for product with invalid articul ~a" product))))
+        (log:warn "Attempt to remove pics for product with invalid articul ~a" product))))
 
 (defmethod rename.restore-pics-from-backup
     ((product product)
@@ -230,8 +229,7 @@
           (progn
             (rename-remove-product-pics product)
             (rename-convert-from-folder product dir-pathname))
-          (log5:log-for warning
-                        "Folder with pics for product ~a wasn't found in backup" articul)))))
+          (log:warn "Folder with pics for product ~a wasn't found in backup" articul)))))
 
 
 (defmethod rename.restore-pics-from-backup
@@ -241,5 +239,4 @@
   (let ((product-object (getobj product 'product)))
     (if product-object
         (rename.restore-pics-from-backup product-object path-to-backup)
-        (log5:log-for warning
-                      "Attempt to restore pics for product with invalid articul ~a" product))))
+        (log:warn "Attempt to restore pics for product with invalid articul ~a" product))))

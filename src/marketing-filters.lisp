@@ -45,7 +45,7 @@
   (declare (group group) (vendor vendor))
   (let* ((products (remove-if-not (rcurry #'string= (name vendor))(marketing-filters.group-children group showall) :key #'vendor))
          (filters (marketing-filters.get-vendor-filters group vendor products)))
-    ;; (debug-slime-format "group:~A vendor:~A products:~A filters:~A" (key group) vendor (length products) (length filters))))
+    ;; (log:debug "group:~A vendor:~A products:~A filters:~A" (key group) vendor (length products) (length filters))))
     (when filters
       (soy.fullfilter:rightfilterserias
        (list :filters (marketing-filters.%prepare-filters group filters showall))))))
@@ -196,7 +196,7 @@ Filter's key is concatenated group's and default-filter's keys"
                                (ppcre:regex-replace-all " "
                                                         (string-downcase seria) "-"))))
             (name (concatenate 'string  (key vendor) " " seria)))
-        (debug-slime-format "~&~A: ~A" key name)
+        (log:debug "~&~A: ~A" key name)
         (setf filter (make-instance 'filter
                                     :key key
                                     :active nil

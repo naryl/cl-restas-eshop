@@ -15,9 +15,8 @@
 ;; swank server start
 (print swank::*application-hints-tables*)
 (setq swank:*use-dedicated-output-stream* nil)
-(swank:create-server :coding-system "utf-8-unix"
-										 :dont-close t
-										 :port *swank-port*)
+(swank:create-server :dont-close t
+					 :port *swank-port*)
 
 
 ;; load eshop

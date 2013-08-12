@@ -111,7 +111,7 @@
     rs))
 
 (defmethod xls.process-all-dtd ((jct nko) (obn nko))
-  (log5:log-for info "Processing DTD...")
+  (log:info "Processing DTD...")
   (let ((cnt 0)
         (items nil)
         (num-all 0))
@@ -121,7 +121,7 @@
        :do
        (setf items (reverse (ƒ file px)))
        (setf num-all (+ num-all (length items)))
-       (log5:log-for info-console "~a. Processing file: ~a | ~a" (incf cnt) file (length items))
+       (log:info "~a. Processing file: ~a | ~a" (incf cnt) file (length items))
        (loop :for item :in items :do
           (let* ((articul (getf item :articul))
                  (realname (getf item :realname))
@@ -134,7 +134,7 @@
                  (pr (gethash articul *xls.product-table*)))
             (if pr
                 (progn
-                  (log5:log-for warning "WARN:~a | ~a | ~a" articul pr file)
+                  (log:warn "WARN:~a | ~a | ~a" articul pr file)
                   (setf *xls.errors* (concatenate 'string (format nil "<tr><td>~a</td>
                                                                          <td><a href=\"http://320-8080.ru/~a\">~a</a></td>
                                                                          <td>~a</td>
@@ -145,9 +145,8 @@
                 ;; else
                 (setf (gethash articul *xls.product-table*) file))
             (if (null product)
-                (log5:log-for warning
-                              "product ~a (articul ~a) not found, ignore (file: ~a)"
-                              realname articul file)
+                (log:warn "product ~a (articul ~a) not found, ignore (file: ~a)"
+                             realname articul file)
                 ;; else
                 (progn
                   (setf (optgroups product) optgroups)
@@ -156,7 +155,7 @@
                   ;; Если есть значимое realname - перезаписать в продукте
                   (when (valid-string-p realname)
                     (setf (name-seo product) realname)))))))
-    (log5:log-for info "Successfully processed ~a files | ~a products" cnt num-all)))
+    (log:info "Successfully processed ~a files | ~a products" cnt num-all)))
 
 
 (defun dtd ()
@@ -169,7 +168,7 @@
     ))
 
 (defun xls.restore-from-xls (filepath line-processor &optional (restore-name "restore-from-xls"))
-  (log5:log-for info "Start ~a from file ~a" restore-name filepath)
+  (log:info "Start ~a from file ~a" restore-name filepath)
   (let* ((file (format nil "~a" filepath))
          (proc (when (file-exists-p file)
                  (sb-ext:run-program
@@ -182,4 +181,4 @@
            :for line := (read-line stream nil)
            :while (valid-string-p line :unwanted-chars (list #\, #\Space #\Tab) :del-method :trim)
            :do (funcall line-processor line))))
-    (log5:log-for info "DONE ~a" restore-name)))
+    (log:info "DONE ~a" restore-name)))

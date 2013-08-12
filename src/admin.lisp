@@ -137,7 +137,7 @@
    (soy.class_forms:make-choose-key)))
 
 (restas:define-route admin-new-make-post-route ("/administration-super-panel/new-make" :method :post)
-  (debug-slime-format "~A " (hunchentoot:post-parameters*))
+  (log:debug (hunchentoot:post-parameters*))
   (let ((type (string-downcase (tbnl:post-parameter "type")))
         (key (tbnl:post-parameter "key")))
     (if (getobj key)
@@ -187,14 +187,14 @@
   (let* ((key (hunchentoot:post-parameter "key"))
          (type (anything-to-symbol (hunchentoot:post-parameter "type")))
          (item (getobj key)))
-    (debug-slime-format "~A" (hunchentoot:post-parameters*))
+    (log:debug (hunchentoot:post-parameters*))
     (if (not (class-exist-p type))
         ;; return error
         (admin.standard-ajax-response nil "Unknown type")
         ;; else
         (progn
           (unless item ; should always be true
-            (log5:log-for info "Create new item from admin panel with key: ~A" key)
+            (log:info "Create new item from admin panel with key: ~A" key)
             (setf item (make-instance-from-post-data type))
             (admin.post-make-fix item)
             (setobj key item)) ; adding item into storage
@@ -361,7 +361,7 @@
          (group-key (getf post-data :group))
          (vendor-key (getf post-data :vendor))
          (new-text (getf post-data :text)))
-    (debug-slime-format "~A ~A" post-data get-params)
+    (log:debug post-data get-params)
     (cond
       ((and new-text (not (and group-key vendor-key))) "Error: please specify vendor and group")
       ((and new-text (not (getobj group-key 'group))) "Error: group not found")

@@ -104,9 +104,6 @@ Firstly tries to get value from cache (checking for fresh)"
         (format nil "height:~apx" (min height req-size)))))
 
 
-(push (merge-pathnames "drakma/" cl-user::*path-to-libs*) asdf:*central-registry*)
-(asdf:load-system :drakma)
-
 (defun t.fetch-pics-cache ()
  (let ((lst
         (read-from-string (drakma:http-request "http://wolfor.320-8080.ru/pics-cache" :basic-authorization '("eviltosha" "Out2Flat")))))

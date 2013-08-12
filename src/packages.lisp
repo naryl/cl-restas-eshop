@@ -24,6 +24,7 @@
      :cl-fad
      :string-case
      ;; :sendmail
+     :mongo-cl-driver.sugar ; (son)
      )
   (:import-from :arnesi :parse-float)
   (:import-from :alexandria :read-file-into-string)
