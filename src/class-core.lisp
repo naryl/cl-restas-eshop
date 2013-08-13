@@ -25,6 +25,20 @@
                                   ,(getf field :disabled)))
                 slot-list))))
 
+;; (defmacro class-core.define-write-json-method (name slot-list)
+;;   `(st-json::addon-element-type (element ,name) stream
+;;         (write-char #\{ stream)
+;;         ,@(mapcar #'(lambda (slot)
+;;                       `(progn
+;;                          (write "type:" :stream stream)
+;;                          (write (',(getf slot :type) element) :stream stream))
+;;                                     ;; (,(getf field :name) object)
+;;                                     ;; ,(format nil "~(~A~)" (getf field :name))
+;;                                     ;; ,(getf field :disabled)))
+;;                          )
+;;                   slot-list)
+;;         (write-char #\y stream)))
+
 (defmethod print-object ((group group) stream)
    (print-unreadable-object (group stream :type t :identity t)
      (format stream "~a" (key group))))
@@ -102,13 +116,14 @@ Note: function must be called during request, so functions like
          :for line := (read-line file nil 'EOF)
          :until (eq line 'EOF)
          :do
-         (let ((item (%unserialize type line))
-               (cur-pos (round (* 100 (/ (cl:file-position file) file-length)))))
-           (when (> cur-pos percent)
-             (setf percent cur-pos)
-             (when (zerop (mod percent 10))
-               (log5:log-for info-console "Done percent: ~a%" percent)))
-           (setf (gethash (key item) storage) item))))))
+         (progn
+           (let ((item (%unserialize type line))
+                 (cur-pos (round (* 100 (/ (cl:file-position file) file-length)))))
+             (when (> cur-pos percent)
+               (setf percent cur-pos)
+               (when (zerop (mod percent 10))
+                 (log5:log-for info-console "Done percent: ~a%" percent)))
+             (setf (gethash (key item) storage) item)))))))
 
 (defun class-core.bind-product-to-group (product group)
   "Bind product to group, and push product to group's children"
@@ -260,6 +275,7 @@ Reloaded standard method %post-unserialize"
          (%post-unserialize class)))
    *classes*))
 
+
 (defparameter *classes* (make-hash-table :test #'equal)
   "Hash-table of all classes, containing plist of options,
 such as pointer to storage, serialize flag, etc.")
@@ -298,7 +314,6 @@ such as pointer to storage, serialize flag, etc.")
                      `(',(getf slot-plist :name) ',(getf slot-plist :type)))
                  slots))))
 
-
 ;;; TODO: add :documentation arg (and other args)
 (defmacro class-core.make-class-and-methods (name slot-list &key
                                              (serialize t)
@@ -319,6 +334,7 @@ such as pointer to storage, serialize flag, etc.")
            (make-instance ',name ,@instance-initforms))
      (class-core.define-view-method ,name ,slot-list)
      (class-core.define-edit-method ,name ,slot-list)
+     ;; (class-core.define-write-json-method ,name ,slot-list)
      (class-core.define-post-data-create ,name ,slot-list)
      (class-core.define-print-method ,name)
      ,@(when make-storage
