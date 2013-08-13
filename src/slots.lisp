@@ -452,7 +452,7 @@ Type: ~A" type))
                           (slots.group-branch child open-groups field-name)
                         (setf child-open (or child-open branch-opened))
                         branch))
-                  (groups group)))
+                  (remove-if-not #'active (groups group))))
     (values (soy.class_forms:group-tree-branch (list :opened child-open
                                                      :hashkey (key group)
                                                      :name (name group)
