@@ -104,8 +104,7 @@
  (defun %product-update-name (product name)
   "Update product field name"
   (declare (product product) ((or string t) name))
-  (when (and name
-             (string= "" (name-provider product)))
+  (when name
     (setf (name-provider product) name))
   (when (string= "" (name-seo product))
     (setf (name-seo product) name)))
