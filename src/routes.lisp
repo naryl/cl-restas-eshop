@@ -273,7 +273,7 @@
 (define-tracing-route article-akcii-route ("/articles/akcii" :requirement #'test-article-get-parameters)
   (let ((request-get-plist (request-get-plist)))
     (if (null (getf request-get-plist :tags))
-        (setf (getf request-get-plist :tags) "Акции"))
+        (setf (getf request-get-plist :tags) "текущии акции"))
     (articles-page request-get-plist)))
 
 ;;список новостей
