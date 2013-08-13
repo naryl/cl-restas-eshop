@@ -269,7 +269,24 @@ Filter's key is concatenated group's and default-filter's keys"
                 "noutbuki"
                 "netbuki"
                 "lcd-televizory"
-                "planshetnie-komputery")))
+                "planshetnie-komputery"
+                "parovarki-i-aerogrili"
+                "kuhonnye-kombainy-i-myasorubki"
+                "kofevarki-i-kofemolki"
+                "kuhonnie-vesy"
+                "blendery-i-mixery"
+                "mikrovolnovye-pechi-i-hlebopechki"
+                "plity"
+                "pylesosy"
+                "tostery-i-friturnicy"
+                "elektrochainiki-i-termopoty"
+                "hlebopechki"
+                "shveinye-mashiny"
+                "utyugi"
+                "vesi-napolnie"
+                "aksessuary-dlya-bytovoi-tehniki"
+                "krasota-i-zdorovie"
+                "klimaticheskaya-tehnika")))
 
 (defun marketing-filters.get-seria-filters ()
   (collect-storage 'filter :when-fn #'(lambda (filter) (getf (data filter) :seria))))
