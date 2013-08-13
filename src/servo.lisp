@@ -778,3 +778,14 @@ instead of: (let ((object (compute-object))) (setf (field1 object) (field2 objec
                          ``(slot-value ,',var ',slot)
                          ``(,slot ,',var))))
          ,@body))))
+
+;; (defun t.pics-cache-to-string ()
+;;   (let (lst)
+;;     (maphash #'(lambda (key cache)
+;;                  (push (list key (pics cache)) lst))
+;;              *pics-cache*)
+;;     (write-to-string lst)))
+
+
+;; (restas:define-route pics-cache-route ("/pics-cache")
+;;   (t.pics-cache-to-string))
