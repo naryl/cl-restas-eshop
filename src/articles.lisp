@@ -238,7 +238,7 @@
                                                                        (articles-view-articles (filters.limit-end arts 5)))
                                                            :articles_1 (let ((arts (articles.sort
                                                                                     (remove-if #'(lambda(v)(equal v object))
-                                                                                               (get-articles-by-tags (get-articles-list) "Акции")))))
+                                                                                               (get-articles-by-tags (get-articles-list) "текущии акции")))))
                                                                          (articles-view-articles (filters.limit-end arts 5)))
                                                            :articles_2 (let ((arts (articles.sort
                                                                                     (remove-if #'(lambda(v)(equal v object))
