@@ -5,6 +5,11 @@
 (restas:define-route admin-route ("/administration-super-panel")
   (restas:redirect 'admin/-route))
 
+(restas:define-route admin/-route ("/administration-super-panel/test")
+  (require-authorization
+  (format t "~A" (hunchentoot:authorization)))
+  (show-admin-page "info"))
+
 (restas:define-route admin/-route ("/administration-super-panel/")
   (show-admin-page "info"))
 
@@ -296,7 +301,7 @@
          (rename-convert-all)
          "DO proccess-pictures")
         ("dtd"
-         (xls.update-options-from-xls)
+         (dtd)
          "DO DTD")
         ("articles-restore"
          (articles.restore)
@@ -344,7 +349,8 @@
                               'product
                               :when-fn
                               #'(lambda (item)
-                                  (and (null (parent item))
+                                  (and (active item)
+                                       (null (parent item))
                                        (not (special-p item)))))))
     (soy.class_forms:parenting-page
      (list :products (mapcar #'(lambda (product)
@@ -358,7 +364,7 @@
 (defun admin.vendor-seo-upload (post-data)
   (let* ((get-params (servo.alist-to-plist (hunchentoot:get-parameters hunchentoot:*request*)))
          (group-key (getf post-data :group))
-         (vendor-key (getf post-data :vendor))
+         (vendor-key (string-downcase (getf post-data :vendor)))
          (new-text (getf post-data :text)))
     (debug-slime-format "~A ~A" post-data get-params)
     (cond
