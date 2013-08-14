@@ -1,5 +1,5 @@
 (defsystem eshop
-  :depends-on (#:restas #:cl-json #:arnesi #:closure-template #:log4cl #:string-case
+  :depends-on (#:restas #:cl-json #:arnesi #:closure-template #:log4cl #:string-case #:anaphora
                #:alexandria #:cl-csv #:cl-mime #:data-sift #:cl-heap #:drakma
                #:mongo-cl-driver #:mongo-cl-driver.usocket)
   :pathname "src"
