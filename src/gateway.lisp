@@ -2,8 +2,6 @@
 
 (in-package #:eshop)
 
-(arnesi:enable-sharp-l-syntax)
-
 (defclass gateway.dump ()
   ((products-num :initform 0 :accessor product-num)
    (is-loaded :initform nil :accessor is-loaded)
@@ -32,7 +30,7 @@
   (declare (gateway.erp-data-dump dump))
   (push data (list-raw-data dump)))
 
-(defun %gateway.processing-fist-package (data &optional (dump *gateway.dump*))
+(defun %gateway.processing-first-package (data &optional (dump *gateway.dump*))
   "Prepare dump, start to collect packet data & give back answer"
   (declare (gateway.erp-data-dump dump))
   (%gateway.clear-dump)
@@ -267,8 +265,8 @@
   (%gateway.add-data->dump data dump)
   (setf (date dump) (get-universal-time))
   (let ((raw (list-raw-data dump)))
-        (bt:make-thread #L(gateway.%store-and-processed-dump raw)
-                        :name "store-and-processed-dump"))
+    (bt:make-thread #'(lambda () (gateway.%store-and-processed-dump raw))
+                    :name "store-and-processed-dump"))
   (%gateway.clear-dump)
   "last")
 
@@ -296,10 +294,10 @@
   (let ((num (format nil "~A" (hunchentoot:get-parameter "num")))
         (single (format nil "~A" (hunchentoot:get-parameter "single"))))
     (aif (hunchentoot:raw-post-data)
-         (string-case num
-           ("1" (%gateway.processing-fist-package it))
+         (switch (num :test #'string=)
+           ("1" (%gateway.processing-first-package it))
            ("0" (%gateway.processing-last-package it))
-           (t (string-case single
+           (t (switch (single :test #'string=)
                 ("1" (%gateway.processing-single-package it))
                 (t (%gateway.processing-package it)))))
          "NIL")))

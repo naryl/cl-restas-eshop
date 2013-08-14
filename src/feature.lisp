@@ -1,7 +1,5 @@
 (in-package #:eshop)
 
-(arnesi:enable-sharp-l-syntax)
-
 (alexandria:define-constant +phone-next-template+
     (make-instance 'sendmail:email
                    :from (config.get-option :critical :from-email)
@@ -135,7 +133,7 @@
         (bonuscount)) ;; сумма бонусов
     ;; кукисы пользователя
     (mapcar #'(lambda (cookie)
-                (string-case (car cookie)
+                (switch ((car cookie) :test #'string=)
                   ("cart" (setf cart (json:decode-json-from-string
                                       (hunchentoot:url-decode(cdr cookie)))))
                   ("user-nc" (setf user (json:decode-json-from-string

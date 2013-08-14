@@ -1,7 +1,5 @@
 (in-package #:eshop)
 
-(arnesi:enable-sharp-l-syntax)
-
 (defun sugg.%get-yml-name (product)
   (let ((yml-name (get-option product "Secret" "Yandex")))
     (if (or (null yml-name)
@@ -31,9 +29,9 @@
 (defun sugg.%get-all-suggestions ()
   (append
    (collect-storage 'product
-                    :func #L(sugg.%get-art-sugg (key !1)))
+                    :func #'(lambda (obj) (sugg.%get-art-sugg (key obj))))
    (collect-storage 'product
-                    :func #L(sugg.%get-pr-sugg (sugg.%get-yml-name !1)))))
+                    :func #'(lambda (obj) (sugg.%get-pr-sugg (sugg.%get-yml-name obj))))))
 
 
 ;; (sugg.%print-to-file #P"/home/wolfor/sugg.bkp")

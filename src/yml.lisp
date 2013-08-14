@@ -2,8 +2,6 @@
 
 (in-package #:eshop)
 
-(arnesi:enable-sharp-l-syntax)
-
 ;; Группы представляют собой лес для YML нам нужны не только сами
 ;; группы маркированные для выгрузки но и их родители
 ;; На самом деле нам нужно минимальные остовные деревья,
@@ -174,7 +172,7 @@
            (let ((diagonal (get-option product "Экран" "Диагональ экрана, дюйм")))
              (when (equal diagonal "")
                (setf diagonal nil))
-             (setf diagonal (ceiling (arnesi:parse-float diagonal)))
+             (setf diagonal (ceiling (parse-float diagonal)))
              (and (>= diagonal 32)
                   (string= (vendor product) "Samsung")))
            (equal key "kondicioneri")
@@ -199,7 +197,7 @@
                (let ((diagonal (get-option product "Экран" "Диагональ экрана, дюйм")))
                  (if (equal diagonal "")
                      (setf diagonal nil))
-                 (setf diagonal (ceiling (arnesi:parse-float diagonal)))
+                 (setf diagonal (ceiling (parse-float diagonal)))
                  (> diagonal 51)))
               (setf result 500)
               (if (or
@@ -308,7 +306,7 @@
                           :categoryes (yml.%category)
                           :offers (yml.%offers))))
     (when (search "YandexMarket" (tbnl:user-agent))
-      (bt:make-thread #L(yml.%flush data-yml)
+      (bt:make-thread #'(lambda () (yml.%flush data-yml))
                       :name "flash-yml"))
     data-yml))
 

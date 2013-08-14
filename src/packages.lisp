@@ -13,23 +13,21 @@
 
 ;;; TODO: make separated package eshop-core (class-core, slots, backup, etc.)
 (restas:define-module #:eshop
-    (:use
-     ;; system and libs' packages
-     :cl
-     :closure-template
-     :anaphora
-     :split-sequence
-     :cl-ppcre
-     :json
-     :cl-fad
-     :string-case
-     ;; :sendmail
-     :mongo-cl-driver.sugar ; (son)
-     )
-  (:import-from :arnesi :parse-float)
-  (:import-from :alexandria :read-file-into-string)
-  (:import-from :alexandria :rcurry)
-  (:import-from :alexandria :make-keyword :symbolicate)
+  (:use
+   ;; system and libs' packages
+   :cl
+   :closure-template
+   :anaphora
+   :split-sequence
+   :cl-ppcre
+   :json
+   :cl-fad
+   :alexandria
+   :parse-float
+   ;; :sendmail
+   :mongo-cl-driver.sugar ; (son)
+   )
+  (:shadowing-import-from :cl-fad :copy-stream :copy-file)
   (:export :config.parse-config
            :config.get-option
            :servo.compile-soy

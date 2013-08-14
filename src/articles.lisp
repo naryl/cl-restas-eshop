@@ -254,7 +254,7 @@
 
 ;; отображение страницы статьи
 (defmethod restas:render-object ((designer eshop-render) (object article))
-  (string-case (ctype object)
+  (switch ((ctype object) :test #'string=)
     ("static" (articles.show-static object))
     ("article" (articles.show-article object))
     ("landscape" (articles.show-landscape object))))

@@ -2,8 +2,6 @@
 
 (in-package #:eshop)
 
-(arnesi:enable-sharp-l-syntax)
-
 (defmacro class-core.define-class (name slot-list)
   "Macro for making class by given list of slots"
   `(defclass ,name ()
