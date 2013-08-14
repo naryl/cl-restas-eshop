@@ -1,7 +1,4 @@
 .dropbox
-cl-cron.log
 /libs
-/old
-/backup
-/eshop-logs
-/last-backup
+/bin/*
+!/bin/eshop.sh
