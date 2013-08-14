@@ -1,6 +1,6 @@
 ESHOP_PATH="$HOME/cl-restas-eshop/"
-CONFIG_PATH=$ESHOP_PATH"example-start/config-tosha.conf"
-LIBS_PATH=$ESHOP_HOME"libs/"
+CONFIG_PATH=$ESHOP_PATH"config/default.conf"
+LIBS_PATH="$HOME/cl-libs/"
 SWANK_PORT=4005
 
 export ESHOP_PATH
