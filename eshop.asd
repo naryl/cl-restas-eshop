@@ -1,6 +1,6 @@
 (defsystem eshop
   :depends-on (#:restas #:cl-json #:arnesi #:closure-template #:log4cl #:string-case
-               #:alexandria #:cl-csv :cl-mime :data-sift :cl-heap
+               #:alexandria #:cl-csv :cl-mime :data-sift :cl-heap #:drakma
                #:mongo-cl-driver #:mongo-cl-driver.usocket)
   :components
   ((:module "src"

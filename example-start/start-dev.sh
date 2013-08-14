@@ -1,4 +1,4 @@
-ESHOP_PATH="$HOME/eshop-dev/"
+ESHOP_PATH="$HOME/cl-restas-eshop/"
 CONFIG_PATH=$ESHOP_PATH"example-start/config-dev.conf"
 LIBS_PATH="$HOME/eshop/libs/"
 SWANK_PORT=4005
