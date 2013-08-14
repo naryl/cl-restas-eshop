@@ -1,4 +1,3 @@
-(load "~/app/sbcl-1.1.10/contrib/asdf/asdf.lisp")
 (require 'asdf)
 
 (defvar *subdir-search-registry* '(#P"~/eshop/aux-libs/")
@@ -70,10 +69,10 @@
              "cl-qprint" ;; cl-mime
              "cl-heap" ;; heap and priority queue
              "mongo-cl-driver" ;; mongodb
+             "drakma" ;; t.fetch-pics-cache, hunch-test http клиент для тестов
 
              ;; WEB Server test
              ;; "cl-who" ;; hunch-test
-             ;; "drakma" ;; hunch-test http клиент для тестов
              ;; "puri-unicode" ;; drakma
              ;; "Eos" ;; esrap test
 

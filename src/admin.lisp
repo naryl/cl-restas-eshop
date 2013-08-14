@@ -5,11 +5,6 @@
 (restas:define-route admin-route ("/administration-super-panel")
   (restas:redirect 'admin/-route))
 
-(restas:define-route admin/-route ("/administration-super-panel/test")
-  (require-authorization
-  (format t "~A" (hunchentoot:authorization)))
-  (show-admin-page "info"))
-
 (restas:define-route admin/-route ("/administration-super-panel/")
   (show-admin-page "info"))
 

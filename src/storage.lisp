@@ -30,7 +30,8 @@ Note: returned object is NOT setfable (but its fields are)"
 
 (defun getobj-from-db (key &optional type)
   "Get object from mongo. If type is nil it will try all collections"
-  (let ((types (if type
+  nil ; Pending migration to mongo
+  #+(or)(let ((types (if type
                     (list type)
                     (alexandria:hash-table-keys *classes*))))
     (dolist (type types)

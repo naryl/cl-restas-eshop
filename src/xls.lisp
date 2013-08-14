@@ -63,7 +63,7 @@
 
 (defun xls.%update-options-single-file (file articul-file error-articuls)
   (declare ((or pathname string) file) (hash-table articul-file error-articuls))
-  (log5:log-for info-console "Processing file: ~A" file)
+  (log:info "Processing file: ~A" file)
   (let ((option-table (xls.%read-and-process-file file)))
     (loop
        :for option-descriptor :in (cddr (butlast option-table)) ; without 2 header rows and last crap row
@@ -72,9 +72,8 @@
                   (product (getobj key 'product)))
              (when (valid-string-p key :whitespace-check nil)
                (if (null product)
-                   (log5:log-for warning
-                                 "Product ~A (articul ~A), not found, skip. File: ~A"
-                                 name key file)
+                   (log:warn "Product ~A (articul ~A), not found, skip. File: ~A"
+                             name key file)
                    ;; else
                    (progn
                      (when (valid-string-p name :whitespace-check nil)
