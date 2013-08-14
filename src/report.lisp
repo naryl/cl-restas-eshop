@@ -100,6 +100,8 @@ list of conses (column-header . column-specifier).
   (report.%rsc 'product-name-real #'name-seo)
   (report.%rsc 'product-erp-price #'erp-price)
   (report.%rsc 'product-erp-class #'erp-class)
+  (report.%rsc 'product-count-total #'count-total)
+  (report.%rsc 'product-count-transit #'count-transit)
   (report.%rsc
    'product-yml-name
    (rcurry #'get-option "Secret" "Yandex"))
@@ -396,7 +398,7 @@ list of conses (column-header . column-specifier).
    'group))
 
 (defun create-report (file-name report-func)
-  (log5:log-for info "Create report ~A ..." file-name)
+  (log:info "Create report ~A ..." file-name)
   (let ((filepath (merge-pathnames file-name (config.get-option :paths :path-to-reports))))
     (with-open-file
         (stream filepath :direction :output :if-exists :supersede :external-format :cp1251)

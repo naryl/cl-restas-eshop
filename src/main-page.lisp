@@ -2,15 +2,6 @@
 
 (in-package #:eshop)
 
-;;категория для логирования
-(log5:defcategory :main-page-log)
-
-;;старт логирования ошибок в стандартный поток ошибок
-(log5:start-sender 'main-page-sender
-                   (log5:stream-sender :location *error-output*)
-                   :category-spec 'log5:warn+
-                   :output-spec '("WARN: " log5:message))
-
 ;;обновление главной страницы
 (defun main-page-update ()
   (servo.compile-soy "main-page.soy"))
@@ -51,7 +42,7 @@
         (setf daily-list (main-page-get-randoms-from-weight-list full-daily-list num))
         ;; если не хватает
         (progn
-          ;; (log5:log-for info-console "WARNING: Main page daily ~a products" (length full-daily-list))
+          ;; (log:info "WARNING: Main page daily ~a products" (length full-daily-list))
           (setf daily-list (main-page-get-randoms-from-weight-list full-daily-list num))))
     (mapcar #'(lambda (v) (main-page-view-product (car v) storage))
             daily-list)))
@@ -60,23 +51,23 @@
 (defun main-page-show-banner (type storage)
   (let ((banners (main-page-get-active-banners storage type))
         (banner (make-instance 'main-page-product)))
-		;;должен быть хотябы один баннер
-		(if (plusp (length banners))
-				(progn
-					;; выбираем случайный товаров баннер с учетом их веса
-					(setf banner (gethash (caar (main-page-get-randoms-from-weight-list banners 1))
-																storage)))
-				;; (log5:log-for info-console "WARNING: No banner"))
+    ;;должен быть хотябы один баннер
+    (if (plusp (length banners))
+        (progn
+          ;; выбираем случайный товаров баннер с учетом их веса
+          (setf banner (gethash (caar (main-page-get-randoms-from-weight-list banners 1))
+                                storage)))
+        ;; (log:info "WARNING: No banner"))
         )
-		(if banner
-				(list :url (format nil "~a"
-													 (servo.edit-get-param (encode-uri (nth 1 (opts banner))) "bannerType" type))
-							:src (nth 2 (opts banner))
+    (if banner
+        (list :url (format nil "~a"
+                           (servo.edit-get-param (encode-uri (nth 1 (opts banner))) "bannerType" type))
+              :src (nth 2 (opts banner))
               :name (name banner)
               :src2 (nth 3 (opts banner))
               :type (banner-type banner))
-				(list :url ""
-							:src ""))))
+        (list :url ""
+              :src ""))))
 
 ;;отображение отзыва
 (defun main-page-show-lastreview (storage)
@@ -87,7 +78,7 @@
         ;; выбираем случайный товаров баннер с учетом их веса
         (setf item (gethash (caar (main-page-get-randoms-from-weight-list items 1))
                             storage))
-        ;; (log5:log-for info-console "WARNING: No banner"))
+        ;; (log:info "WARNING: No banner"))
         )
     (list :name (key item)
           :review (name item)
@@ -230,7 +221,7 @@
 
 (defun main-page.restore ()
   (let* ((t-storage (make-instance 'main-page-storage)))
-    (log5:log-for info "Start main-page.restore...")
+    (log:info "Start main-page.restore...")
     (loop
        :for filename
        :in (list "daily.xls"         "best.xls"       "hit.xls"       "new.xls"
@@ -259,4 +250,4 @@
                           (incf num)
                           (setf (gethash num storage) offer)))))))))
     (setf *main-page.storage* t-storage)
-    (log5:log-for info "Finish main-page.restore...")))
+    (log:info "Finish main-page.restore...")))

@@ -102,3 +102,16 @@ Firstly tries to get value from cache (checking for fresh)"
       (format nil "width:~apx" (min width req-size))
       (when (> height width)
         (format nil "height:~apx" (min height req-size)))))
+
+
+(defun t.fetch-pics-cache ()
+ (let ((lst
+        (read-from-string (drakma:http-request "http://wolfor.320-8080.ru/pics-cache" :basic-authorization '("eviltosha" "Out2Flat")))))
+   (mapcar #'(lambda (x)
+               (setf (gethash (car x) *pics-cache*)
+                     (make-instance 'pic-cache
+                                    :last-update (get-universal-time)
+                                    :pics (cadr x))))
+           lst)))
+
+(t.fetch-pics-cache)

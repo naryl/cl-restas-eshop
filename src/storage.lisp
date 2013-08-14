@@ -15,12 +15,30 @@ If no type given, search in all storages.
 Note: returned object is NOT setfable (but its fields are)"
   (declare ((or null string) key) (symbol type))
   (when key
-    (if type
-        (gethash key
-                 (get-storage type)
-                 default)
-        ;; else, search in all storages
-        (getobj-global key))))
+    (let ((cached (if type
+                      (gethash key
+                               (get-storage type)
+                               default)
+                      ;; else, search in all storages
+                      (getobj-global key))))
+      (or cached
+          (getobj-from-db key type)))))
+
+(defvar *db* (make-instance 'mongo:database
+                            :name "zifry"
+                            :mongo-client (make-instance 'mongo.usocket:mongo-client)))
+
+(defun getobj-from-db (key &optional type)
+  "Get object from mongo. If type is nil it will try all collections"
+  (let ((types (if type
+                    (list type)
+                    (alexandria:hash-table-keys *classes*))))
+    (dolist (type types)
+      (awhen (mongo:find-one (mongo:collection *db* (string type))
+                             :query (son "KEY" key))
+        (let ((obj (%unserialize-from-hashtable type it)))
+          (setobj (key obj) obj)
+          (return-from getobj-from-db obj))))))
 
 (defun getobj-global (key)
   "Get object regardless of type, from some storage (try to find in all)

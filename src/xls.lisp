@@ -112,10 +112,8 @@
     (email.send-xls-doubles-warn (hash-table-count error-articuls)
                                  (xls.%prepare-error-email error-articuls))))
 
-
-
 (defun xls.restore-from-xls (filepath line-processor &optional (restore-name "restore-from-xls"))
-  (log5:log-for info "Start ~a from file ~a" restore-name filepath)
+  (log:info "Start ~a from file ~a" restore-name filepath)
   (let* ((file (format nil "~a" filepath))
          (proc (when (file-exists-p file)
                  (sb-ext:run-program
@@ -128,4 +126,4 @@
            :for line := (read-line stream nil)
            :while (valid-string-p line :unwanted-chars (list #\, #\Space #\Tab) :del-method :trim)
            :do (funcall line-processor line))))
-    (log5:log-for info "DONE ~a" restore-name)))
+    (log:info "DONE ~a" restore-name)))

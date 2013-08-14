@@ -2,12 +2,14 @@
 
 (in-package #:eshop)
 
+(arnesi:enable-sharp-l-syntax)
+
 (defmacro class-core.define-class (name slot-list)
   "Macro for making class by given list of slots"
   `(defclass ,name ()
      ,(mapcar #'(lambda (field)
                   `(,(getf field :name)
-                     :initarg ,(anything-to-keyword (getf field :name))
+                     :initarg ,(make-keyword (getf field :name))
                      :initform ,(getf field :initform)
                      :accessor ,(getf field :name)))
               slot-list)))
@@ -64,7 +66,7 @@ Note: function must be called during request, so functions like
       :key (hunchentoot:post-parameter "key")
       ,@(mapcan #'(lambda (slot)
            (unless (getf slot :disabled)
-             `(,(anything-to-keyword (getf slot :name))
+             `(,(make-keyword (getf slot :name))
                 (slots.%get-data ',(getf slot :type)
                                  (hunchentoot:post-parameter
                                   ,(format nil "~(~A~)" (getf slot :name)))))))
@@ -87,24 +89,41 @@ Note: function must be called during request, so functions like
                                            ,(format nil "~(~A~)" (getf slot :name)))))))
                  slot-list))))
 
+(defgeneric %unserialize-from-hashtable (type line)
+  (:documentation "Make an object with fields from a hashtable"))
+
 (defgeneric %unserialize (type line)
   (:documentation "Make an object with read from file fields"))
 
 (defmacro class-core.define-unserialize-method (name slot-list)
-  `(defmethod %unserialize ((type (eql ',name)) line)
-     (let ((raw (decode-json-from-string line)))
+  `(progn
+     (defmethod %unserialize-from-hashtable ((type (eql ',name)) hash-table)
        (make-instance
         ',name
         ,@(mapcan
            #'(lambda (field)
-               (let ((name (anything-to-keyword (getf field :name)))
+               (let ((name (make-keyword (getf field :name)))
                      (initform (getf field :initform)))
                  `(,name
-                   (let ((val (cdr (assoc ,name raw))))
+                   (let ((val (gethash (string ',name) hash-table)))
                      (if val
                          (slots.%decode-from-string ',(getf field :type) val)
                          ,initform)))))
-           slot-list)))))
+           slot-list)))
+     (defmethod %unserialize ((type (eql ',name)) line)
+       (let ((raw (decode-json-from-string line)))
+         (make-instance
+          ',name
+          ,@(mapcan
+             #'(lambda (field)
+                 (let ((name (make-keyword (getf field :name)))
+                       (initform (getf field :initform)))
+                   `(,name
+                     (let ((val (cdr (assoc ,name raw))))
+                       (if val
+                           (slots.%decode-from-string ',(getf field :type) val)
+                           ,initform)))))
+             slot-list))))))
 
 (defun %unserialize-from-file (filepath type storage)
   "Read from file and decode json; only applicable to classes with storage"
@@ -122,7 +141,7 @@ Note: function must be called during request, so functions like
              (when (> cur-pos percent)
                (setf percent cur-pos)
                (when (zerop (mod percent 10))
-                 (log5:log-for info-console "Done percent: ~a%" percent)))
+                 (log:info "Done percent: ~a%" percent)))
              (setf (gethash (key item) storage) item)))))))
 
 (defun class-core.bind-product-to-group (product group)
@@ -252,7 +271,25 @@ Reloaded standard method %post-unserialize"
                      (setobj (string-downcase name) v 'vendor))))
              (copy-structure storage))))
 
-(defun class-core.unserialize-all ()
+(defgeneric class-core.unserialize-all (source))
+
+(defmethod class-core.unserialize-all ((source (eql :mongo)))
+  (maphash
+   #'(lambda (class properties)
+       ;; unserialize from file, only if class has storage
+       (when (getf properties :storage)
+         (let ((t-storage (make-hash-table :test #'equal))) ; storage for temp instances
+           (log:info "Unserialize ~A from mongo..." class)
+           (mongo:with-cursor (cursor (mongo:collection *db* (string class)) (son))
+             (mongo:docursor (item cursor :close-after nil)
+               (let ((obj (%unserialize-from-hashtable class item)))
+                 (setf (gethash (key obj) t-storage) obj))))
+           ;; set real storage as fully unserialized temp storage
+           (setf (getf properties :storage) t-storage))))
+   *classes*)
+  (class-core.after-unserialize-all))
+
+(defmethod class-core.unserialize-all ((source (eql :filesystem)))
   "Unsrialize all classes objects from files"
   ;; unserialize all instances, without processing slots
   (maphash
@@ -260,15 +297,16 @@ Reloaded standard method %post-unserialize"
        ;; unserialize from file, only if class has storage
        (when (getf properties :storage)
          (let ((t-storage (make-hash-table :test #'equal))) ; storage for temp instances
-           (log5:log-for info "Unserialize ~A..." class)
+           (log:info "Unserialize ~A from file..." class)
            (%unserialize-from-file (get-last-bakup-pathname class)
                                    class
                                    t-storage)
            ;; set real storage as fully unserialized temp storage
            (setf (getf properties :storage) t-storage))))
    *classes*)
-  ;; post-unserialize actions, such as making links instead of text keys
-  ;; Note: can't be merged with previous maphash, because must be after it
+  (class-core.after-unserialize-all))
+
+(defun class-core.after-unserialize-all ()
   (maphash
    #'(lambda (class properties)
        (when (getf properties :storage)

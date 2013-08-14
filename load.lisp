@@ -52,7 +52,7 @@
              "data-sift" ;; restas
              "puri-unicode" ;; data-sift
              "parse-number" ;; data-sift
-					   "closer-mop" ;;restas
+             "closer-mop" ;;restas
              ;; CLOP (ESHOP)
              "cl-json" ;; eshop JSON сериализатор
              "cl-closure-template" ;; eshop шаблонизатор
@@ -61,7 +61,7 @@
              "anaphora" ;; parenscript | macro collection from Hell http://www.cliki.net/Anaphora
              "esrap" ;; closure-template
              "arnesi" ;; eshop parse-float
-             "log5" ;; eshop
+             "log4cl" ;; eshop
              "string-case" ;; eshop
              "cl-csv" ;; eshop
              "cl-interpol" ;; cl-csv
@@ -69,6 +69,7 @@
              "cl-mime" ;; eshop
              "cl-qprint" ;; cl-mime
              "cl-heap" ;; heap and priority queue
+             "mongo-cl-driver" ;; mongodb
 
              ;; WEB Server test
              ;; "cl-who" ;; hunch-test

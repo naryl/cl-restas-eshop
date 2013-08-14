@@ -1,5 +1,7 @@
 (defsystem eshop
-  :depends-on (#:restas #:cl-json #:arnesi #:closure-template #:log5 #:string-case #:alexandria #:cl-csv :cl-mime :data-sift :cl-heap)
+  :depends-on (#:restas #:cl-json #:arnesi #:closure-template #:log4cl #:string-case
+               #:alexandria #:cl-csv :cl-mime :data-sift :cl-heap
+               #:mongo-cl-driver #:mongo-cl-driver.usocket)
   :components
   ((:module "src"
             :serial t

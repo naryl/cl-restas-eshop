@@ -112,12 +112,12 @@
 
 
 (defun sitemap.create-sitemap-file ()
-  (log5:log-for info "Create Sitemap.XML: ")
+  (log:info "Create Sitemap.XML: ")
   (setq *sitemap-lastmod-time* (time.get-lastmod-time))
   (let ((filepath (config.get-option :critical :path-to-sitemap))
         (routes (sitemap.get-all-routes-list))
         (number 0))
-    (log5:log-for info "Routes number: ~A" (length routes))
+    (log:info "Routes number: ~A" (length routes))
     (loop
        :while routes
        :do

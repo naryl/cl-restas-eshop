@@ -24,10 +24,12 @@
      :cl-fad
      :string-case
      ;; :sendmail
+     :mongo-cl-driver.sugar ; (son)
      )
   (:import-from :arnesi :parse-float)
   (:import-from :alexandria :read-file-into-string)
   (:import-from :alexandria :rcurry)
+  (:import-from :alexandria :make-keyword :symbolicate)
   (:export :config.parse-config
            :config.get-option
            :servo.compile-soy
