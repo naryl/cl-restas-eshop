@@ -6,7 +6,7 @@
 
 ;; регестрация путей для asdf
 (load (merge-pathnames "load.lisp" *path-to-eshop*))
-(load.register-libs)
+(load.register-libs *path-to-libs*)
 
 ;; load swank libs
 (asdf:load-system :swank)
