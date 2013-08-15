@@ -2,8 +2,6 @@
 
 (in-package #:eshop)
 
-(arnesi:enable-sharp-l-syntax)
-
 (defun get-storage (type)
   "Get storage for given type objects"
   (declare (symbol type))
@@ -186,7 +184,7 @@ where key is vendor name and value is number of products with this vendor"
   (declare (group root) (function when-fn))
   (aif (remove-if-not when-fn (groups root))
        ;; no need for sort in mapcan, because it will be sorted anyway
-       (mapcan #L(storage.get-all-child-groups !1 when-fn) it)
+       (mapcan #'(lambda (group) (storage.get-all-child-groups group when-fn)) it)
        (list root))) ; else
 
 

@@ -5,7 +5,7 @@
 (defmacro with-sorted-paginator (get-products request-get-plist body)
   `(let* ((products ,get-products)
           (sorting  (getf ,request-get-plist :sort))
-          (sorted-products (string-case sorting
+          (sorted-products (switch (sorting :test #'string=)
                              ("pt" (sort products #'< :key #'siteprice))
                              ("pb" (sort products #'> :key #'siteprice))
                              (t products))))
@@ -59,8 +59,8 @@
          (setf value-f "0"))
        (unless (valid-string-p value-t)
          (setf value-t "99999999"))
-       (setf value-f (arnesi:parse-float (format nil "~as" value-f)))
-       (setf value-t (arnesi:parse-float (format nil "~as" value-t)))
+       (setf value-f (parse-float (format nil "~as" value-f)))
+       (setf value-t (parse-float (format nil "~as" value-t)))
        (<= value-f value-x value-t))))
 
 
@@ -79,9 +79,9 @@
        (when (or (null value-t)
                  (string= value-t ""))
          (setf value-t "99999999"))
-       (setf value-f (arnesi:parse-float (format nil "~as" value-f)))
-       (setf value-t (arnesi:parse-float (format nil "~as" value-t)))
-       (setf value-x (arnesi:parse-float (format nil "~as" value-x)))
+       (setf value-f (parse-float (format nil "~as" value-f)))
+       (setf value-t (parse-float (format nil "~as" value-t)))
+       (setf value-x (parse-float (format nil "~as" value-x)))
        (and (<= value-f value-x value-t)))))
 
 ;;Фильтруем по наличию опции
@@ -698,11 +698,11 @@
   "Replacing all chars in char-list from string"
   (coerce
    (remove-if #'null
-              (map 'list (lambda (c)
-                           (if (some #'(lambda (c1) (char= c c1))
-                                     char-list)
-                               replacement
-                               c))
+              (map 'list #'(lambda (c)
+                             (if (some #'(lambda (c1) (char= c c1))
+                                       char-list)
+                                 replacement
+                                 c))
                    string))
    'string))
 
@@ -719,10 +719,6 @@
                              t)
        ;; for returning t if valid (not number)
        t))
-
-(defun ensure-list (obj)
-  "When obj is list return obj, otherwise return list with only element - obj"
-  (if (consp obj) obj (list obj)))
 
 (defun ensure-string (obj)
   "If obj is string return obj, if obj is nil, convert to empty string, otherwise throw error"
@@ -756,7 +752,7 @@ Used for printing system info to browser"
   "Parse float and convert to smallest integer not less than original number give back nil input is nil"
   (declare ((or string t) string))
   (aif string
-       (ceiling (arnesi:parse-float it))
+       (ceiling (parse-float it))
        nil))
 
 (defmacro with-getter ((getter-sym object &optional use-slot-value) &body body)

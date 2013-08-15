@@ -124,7 +124,7 @@
               (articul (nth 2 args))
               (product (getobj articul 'product)))
          (when product
-           (string-case type
+           (switch (type :test #'string=)
              ("green" (soy.product:green_item (list :item (prerender.product-view (articul product)))))
              ("yellow" (soy.product:yellow_item (list :item (prerender.product-view (articul product)))))))))
       ((string= type "freedelivery")

@@ -1,7 +1,9 @@
 (defsystem eshop
-  :depends-on (#:restas #:cl-json #:arnesi #:closure-template #:log4cl #:string-case #:anaphora
-               #:alexandria #:cl-csv #:cl-mime #:data-sift #:cl-heap #:drakma
-               #:mongo-cl-driver #:mongo-cl-driver.usocket)
+  :depends-on (#:restas #:hunchentoot #:closure-template
+               #:cl-csv #:cl-mime #:data-sift #:cl-heap #:cl-json
+               #:mongo-cl-driver #:mongo-cl-driver.usocket
+               #:log4cl #:drakma
+               #:anaphora #:alexandria #:parse-float)
   :pathname "src"
   :serial t
   :components ((:module "patches"

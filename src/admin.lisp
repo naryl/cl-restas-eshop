@@ -52,7 +52,7 @@
 
 
 (restas:define-route admin-filter-create ("administration-super-panel/filter-create" :method :get)
-  (string-case (hunchentoot:get-parameter "get")
+  (switch ((hunchentoot:get-parameter "get") :test #'string=)
     ("filter-types"
      ;; FIXME: use json encode, not format
      (format nil "[~{~A~^,~}]" (mapcar #'encode-json-plist-to-string
@@ -144,7 +144,7 @@
         (restas:redirect 'admin-edit-get-route :type type :key key)
         (progn
           ;; FIXME
-          (setobj key (make-instance (string-case (string-downcase type)
+          (setobj key (make-instance (switch (type :test #'string-equal)
                                        ("product" 'product)
                                        ("group" 'group)) :key key))
           (admin.post-make-fix (getobj key))
@@ -282,7 +282,7 @@
 
 (defun admin.do-action (action)
   (handler-case
-      (string-case (ensure-string action)
+      (switch ((ensure-string action) :test #'string=)
         ("do-gc"
          (sb-ext:gc :full t)
          (htmlize
@@ -391,7 +391,7 @@
   (let ((post-data (servo.alist-to-plist (hunchentoot:post-parameters hunchentoot:*request*))))
     (soy.admin:main
      (list :content
-           (string-case (ensure-string key)
+           (switch ((ensure-string key) :test #'string=)
              ("info" (soy.admin:info (list :info (admin.get-info))))
              ("actions" (soy.admin:action-buttons (list :post post-data
                                                         :info (admin.do-action
