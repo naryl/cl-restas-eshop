@@ -7,10 +7,8 @@
             :nopretty ; Avoid splitting log lies
             :time ; Include time in log messages
             :nofile ; Don't include source file name
+            :daily (merge-pathnames "eshop.log" (config.get-option :paths :path-to-logs)) ;; requests log
+            :backup nil ;; just one plain file, without rolling
             )
 
 (defvar *eshop-access-log-lock* (bt:make-lock "eshop-request-log-lock"))
-
-(defun request-log-message (control-string &rest args)
- (tbnl::with-log-stream (stream (merge-pathnames "request.log" (config.get-option :paths :path-to-logs)) *eshop-access-log-lock*)
-   (apply #'format stream control-string args)))

@@ -32,16 +32,16 @@
                   gc-run-time-ms eval-calls
                   lambdas-converted page-faults bytes-consed
                   aborted))
-  (request-log-message "~A"
-                       (cl-csv:write-csv-row
-                        (list (time.encode.backup)
-                              (+ user-run-time-us system-run-time-us)
-                              processor-cycles
-                              *current-route-symbol*
-                              (tbnl:request-uri*)
-                              (tbnl:real-remote-addr)
-                              (tbnl:user-agent)
-                              (tbnl:referer)))))
+  (log:info "~A"
+             (cl-csv:write-csv-row
+              (list (time.encode.backup)
+                    (+ user-run-time-us system-run-time-us)
+                    processor-cycles
+                    *current-route-symbol*
+                    (tbnl:request-uri*)
+                    (tbnl:real-remote-addr)
+                    (tbnl:user-agent)
+                    (tbnl:referer)))))
 
 
 (defmacro define-tracing-route (name (template &rest args) &body body)
