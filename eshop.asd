@@ -59,4 +59,5 @@
                                      (:file "cl-cron"))
                         :depends-on ("classes"))
                (:file "cron")
-               (:file "debug")))
+               (:file "debug")
+               (:file "bonus-activate")))
