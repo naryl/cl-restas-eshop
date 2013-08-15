@@ -265,7 +265,8 @@
                       (format nil "Successfully compiled ~a" name))
                   (error (e) (format  nil "ERROR:~%~a" e)))
                 (format nil "File ~a not found" name))))
-    (soy.admin:compile-template (list :output output))))
+    (soy.admin:compile-template (list :output output
+                                      :tmpls (mapcar #'pathname-name (get-all-template-paths))))))
 
 (defun admin.make-backup (post-data)
   (let ((dobackup (getf post-data :dobackup))
