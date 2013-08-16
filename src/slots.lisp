@@ -178,7 +178,7 @@ Type: ~A" type))
   (declare (string post-data-string))
   (loop :for pair :in (st-json:read-json-from-string post-data-string)
      :for pair-plist := (alist-plist pair)
-     :collect (make-keyword (getf pair-plist :name))
+     :collect (anything-to-keyword (getf pair-plist :name))
      :collect (getf pair-plist :value)))
 
 (defmethod slots.%encode-to-string ((type (eql 'string-plist)) value)
@@ -251,14 +251,14 @@ Type: ~A" type))
              (loop
                 :for i :from 0
                 :for variant := (format nil "~A~D" prefix i)
-                :for variant-value := (getf data (make-keyword variant))
+                :for variant-value := (getf data (anything-to-keyword variant))
                 :while variant-value
                 :collect (list :name variant
                                :value variant-value
                                ;; empty for now rewrite later
                                :placeholder (format nil "Variant ~A" i))))
            (prepare-fields (filter-type data)
-             (let ((filter-data (gethash (symbolicate filter-type)
+             (let ((filter-data (gethash (anything-to-symbol filter-type)
                                          *basic-filters-data*)))
                (loop :for key :being :the hash-keys :in (fields filter-data)
                   :using (hash-value field-params)
@@ -268,7 +268,7 @@ Type: ~A" type))
                                ;; else
                                (list :type "single" :label (getf field-params :name)
                                      :name (format nil "~(~A~)" key)
-                                     :value (getf data (make-keyword key))))))))
+                                     :value (getf data (anything-to-keyword key))))))))
     (soy.class_forms:filter-hash-table-field
      (list :disabled disabled
            :name name
@@ -287,7 +287,7 @@ Type: ~A" type))
         (key filter) basics
         (setf (gethash key result)
               (apply #'filters.create-basic-filter
-                     (symbolicate (getf filter :type))
+                     (anything-to-symbol (getf filter :type))
                      (getf filter :data))))
     result))
 
@@ -310,7 +310,7 @@ Type: ~A" type))
     (loop
        :for (key . value) :in decoded-list
        :do (let ((decoded-list (st-json:read-json-from-string value)))
-             (setf (gethash (symbolicate key) hash-table)
+             (setf (gethash (anything-to-symbol key) hash-table)
                    (%unserialize 'basic-filter decoded-list))))
     hash-table))
 

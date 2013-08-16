@@ -524,13 +524,13 @@ list of conses (column-header . column-specifier).
 ;;;; fullfilter report
 ;; temp
 (defun fullfilter-keyword-t (keyword)
-  (alexandria:make-keyword (format nil "~A-T" keyword)))
+  (anything-to-keyword (format nil "~A-T" keyword)))
 
 (defun fullfilter-keyword-f (keyword)
-  (alexandria:make-keyword (format nil "~A-F" keyword)))
+  (anything-to-keyword (format nil "~A-F" keyword)))
 
 (defun fullfilter-keyword-n (keyword num)
-  (alexandria:make-keyword (format nil "~A-~D" keyword num)))
+  (anything-to-keyword (format nil "~A-~D" keyword num)))
 
 (defun get-advanced-filters (group)
   (loop :for filter-group :in (advanced (fullfilter group))

@@ -9,7 +9,7 @@
   `(defclass ,name ()
      ,(mapcar #'(lambda (field)
                   `(,(getf field :name)
-                     :initarg ,(make-keyword (getf field :name))
+                     :initarg ,(anything-to-keyword (getf field :name))
                      :initform ,(getf field :initform)
                      :accessor ,(getf field :name)))
               slot-list)))
@@ -66,7 +66,7 @@ Note: function must be called during request, so functions like
       :key (hunchentoot:post-parameter "key")
       ,@(mapcan #'(lambda (slot)
            (unless (getf slot :disabled)
-             `(,(make-keyword (getf slot :name))
+             `(,(anything-to-keyword (getf slot :name))
                 (slots.%get-data ',(getf slot :type)
                                  (hunchentoot:post-parameter
                                   ,(format nil "~(~A~)" (getf slot :name)))))))
@@ -102,7 +102,7 @@ Note: function must be called during request, so functions like
         ',name
         ,@(mapcan
            #'(lambda (field)
-               (let ((name (make-keyword (getf field :name)))
+               (let ((name (anything-to-keyword (getf field :name)))
                      (initform (getf field :initform)))
                  `(,name
                    (let ((val (gethash (string ',name) hash-table)))
@@ -116,7 +116,7 @@ Note: function must be called during request, so functions like
           ',name
           ,@(mapcan
              #'(lambda (field)
-                 (let ((name (make-keyword (getf field :name)))
+                 (let ((name (anything-to-keyword (getf field :name)))
                        (initform (getf field :initform)))
                    `(,name
                      (let ((val (cdr (assoc ,name raw))))

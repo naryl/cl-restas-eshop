@@ -93,9 +93,8 @@
 (defun %gateway.decode-json-from-file (pathname)
   "Read file and decode json data to appended list"
   (declare (pathname pathname))
-  (nreverse
-   (dolines (line pathname result)
-     (push (st-json:read-json-from-string line) result))))
+  (dolines (line pathname result)
+    (setf result (nconc (st-json:read-json-from-string line) result))))
 
  (defun %product-update-name (product name)
   "Update product field name"
