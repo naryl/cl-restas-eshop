@@ -63,7 +63,7 @@
 
 (restas:define-route admin-edit-slot-route ("administration-super-panel/edit-slot" :method :post)
   (let ((object (getobj (hunchentoot:post-parameter "key")))
-        (slot (symbolicate (hunchentoot:post-parameter "slot")))
+        (slot (anything-to-symbol (hunchentoot:post-parameter "slot")))
         (value (hunchentoot:post-parameter "value")))
     (if object
         (handler-case
@@ -123,7 +123,7 @@
          (restas:redirect 'admin-edit-get-route)
          ;; else
          (if (and (valid-string-p type)
-                  (class-exist-p (symbolicate type)))
+                  (class-exist-p (anything-to-symbol type)))
              (soy.class_forms:formwindow
               (list :key key
                     :type type
@@ -185,7 +185,7 @@
 
 (restas:define-route admin-make-post-route ("/administration-super-panel/make" :method :post)
   (let* ((key (hunchentoot:post-parameter "key"))
-         (type (symbolicate (hunchentoot:post-parameter "type")))
+         (type (anything-to-symbol (hunchentoot:post-parameter "type")))
          (item (getobj key)))
     (log:debug (hunchentoot:post-parameters*))
     (if (not (class-exist-p type))
