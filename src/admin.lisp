@@ -357,7 +357,7 @@
            :groups (slots.%view 'group-list nil "GROUPS" nil)))))
 
 (defun admin.vendor-seo-upload (post-data)
-  (let* ((get-params (servo.alist-to-plist (hunchentoot:get-parameters hunchentoot:*request*)))
+  (let* ((get-params (alist-plist (hunchentoot:get-parameters hunchentoot:*request*)))
          (group-key (getf post-data :group))
          (vendor-key (string-downcase (getf post-data :vendor)))
          (new-text (getf post-data :text)))
@@ -387,7 +387,7 @@
     (soy.admin:black-list (list :output output :errortext errortext))))
 
 (defun show-admin-page (&optional (key ""))
-  (let ((post-data (servo.alist-to-plist (hunchentoot:post-parameters hunchentoot:*request*))))
+  (let ((post-data (alist-plist (hunchentoot:post-parameters hunchentoot:*request*))))
     (soy.admin:main
      (list :content
            (switch ((ensure-string key) :test #'string=)

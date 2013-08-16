@@ -587,17 +587,8 @@
 (deftype alist ()
   `(satisfies alistp))
 
-(defun servo.alist-to-plist (alist)
-  "Non-recursive convertion from association list to property list"
-  (declare (alist alist))
-  (loop
-     :for (key . value)
-     :in alist
-     :collect (make-keyword key)
-     :collect value))
-
 (defun servo.recursive-alist-to-plist (alist)
-  "Rcursive convertion from association list to property list"
+  "Recursive convertion from association list to property list"
   (declare (alist alist))
   (loop
      :for (key . value)
@@ -623,19 +614,6 @@
                         value)))
        (setf plist (cddr plist)))
     result))
-
-(defun servo.list-to-hashtasble (list)
-  "Converting list (hash1 val1 hash2 val2...) to hashtable"
-  ;; (sb-pcl::doplist
-  (let ((res (make-hash-table :test #'equal)))
-    (loop
-       :for x :from 0 :to (- (length list) 1)
-       :when (evenp x)
-       :do
-       (let ((key (nth x list))
-             (value (nth (+ 1 x) list)))
-         (setf (gethash key res) value)))
-    res))
 
 (defun servo.diff-percentage (full part)
   "Returns difference in percents. (1 - part / full) * 100%"
@@ -766,6 +744,35 @@ instead of: (let ((object (compute-object))) (setf (field1 object) (field2 objec
                          ``(slot-value ,',var ',slot)
                          ``(,slot ,',var))))
          ,@body))))
+
+(defmacro dolines ((line-var filename &optional result-raw) &body body)
+  "Execute body for all file's lines in order"
+  (let* ((result-raw (ensure-list result-raw))
+         (result-name (first result-raw))
+         (result-init (second result-raw)))
+    (with-gensyms (file)
+      `(let (,@(cond ((null result-name)
+                      nil)
+                     ((symbolp result-name)
+                      `((,result-name ,result-init)))))
+         (with-open-file (,file ,filename)
+           (loop
+              :for ,line-var := (read-line ,file nil :eof)
+              :until (eq ,line-var :eof)
+              :do (progn ,@body)))
+         ,result-name))))
+
+(defun ensure-plist-keys (keys plist)
+  (let ((keys (copy-list keys)))
+    (unless (= (* 2 (length keys))
+               (length plist))
+      (log:warn "Wrong number of values in plist ~A. Expected keys are ~A." plist keys))
+    (dolist (item plist)
+      (when (keywordp item)
+        (deletef keys item)))
+    (unless (null keys)
+      (log:warn "Missing keys in plist ~A. Keys are ~A." plist keys)))
+  plist)
 
 ;; (defun t.pics-cache-to-string ()
 ;;   (let (lst)

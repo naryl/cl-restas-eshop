@@ -18,6 +18,13 @@
 (push *path-to-eshop* asdf:*central-registry*)
 (asdf:load-system :eshop)
 
+;; json serializer config
+(setf st-json:*decode-objects-as* :alist)
+(setf st-json:*read-null-as* nil)
+(setf st-json:*map-keys* #'(lambda (key) (intern
+                                          (st-json:camel-dash (string key))
+                                          :keyword)))
+
 ;; alternative order numbering for developers server
 (if (and (not (eshop:config.get-option :start-options :release))
          (eshop:config.get-option :start-options :dbg-on))

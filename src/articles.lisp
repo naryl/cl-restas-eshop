@@ -29,7 +29,7 @@
 
 (defmethod unserialize (filepath (dummy article))
   (let* ((file-content (alexandria:read-file-into-string filepath))
-         (raw (decode-json-from-string file-content))
+         (raw (st-json:read-json-from-string file-content))
          (key (pathname-name filepath))
          (body (cdr (assoc :body raw)))
          (breadcrumbs (cdr (assoc :breadcrumbs raw)))
