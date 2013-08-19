@@ -13,7 +13,6 @@
 (swank:create-server :dont-close t
                      :port *swank-port*)
 
-
 ;; load eshop
 (push *path-to-eshop* asdf:*central-registry*)
 (asdf:load-system :eshop)
@@ -64,9 +63,8 @@
 (setf cl-csv:*newline* (string #\Newline)
       cl-csv:*separator* #\;)
 
-(print (format nil "ESHOP load finished. Time : ~A" (eshop::time.msecs-to-hms (get-internal-real-time))))
-(print "Server info: ")
-(room)
+(log:info "ESHOP load finished. Time : ~A" (eshop::time.msecs-to-hms (get-internal-real-time))))
+(log:info "Server info: ~A" (with-output-to-string (*standard-output*) (room)))
 
 ;; запуск Restas
 (restas:start '#:eshop :port (eshop:config.get-option :start-options :server-port))
