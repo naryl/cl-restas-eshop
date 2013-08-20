@@ -138,7 +138,7 @@ list of conses (column-header . column-specifier).
    #'(lambda (item)
        (gethash (articul item) *xls.product-table*)))
   (report.%rsc 'product-vendor #'vendor)
-  (report.%rsc 'product-delivery #'yml.get-product-delivery-price1)
+  (report.%rsc 'product-delivery #'get-product-delivery-price)
   (report.%rsc
    'product-seria (rcurry #'get-option "Общие характеристики" "Серия"))
   (report.%rsc

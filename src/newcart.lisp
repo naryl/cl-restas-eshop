@@ -279,7 +279,7 @@
             ;; Временно доставка 300 на все
             ;; существует два вида доставки: курьером и самовывоз (express | pickup)
             (if  (string= delivery-type "express")
-                 (setf deliverysum (yml.get-delivery-price (newcart-cart-products cart))))
+                 (setf deliverysum (get-delivery-price (newcart-cart-products cart))))
             (if  (and (string= delivery-type "pickup")
                       (string= pickup "pickup-3"))
                  (setf deliverysum 100))

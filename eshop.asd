@@ -27,6 +27,7 @@
                (:file "render")
                (:file "cart")
                (:file "xls")  ;;необходима xls2csv | sudo apt-get install catdoc
+               (:file "delivery-price")
                (:file "yml")
                (:file "articles")
                (:file "sklonenie")

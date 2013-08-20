@@ -249,9 +249,6 @@
 (define-tracing-route yml/-route ("/yml/")
   (yml-page))
 
-(define-tracing-route parseryml-route ("/parseryml")
-  (yml-page-for-parser))
-
 ;; ARTICLES
 ;;TODO возможно проверять входные тэги
 (defun test-article-get-parameters ()
