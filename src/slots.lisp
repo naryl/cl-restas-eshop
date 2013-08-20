@@ -98,7 +98,7 @@ Type: ~A" type))
 
 (defmethod slots.%get-data ((type (eql 'string)) post-data-string)
   (declare (string post-data-string))
-  (decode-json-from-string post-data-string))
+  (st-json:read-json-from-string post-data-string))
 
 (defmethod slots.%encode-to-string ((type (eql 'string)) value)
   value)
@@ -124,7 +124,7 @@ Type: ~A" type))
 
 (defmethod slots.%get-data ((type (eql 'int)) post-data-string)
   (declare (string post-data-string))
-  (let ((int (decode-json-from-string post-data-string)))
+  (let ((int (st-json:read-json-from-string post-data-string)))
     (if (integerp int)
         int
         (error "Error: value ~A is not integer" int))))
@@ -145,7 +145,7 @@ Type: ~A" type))
 
 (defmethod slots.%get-data ((type (eql 'int?)) post-data-string)
   (declare (string post-data-string))
-  (let ((int? (decode-json-from-string post-data-string)))
+  (let ((int? (st-json:read-json-from-string post-data-string)))
     (if (or (integerp int?)
             (not int?))
         int?
@@ -176,9 +176,9 @@ Type: ~A" type))
 
 (defmethod slots.%get-data ((type (eql 'string-plist)) post-data-string)
   (declare (string post-data-string))
-  (loop :for pair :in (decode-json-from-string post-data-string)
-     :for pair-plist := (servo.alist-to-plist pair)
-     :collect (make-keyword (getf pair-plist :name))
+  (loop :for pair :in (st-json:read-json-from-string post-data-string)
+     :for pair-plist := (alist-plist pair)
+     :collect (anything-to-keyword (getf pair-plist :name))
      :collect (getf pair-plist :value)))
 
 (defmethod slots.%encode-to-string ((type (eql 'string-plist)) value)
@@ -186,8 +186,8 @@ Type: ~A" type))
 
 (defmethod slots.%decode-from-string ((type (eql 'string-plist)) string)
   (declare (string string))
-  (servo.alist-to-plist
-   (decode-json-from-string string)))
+  (alist-plist
+   (st-json:read-json-from-string string)))
 
 ;; symbol, standard symbol
 (defmethod slots.%view ((type (eql 'symbol)) value name disabled)
@@ -228,7 +228,7 @@ Type: ~A" type))
 
 (defmethod slots.%encode-to-string ((type (eql 'default-set)) value)
   (declare (default-set value))
-  (encode-json-to-string
+  (st-json:write-json-to-string
    (etypecase value
      (symbol `(symbol ,value))
      ;; Note: each element of list must have method "key"
@@ -238,7 +238,7 @@ Type: ~A" type))
 
 (defmethod slots.%decode-from-string ((type (eql 'default-set)) string)
   (declare (string string))
-  (let ((decoded-list (decode-json-from-string string)))
+  (let ((decoded-list (st-json:read-json-from-string string)))
     (switch ((first decoded-list) :test #'string=)
       ("symbol" (symbolicate (second decoded-list)))
       ("list" (keys-to-objects (second decoded-list)))
@@ -251,14 +251,14 @@ Type: ~A" type))
              (loop
                 :for i :from 0
                 :for variant := (format nil "~A~D" prefix i)
-                :for variant-value := (getf data (make-keyword variant))
+                :for variant-value := (getf data (anything-to-keyword variant))
                 :while variant-value
                 :collect (list :name variant
                                :value variant-value
                                ;; empty for now rewrite later
                                :placeholder (format nil "Variant ~A" i))))
            (prepare-fields (filter-type data)
-             (let ((filter-data (gethash (symbolicate filter-type)
+             (let ((filter-data (gethash (anything-to-symbol filter-type)
                                          *basic-filters-data*)))
                (loop :for key :being :the hash-keys :in (fields filter-data)
                   :using (hash-value field-params)
@@ -268,7 +268,7 @@ Type: ~A" type))
                                ;; else
                                (list :type "single" :label (getf field-params :name)
                                      :name (format nil "~(~A~)" key)
-                                     :value (getf data (make-keyword key))))))))
+                                     :value (getf data (anything-to-keyword key))))))))
     (soy.class_forms:filter-hash-table-field
      (list :disabled disabled
            :name name
@@ -281,36 +281,36 @@ Type: ~A" type))
 
 (defmethod slots.%get-data ((type (eql 'filters-hash-table)) post-data-string)
   (declare (string post-data-string))
-  (let ((basics (servo.recursive-alist-to-plist (decode-json-from-string post-data-string)))
+  (let ((basics (servo.recursive-alist-to-plist (st-json:read-json-from-string post-data-string)))
         (result (make-hash-table :test #'equal)))
     (sb-pcl::doplist
         (key filter) basics
         (setf (gethash key result)
               (apply #'filters.create-basic-filter
-                     (symbolicate (getf filter :type))
+                     (anything-to-symbol (getf filter :type))
                      (getf filter :data))))
     result))
 
 
 (defmethod slots.%encode-to-string ((type (eql 'filters-hash-table)) hash-table)
   (declare (hash-table hash-table))
-  (encode-json-to-string
+  (st-json:write-json-to-string
    (loop
       :for key :being :the hash-keys :in hash-table
       :using (hash-value filter)
       :collect (cons
                 key
-                (encode-json-to-string
+                (st-json:write-json-to-string
                  (backup.serialize-entity filter))))))
 
 (defmethod slots.%decode-from-string ((type (eql 'filters-hash-table)) string)
   (declare (string string))
-  (let ((decoded-list (decode-json-from-string string))
+  (let ((decoded-list (st-json:read-json-from-string string))
         (hash-table (make-hash-table :test #'equal)))
     (loop
        :for (key . value) :in decoded-list
-       :do (let ((decoded-list (decode-json-from-string value)))
-             (setf (gethash (symbolicate key) hash-table)
+       :do (let ((decoded-list (st-json:read-json-from-string value)))
+             (setf (gethash (anything-to-symbol key) hash-table)
                    (%unserialize 'basic-filter decoded-list))))
     hash-table))
 
@@ -324,7 +324,7 @@ Type: ~A" type))
 
 (defmethod slots.%get-data ((type (eql 'textedit)) post-data-string)
   "Replace #\Replace (#\Newline remains)"
-  (servo.string-replace-chars (decode-json-from-string post-data-string) (list #\Return)))
+  (servo.string-replace-chars (st-json:read-json-from-string post-data-string) (list #\Return)))
 
 (defmethod slots.%encode-to-string ((type (eql 'textedit)) value)
   (slots.%encode-to-string 'string value))
@@ -360,21 +360,12 @@ Type: ~A" type))
   (slots.%get-data 'undefined string))
 
 (defmethod slots.%encode-to-string ((type (eql 'textedit-hashtable)) hashtable)
-  (let ((res-list))
-    (maphash #'(lambda (vendor seo-text)
-                 (push
-                  (format nil "~A,~A"
-                          (encode-json-to-string vendor)
-                          (encode-json-to-string
-                           (slots.%encode-to-string 'textedit seo-text)))
-                  res-list))
-             hashtable)
-    (when res-list
-      (format nil "[~{~A~^,~}]" res-list))))
+  (st-json:write-json-to-string hashtable))
 
 (defmethod slots.%decode-from-string ((type (eql 'textedit-hashtable)) string)
   (declare (string string))
-  (servo.list-to-hashtasble (decode-json-from-string string)))
+  (let ((st-json:*decode-objects-as* :hashtable))
+    (st-json:read-json-from-string string)))
 
 ;;time, человекопонятное время
 (defmethod slots.%view ((type (eql 'time)) value name disabled)
@@ -403,7 +394,7 @@ Type: ~A" type))
 
 (defmethod slots.%get-data ((type (eql 'bool)) post-data-string)
   (declare (string post-data-string))
-  (let ((bool (decode-json-from-string post-data-string)))
+  (let ((bool (st-json:read-json-from-string post-data-string)))
     (if (typep bool 'boolean)
         bool
         (error "Error: value ~A is not bool" bool))))
@@ -464,7 +455,7 @@ Type: ~A" type))
 
 (defmethod slots.%get-data ((type (eql 'group-list)) string-list)
   (when string-list
-    (keys-to-objects (decode-json-from-string string-list) :type 'group)))
+    (keys-to-objects (st-json:read-json-from-string string-list) :type 'group)))
 
 (defmethod slots.%encode-to-string ((type (eql 'group-list)) groups)
   (format nil "[~{\"~A\"~^,~}]" (mapcar #'key groups)))
@@ -472,7 +463,7 @@ Type: ~A" type))
 (defmethod slots.%decode-from-string ((type (eql 'group-list)) string)
   ;; ! Needs post-processing
   (declare (string string))
-  (decode-json-from-string string))
+  (st-json:read-json-from-string string))
 
 ;;products, список продуктов(-детей)
 (defmethod slots.%view ((type (eql 'product-list)) value name disabled)
@@ -488,7 +479,7 @@ Type: ~A" type))
 (defmethod slots.%decode-from-string ((type (eql 'product-list)) string)
   ;; ! Needs post-processing
   (declare (string string))
-  (decode-json-from-string string))
+  (st-json:read-json-from-string string))
 
 ;;optgroups
 (defmethod slots.%view ((type (eql 'optgroups)) value name disabled)
@@ -506,11 +497,11 @@ Type: ~A" type))
 
 (defmethod slots.%get-data ((type (eql 'keyoptions)) post-data-string)
   (declare (string post-data-string))
-  (let ((keyoptions-list (decode-json-from-string post-data-string)))
+  (let ((keyoptions-list (st-json:read-json-from-string post-data-string)))
     (remove-if #'null
                (mapcar
                 #'(lambda (keyoption-alist)
-                    (let ((keyoption (servo.alist-to-plist keyoption-alist)))
+                    (let ((keyoption (alist-plist keyoption-alist)))
                       (when (and (getf keyoption :optgroup)
                                  (getf keyoption :optname)
                                  (getf keyoption :showname))
@@ -519,14 +510,12 @@ Type: ~A" type))
 
 
 (defmethod slots.%encode-to-string ((type (eql 'keyoptions)) keyoptions)
-  (format nil "[~{~a~^,~}]"
-          (mapcar #'(lambda (keyoption)
-                      (format nil "{\"optgroup\":~a,\"optname\":~a,\"showname\":~a,\"units\":~a}"
-                              (encode-json-to-string (getf keyoption :optgroup))
-                              (encode-json-to-string (getf keyoption :optname))
-                              (encode-json-to-string (getf keyoption :showname))
-                              (encode-json-to-string (or (getf keyoption :units) ""))))
-                  keyoptions)))
+  (st-json:write-json-to-string
+   (mapcar #'(lambda (keyoption)
+               (let ((ht (plist-hash-table keyoption)))
+                 (setf (gethash :units ht)
+                       (gethash :units ht ""))))
+           keyoptions)))
 
 (defmethod slots.%decode-from-string ((type (eql 'keyoptions)) string)
   (declare (string string))
@@ -535,7 +524,7 @@ Type: ~A" type))
                     :optname (cdr (assoc :optname pair))
                     :showname (cdr (assoc :showname pair))
                     :units (cdr (assoc :units pair))))
-          (decode-json-from-string string)))
+          (st-json:read-json-from-string string)))
 
 (defmethod slots.%view ((type (eql 'catalog-keyoptions)) value name disabled)
   (soy.class_forms:catalog-keyoptions-field
@@ -545,11 +534,11 @@ Type: ~A" type))
 
 (defmethod slots.%get-data ((type (eql 'catalog-keyoptions)) post-data-string)
   (declare (string post-data-string))
-  (let ((keyoptions-list (decode-json-from-string post-data-string)))
+  (let ((keyoptions-list (st-json:read-json-from-string post-data-string)))
     (remove-if #'null
                (mapcar
                 #'(lambda (keyoption-alist)
-                    (let ((keyoption (servo.alist-to-plist keyoption-alist)))
+                    (let ((keyoption (alist-plist keyoption-alist)))
                       (when (and (getf keyoption :optgroup)
                                  (getf keyoption :optname)
                                  (getf keyoption :showname))
@@ -557,14 +546,12 @@ Type: ~A" type))
                 keyoptions-list))))
 
 (defmethod slots.%encode-to-string ((type (eql 'catalog-keyoptions)) keyoptions)
-  (format nil "[~{~a~^,~}]"
-          (mapcar #'(lambda (keyoption)
-                      (format nil "{\"optgroup\":~a,\"optname\":~a,\"showname\":~a,\"units\":~a}"
-                              (encode-json-to-string (getf keyoption :optgroup))
-                              (encode-json-to-string (getf keyoption :optname))
-                              (encode-json-to-string (getf keyoption :showname))
-                              (encode-json-to-string (or (getf keyoption :units) ""))))
-                  keyoptions)))
+  (st-json:write-json-to-string
+   (mapcar #'(lambda (keyoption)
+               (let ((ht (plist-hash-table keyoption)))
+                 (setf (gethash :units ht)
+                       (gethash :units ht ""))))
+           keyoptions)))
 
 (defmethod slots.%decode-from-string ((type (eql 'catalog-keyoptions)) string)
   (declare (string string))
@@ -573,4 +560,4 @@ Type: ~A" type))
                     :optname (cdr (assoc :optname pair))
                     :showname (cdr (assoc :showname pair))
                     :units (cdr (assoc :units pair))))
-          (decode-json-from-string string)))
+          (st-json:read-json-from-string string)))

@@ -1,6 +1,6 @@
 (defsystem eshop
   :depends-on (#:restas #:hunchentoot #:closure-template
-               #:cl-csv #:cl-mime #:data-sift #:cl-heap #:cl-json
+               #:cl-csv #:cl-mime #:data-sift #:cl-heap #:st-json
                #:mongo-cl-driver #:mongo-cl-driver.usocket
                #:log4cl #:drakma
                #:anaphora #:alexandria #:parse-float)
@@ -13,7 +13,9 @@
                                   ((:file "common-lisp-backend")))
                          (:module "cl-mime"
                                   :components ((:file "encoding")
-                                               (:file "headers")))))
+                                               (:file "headers")))
+                         (:module "st-json"
+                                  :components ((:file "st-json")))))
                (:file "packages")
                (:file "search-tips")
                (:file "images") ;; imagemagic

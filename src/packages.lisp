@@ -20,7 +20,6 @@
    :anaphora
    :split-sequence
    :cl-ppcre
-   :json
    :cl-fad
    :alexandria
    :parse-float

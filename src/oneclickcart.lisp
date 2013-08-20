@@ -102,4 +102,4 @@
                                 (name it)
                                 "")
             (price answer) (siteprice it)))
-    (json:encode-json-to-string answer)))
+    (st-json:write-json-to-string answer)))

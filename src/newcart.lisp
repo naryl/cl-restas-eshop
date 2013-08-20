@@ -72,8 +72,8 @@
 (defun newcart-yandex-cookie ()
   (let* ((cookie (hunchentoot:url-decode (hunchentoot:cookie-in "user-nc")))
          (cookie-data (when cookie
-                        (servo.alist-to-plist (decode-json-from-string cookie))))
-         (post-data (servo.alist-to-plist (hunchentoot:post-parameters hunchentoot:*request*)))
+                        (alist-plist (st-json:read-json-from-string cookie))))
+         (post-data (alist-plist (hunchentoot:post-parameters hunchentoot:*request*)))
          (street (getf post-data :street))
          (building (getf post-data :building))
          (suite (getf post-data :suite))
@@ -140,7 +140,7 @@
         (pricesum 0)
         (bonuscount nil))
     (when (not (null cart-cookie))
-      (setf cart (json:decode-json-from-string cart-cookie))
+      (setf cart (st-json:read-json-from-string cart-cookie))
       (multiple-value-bind (lst cnt sm bc) (newcart-cart-products cart)
         (setf products (remove-if #'null lst))
         (setf count cnt)
@@ -180,7 +180,7 @@
         (pricesum))
     (when cart-cookie
       (setf cart-cookie (hunchentoot:url-decode cart-cookie))
-      (setf cart (json:decode-json-from-string cart-cookie))
+      (setf cart (st-json:read-json-from-string cart-cookie))
       (multiple-value-bind (lst cnt sm) (newcart-cart-products cart)
         (setf products (remove-if #'null lst))
         (setf count cnt)
@@ -247,9 +247,9 @@
     ;; кукисы пользователя
     (mapcar #'(lambda (cookie)
                 (switch ((car cookie) :test #'string=)
-                  ("cart" (setf cart (json:decode-json-from-string
+                  ("cart" (setf cart (st-json:read-json-from-string
                                       (hunchentoot:url-decode(cdr cookie)))))
-                  ("user-nc" (setf user (json:decode-json-from-string
+                  ("user-nc" (setf user (st-json:read-json-from-string
                                          (hunchentoot:url-decode(cdr cookie)))))
                   (t nil)))
             (hunchentoot:cookies-in hunchentoot:*request*))
