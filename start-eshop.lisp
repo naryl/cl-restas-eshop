@@ -63,7 +63,7 @@
 (setf cl-csv:*newline* (string #\Newline)
       cl-csv:*separator* #\;)
 
-(log:info "ESHOP load finished. Time : ~A" (eshop::time.msecs-to-hms (get-internal-real-time))))
+(log:info "ESHOP load finished. Time : ~A" (eshop::time.msecs-to-hms (get-internal-real-time)))
 (log:info "Server info: ~A" (with-output-to-string (*standard-output*) (room)))
 
 ;; запуск Restas

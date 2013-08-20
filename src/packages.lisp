@@ -37,7 +37,8 @@
            :static-pages.restore
            :articles.restore
            :main-page.restore
-           :cartrige.restore))
+           :cartrige.restore
+           :log-to-this-console))
 
 
 (in-package #:eshop)
