@@ -2,6 +2,8 @@
 
 (in-package #:eshop)
 
+(defvar *bonus-ekk* (make-hash-table :test #'equal))
+
 (define-tracing-route activatebonus-route ("/activatebonus2")
   (bonus-activate.proccess))
 
@@ -10,8 +12,18 @@
         (name (hunchentoot:parameter "name"))
         (email (hunchentoot:parameter "email"))
         (ekk (hunchentoot:parameter "ekk")))
-    (bonus-activate.email telef name email ekk)
-    (hunchentoot:redirect "/" :code 301)))
+    (if (and
+         ekk
+         (= 6 (length ekk))
+         (string<= "075025" ekk)
+         (string>= "085024" ekk)
+         (not (gethash ekk *bonus-ekk*)))
+        (progn
+          (setf (gethash ekk *bonus-ekk*) t)
+          (bonus-activate.email telef name email ekk)
+          (hunchentoot:redirect "/" :code 301))
+        (progn
+          (hunchentoot:redirect "/" :code 301)))))
 
 (alexandria:define-constant +bonus-mail-template+
     (make-instance 'sendmail:email
@@ -19,6 +31,7 @@
                    :type "text" :subtype "html"
                    :to (config.get-option :critical :order-emails))
   :test (constantly t))
+
 
 (defun bonus-activate.email (telef name email ekk)
   (sendmail:send-email-with-template
