@@ -791,6 +791,15 @@ instead of: (let ((object (compute-object))) (setf (field1 object) (field2 objec
       (log:warn "Missing keys in plist ~A. Keys are ~A." plist keys)))
   plist)
 
+(defun parse-float (flt)
+  (declare ((or number string null) flt))
+  (cond
+   ((numberp flt) flt)
+   ((stringp flt) (parse-float:parse-float flt :junk-allowed t))
+   (t 0)))
+
+
+
 ;; (defun t.pics-cache-to-string ()
 ;;   (let (lst)
 ;;     (maphash #'(lambda (key cache)

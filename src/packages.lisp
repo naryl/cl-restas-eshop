@@ -22,7 +22,6 @@
    :cl-ppcre
    :cl-fad
    :alexandria
-   :parse-float
    ;; :sendmail
    :mongo-cl-driver.sugar ; (son)
    )
