@@ -1,4 +1,10 @@
 .dropbox
 /libs
+
 /bin/*
 !/bin/eshop.sh
+
+/config/*
+!/config/defualt.conf
+!/config/dev.conf
+!/config/releas.conf

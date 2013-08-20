@@ -33,7 +33,6 @@
          :path-to-backups              (list :value #P"~/eshop-dev/backups/"            :type :path)
          :path-to-big-images-backup    (list :value #P"~/source-big-images-bkps/"       :type :path)
          :path-to-main-page            (list :value #P"~/Dropbox/mainPage/"             :type :path)
-         :path-to-seo                  (list :value #P"~/Dropbox/seo/"                  :type :path)
          :path-to-reports              (list :value #P"~/Dropbox/reports/"              :type :path)
          :path-to-xls                  (list :value #P"~/Dropbox/xls/"                  :type :path)
          )
