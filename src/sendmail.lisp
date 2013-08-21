@@ -138,7 +138,7 @@ Note: attachments are list of mime objects. To easily create mime from pathname 
               (cl-mime:print-mime sendmail mime t t)
               (cl-mime:print-mime sendmail (make-body-mime-from-string body) t t))
           (close sendmail)))
-    (sb-impl::simple-stream-perror (e) (log:error "Failed sending email '~A' with error ~S" subject e))))
+    (sb-int:simple-stream-error (e) (log:error "Failed sending email '~A' with error ~S" subject e))))
 
 (defun send-email-with-template (template-email
                                  &key (from (get-user) from-supplied-p)
