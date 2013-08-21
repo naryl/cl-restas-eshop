@@ -343,7 +343,12 @@
                                                     (if (string= delivery-type "express")
                                                         (list (list :articul "107209"
                                                                     :cnt "1"
-                                                                    :siteprice 300))))))
+                                                                    :siteprice 300)))
+                                                    (if (and (string= delivery-type "express")
+                                                             (string= "pickup-3" pickup))
+                                                        (list (list :articul "186039"
+                                                                    :cnt "1"
+                                                                    :siteprice 100))))))
             (setf filename (format nil "~a_~a.txt" (time.get-short-date) order-id))
             ;;сорханение заказа
             (save-order-text order-id client-mail)
