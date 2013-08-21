@@ -795,7 +795,9 @@ instead of: (let ((object (compute-object))) (setf (field1 object) (field2 objec
   (declare ((or number string null) flt))
   (cond
    ((numberp flt) flt)
-   ((stringp flt) (parse-float:parse-float flt :junk-allowed t))
+   ((stringp flt) (or
+                   (parse-float:parse-float flt :junk-allowed t)
+                   0))
    (t 0)))
 
 
