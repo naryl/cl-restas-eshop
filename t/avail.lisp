@@ -7,6 +7,8 @@
   ((base-url  "http://localhost:4246/")))
 
 (addtest avail (verify-page base-url ""))
+(addtest cart (verify-page base-url "cart"))
+(addtest checkout (verify-page base-url "checkout?button2"))
 (addtest delivery (verify-page base-url "delivery"))
 (addtest warranty (verify-page base-url "warranty"))
 (addtest bonus (verify-page base-url "bonus"))

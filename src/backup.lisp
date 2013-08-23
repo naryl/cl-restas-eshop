@@ -25,7 +25,6 @@
      (defmethod backup.serialize-entity ((object ,name))
        (st-json:write-json-to-string (backup.serialize-entity-to-hashtable object)))))
 
-
 (defun backup.serialize-storage-to-file (type filepath)
   "Serialize storage of given type to file."
   (declare (symbol type) (pathname filepath))
