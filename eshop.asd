@@ -17,13 +17,13 @@
                          (:module "st-json"
                                   :components ((:file "st-json")))))
                (:file "packages")
+               (:file "config")
+               (:file "log")
                (:file "search-tips")
                (:file "images") ;; imagemagic
-               (:file "config")
                (:file "time")
                (:file "eshop-config")
                (:file "errors")
-               (:file "log")
                (:file "servo")
                (:file "routes")
                (:file "render")

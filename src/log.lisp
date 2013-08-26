@@ -14,7 +14,7 @@
             :debug                  ; Activate debug level for console logs
             )
 
-(log:config :warn                                                                         ; Log only warnings and errors to file
+(log:config :filter :warn                                                                 ; Log only warnings and errors to file
             :daily (merge-pathnames "eshop.log" (config.get-option :paths :path-to-logs)) ; requests log
             :backup nil                                                                   ; just one plain file, without rolling
             :nopretty
