@@ -39,7 +39,7 @@
                (:file "rename")
                (:file "catalog")
                (:file "prerender")
-               (:file "mop-core")
+               (:file "mop-odm")
                (:file "storage")
                (:file "sessions")
                (:file "slots")

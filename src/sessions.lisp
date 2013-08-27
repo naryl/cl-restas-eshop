@@ -16,29 +16,31 @@
 
 (defclass session ()
   ((key :initform (next-session-id)
-        :transient nil
+        :serializable t
         :reader key
         :type integer
         :documentation "The unique ID \(an INTEGER) of the session.")
    (session-string :reader session-string
-                   :transient nil
+                   :serializable t
                    :documentation "The session string encodes enough
 data to safely retrieve this session.  It is sent to the browser as a
 cookie value or as a GET parameter.")
    (user-agent :initform (hunchentoot:user-agent hunchentoot:*request*)
-               :transient nil
+               :serializable t
                :reader session-user-agent
                :documentation "The incoming 'User-Agent' header that
 was sent when this session was created.")
    (remote-addr :initform (hunchentoot:real-remote-addr hunchentoot:*request*)
-                :transient nil
+                :serializable t
                 :reader session-remote-addr
                 :documentation "The remote IP address of the client
 when this session was started as returned by REAL-REMOTE-ADDR.")
    (cart :initarg :cart
+         :serializable t
          :initform ""
          :type string)
    (nc-user :initarg :cart
+            :serializable t
             :initform ""
             :type string))
   (:metaclass eshop.odm:serializable-class))
