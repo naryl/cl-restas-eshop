@@ -39,9 +39,11 @@
            :cartrige.restore))
 
 (defpackage #:eshop.odm
-  (:use :c2cl)
+  (:use :c2cl
+        :mongo-cl-driver.sugar)
   (:export #:serializable-class
            #:serializable-object
+           #:serializable-object-key
            #:serialize
            #:deserialize
            ;; ^^^^ Serialization

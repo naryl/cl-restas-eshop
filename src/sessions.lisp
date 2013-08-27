@@ -3,24 +3,10 @@
 
 (in-package #:eshop)
 
-(defparameter *serializable-session-vars* (list "cart" "nc-user"))
 (defvar *session-secret*)
 
-(declaim (inline session-collection))
-(defun session-collection ()
-  (mongo:collection *db* "SESSION"))
-
-(let ((session-id-counter (1+ (mongo:$count (session-collection)))))
-  (defmethod next-session-id ()
-    (incf session-id-counter)))
-
-(defclass session ()
-  ((key :initform (next-session-id)
-        :serializable t
-        :reader key
-        :type integer
-        :documentation "The unique ID \(an INTEGER) of the session.")
-   (session-string :reader session-string
+(defclass session (eshop.odm:serializable-object)
+  ((session-string :reader session-string
                    :serializable t
                    :documentation "The session string encodes enough
 data to safely retrieve this session.  It is sent to the browser as a
@@ -45,6 +31,9 @@ when this session was started as returned by REAL-REMOTE-ADDR.")
             :type string))
   (:metaclass eshop.odm:serializable-class))
 
+(defmethod key ((session session))
+  (eshop.odm:serializable-object-key session))
+
 (defun session-value* (slot)
   (slot-value hunchentoot:*session* slot))
 
@@ -67,7 +56,7 @@ USER-AGENT and REMOTE-ADDR"
 (defun stringify-session (session)
   "Creates a string representing the SESSION object SESSION. See
 ENCODE-SESSION-STRING."
-  (encode-session-string (session-id session)
+  (encode-session-string (key session)
                          (session-user-agent session)
                          (session-remote-addr session)))
 
@@ -81,7 +70,7 @@ ENCODE-SESSION-STRING."
   (when session
     (format nil
             "~D:~A"
-            (session-id session)
+            (key session)
             (session-string session))))
 
 (defun session-verify (session-identifier)
@@ -116,16 +105,6 @@ ENCODE-SESSION-STRING."
                     session-identifier user-agent remote-addr)
           nil)))))
 
-(defun init-session ()
-  "Synchronize session and cookie variables. Take cookie if differ."
-  (make-session)
-  #+(or)
-  (dolist (session-var *serializable-session-vars*)
-    (aif (hunchentoot:cookie-in session-var)
-         (setf (hunchentoot:session-value session-var) it)
-         (awhen (hunchentoot:session-value session-var)
-           (hunchentoot:set-cookie session-var :value it)))))
-
 (defun start-session ()
   "Returns the current SESSION object. If there is no current session,
 creates one and updates the corresponding data structures. In this
@@ -157,37 +136,3 @@ case the function will also send a session cookie to the browser."
   "Sets *SESSION-SECRET* to a new random value. All old sessions will
 cease to be valid."
   (setq *session-secret* (create-random-string 10 36)))
-
-(defun store-session (session)
-  (repsert (session-collection) session 'id))
-
-(defun restore-session (id)
-  "Fetches a session object from mongo"
-  (let ((sessions (mongo:find-one (session-collection) :query (son "ID" id))))
-    (if (= 1 (length sessions))
-        (unserialize-session (first sessions))
-        (log:error "More than one session with the same ID ~A" id))))
-
-(defun unserialize-session (ht)
-  (let ((session (make-instance 'session)))
-    (flet ((load-slot (slot)
-             (setf (slot-value session slot)
-                   (gethash (string slot) ht))))
-      (load-slot 'session-id)
-      (load-slot 'session-string)
-      (load-slot 'user-agent)
-      (load-slot 'remote-addr)
-      (load-slot 'data))))
-
-(defun serialize-session (session)
-  (let ((ht (make-hash-table)))
-    (flet ((save-slot (slot)
-             (setf (gethash (string slot) ht)
-                   (slot-value session slot))))
-      (save-slot 'session-id)
-      (save-slot 'session-string)
-      (save-slot 'user-agent)
-      (save-slot 'remote-addr)
-      (save-slot 'data))))
-
-;;; TODO: Use MOP-based serialization as soon as we have it

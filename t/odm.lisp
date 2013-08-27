@@ -5,7 +5,7 @@
 
 (deftestsuite odm-serialize () ())
 
-(defclass test ()
+(defclass test (eshop.odm:serializable-object)
   ((int :initarg :int
         :serializable t)
    (str :initarg :str
