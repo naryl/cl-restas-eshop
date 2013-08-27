@@ -15,7 +15,7 @@
 (restas:define-module #:eshop
   (:use
    ;; system and libs' packages
-   :cl
+   :c2cl
    :closure-template
    :anaphora
    :split-sequence
@@ -38,6 +38,16 @@
            :main-page.restore
            :cartrige.restore))
 
+(defpackage #:eshop.odm
+  (:use :c2cl)
+  (:export #:serializable-class
+           #:serializable-object
+           #:serialize
+           #:deserialize
+           ;; ^^^^ Serialization
+           ;; vvvv Persistense
+           ;; Nothing here yet though. ;-)
+           ))
 
 (in-package #:eshop)
 ;;; registering classes for proper compilation of methods

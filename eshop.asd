@@ -2,6 +2,7 @@
   :depends-on (#:restas #:hunchentoot #:closure-template
                #:cl-csv #:cl-mime #:data-sift #:cl-heap #:st-json
                #:mongo-cl-driver #:mongo-cl-driver.usocket
+               #:closer-mop
                #:log4cl #:drakma
                #:anaphora #:alexandria #:parse-float)
   :pathname "src"
@@ -38,6 +39,7 @@
                (:file "rename")
                (:file "catalog")
                (:file "prerender")
+               (:file "mop-core")
                (:file "storage")
                (:file "sessions")
                (:file "slots")

@@ -230,7 +230,7 @@
                                      content
                                      (format nil "<pre>'~a' ~%'~a' ~%'~a'</pre>"
                                              (request-str)
-                                             (hunchentoot:request-uri *request*)
+                                             (hunchentoot:request-uri hunchentoot:*request*)
                                              (hunchentoot:header-in* "User-Agent"))))))
 
 
@@ -800,7 +800,19 @@ instead of: (let ((object (compute-object))) (setf (field1 object) (field2 objec
                    0))
    (t 0)))
 
+(defun md5-hex (string)
+  "Calculates the md5 sum of the string STRING and returns it as a hex string."
+  (with-output-to-string (s)
+    (loop for code across (md5:md5sum-sequence string)
+      do (format s "~2,'0x" code))))
 
+(defun create-random-string (&optional (n 10) (base 16))
+  "Returns a random number \(as a string) with base BASE and N
+digits."
+  (with-output-to-string (s)
+    (dotimes (i n)
+      (format s "~VR" base
+              (random base)))))
 
 ;; (defun t.pics-cache-to-string ()
 ;;   (let (lst)
