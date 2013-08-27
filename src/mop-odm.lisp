@@ -3,6 +3,8 @@
 
 (in-package eshop.odm)
 
+(declaim (optimize debug))
+
 ;;;; Metaclasses
 
 (defclass serializable-class (standard-class)
@@ -43,6 +45,10 @@
 (defclass serializable-object ()
   ()
   (:metaclass serializable-class))
+
+
+(defmethod reinitialize-instance :around ((class serializable-class) &rest all-keys)
+  (apply #'initialize-instance class all-keys))
 
 (defmethod initialize-instance :around ((class serializable-class) &rest all-keys &key direct-superclasses)
   "Ensures SERIALIZABLE-OBJECT parent in instances of SERIALIZABLE-CLASS"
@@ -100,8 +106,9 @@
            (obj (make-instance class)))
       (maphash #'(lambda (k v)
                    (unless (string= k +class-key+)
-                     (setf (slot-value obj (read-from-string k))
-                           (deserialize v :hashtable))))
+                     (let ((slot-name (read-from-string k)))
+                       (setf (slot-value obj slot-name)
+                             (deserialize v :hashtable)))))
                ht)
       obj))
   (:method ((string string) (source (eql :hashtable)))
