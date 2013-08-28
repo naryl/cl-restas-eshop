@@ -35,6 +35,8 @@
     (restas:debug-mode-off))
 (setf hunchentoot:*catch-errors-p* (eshop:config.get-option :start-options :catch-errors))
 
+(eshop.odm:connect "zifry")
+
 (let ((*package* (find-package :eshop)))
     ;;; content
   (when (eshop:config.get-option :start-options :load-storage)

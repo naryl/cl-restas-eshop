@@ -17,6 +17,10 @@
 ;; references and only fetch the referenced object once it's accessed. Objects are
 ;; read-only when outside transaction.
 ;;
+;; REMOBJ class key
+;; REMOBJ object
+;; Removes object from database. The second form makes it read-only
+;;
 ;; WITH-TRANSACTION body...
 ;; When inside this macro you can get objects and set their slots. They'll be written
 ;; back into mongo as soon as the transaction closes. Be aware that objects become read-only
@@ -30,6 +34,8 @@
 ;;;;
 
 (in-package eshop.odm)
+
+(declaim (optimize (safety 3) (debug 3)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; SERIALIZABLE
 
@@ -73,18 +79,21 @@
 (defclass serializable-object ()
   ((key :initarg :key
         :serializable t
-        :initform (next-autokey)
+        :initform (unless *deserializing* (next-autokey))
         :reader serializable-object-key))
   (:documentation "Root of serializable objects.")
   (:metaclass serializable-class))
 
 ;;;; Serialization
 
-(defvar *default-target* :hashtable)
+(defvar *deserializing* nil)
 
 (alexandria:define-constant +class-key+ "%CLASS%" :test #'equal)
 
-(defgeneric serialize (obj target)
+(defun serialize (obj &optional (target :hashtable))
+  (serialize% obj target))
+
+(defgeneric serialize% (obj target)
   (:documentation "Serializes OBJ to TARGET data structure.
   SERIALIZE and DESERIALIZE are inverse. If you successfully serialized an object
   deserializing it should always yield exact same object.")
@@ -95,19 +104,23 @@
            (slots (class-slots class))
            (ht (make-hash-table :test #'equal)))
       (setf (gethash +class-key+ ht)
-            (string (class-name class)))
+            (symbol-fqn (class-name class)))
       (dolist (slot slots)
         (when (slot-serializable-p slot)
           (let ((slot-name (slot-definition-name slot)))
-            (setf (gethash (string slot-name) ht)
-                  (serialize (slot-value obj slot-name) :hashtable)))))
+            (when (slot-boundp obj slot-name)
+              (setf (gethash (symbol-fqn slot-name) ht)
+                    (serialize (slot-value obj slot-name) :hashtable))))))
       ht))
   (:method ((string string) (target (eql :hashtable)))
     string)
   (:method ((number number) (target (eql :hashtable)))
     number))
 
-(defgeneric deserialize (data source)
+(defun deserialize (data &optional (source :hashtable))
+  (deserialize% data source))
+
+(defgeneric deserialize% (data source)
   (:documentation "Deserializes object from DATA using SOURCE data structure.
   SERIALIZE and DESERIALIZE are inverse. If you successfully serialized an object
   deserializing it should always yield exact same object.")
@@ -116,16 +129,17 @@
           (st-json:*map-keys* #'identity))
       (deserialize (st-json:read-json-from-string string) :hashtable)))
   (:method ((ht hash-table) (source (eql :hashtable)))
-    (let* ((class-name (read-from-string (gethash +class-key+ ht)))
-           (class (find-class class-name))
-           (obj (make-instance class)))
-      (maphash #'(lambda (k v)
-                   (unless (string= k +class-key+)
-                     (let ((slot-name (read-from-string k)))
-                       (setf (slot-value obj slot-name)
-                             (deserialize v :hashtable)))))
-               ht)
-      obj))
+    (let ((*deserializing* t))
+      (let* ((class-name (read-from-string (gethash +class-key+ ht)))
+             (class (find-class class-name))
+             (obj (make-instance class)))
+        (maphash #'(lambda (k v)
+                     (unless (string= k +class-key+)
+                       (let ((slot-name (fqn-symbol k)))
+                         (setf (slot-value obj slot-name)
+                               (deserialize v :hashtable)))))
+                 ht)
+        obj)))
   (:method ((string string) (source (eql :hashtable)))
     string)
   (:method ((number number) (source (eql :hashtable)))
@@ -157,16 +171,30 @@
   (declare (ignore initargs))
   'persistent-effective-slot-definition)
 
-(defmethod compute-effective-slot-definition :around ((class persistent-class) slot-name direct-slot-definitions)
+(defmethod compute-effective-slot-definition :around
+    ((class persistent-class) slot-name direct-slot-definitions)
   (let ((slot (call-next-method)))
     (setf (slot-value slot 'serializable)
           (some #'slot-serializable-p direct-slot-definitions))
     slot))
 
 (defclass persistent-object (serializable-object)
-  ()
+  ((state :initform :rw
+          :type (member :rw :ro :deleted)
+          :accessor persistent-object-state))
   (:documentation "Root of persistent objects.")
   (:metaclass persistent-class))
+
+(defmethod print-object ((obj persistent-object) stream)
+  (print-unreadable-object (obj stream :type t :identity t)
+    (if (and (slot-boundp obj 'key)
+             (slot-boundp obj 'state))
+        (case (persistent-object-state obj)
+          ((:rw :ro) (format stream "~A ~A"
+                             (persistent-object-state obj)
+                             (serializable-object-key obj)))
+          ((:deleted) (format stream "DELETED")))
+        (format stream "DUMMY"))))
 
 ;;;; Persistence
 
@@ -194,18 +222,20 @@
 
 (defmethod initialize-instance :after ((obj persistent-object) &key &allow-other-keys)
   "Stores newly created persistent object in the database"
-  (let ((collection (mongo:collection *db* (string (type-of obj))))
-        (ht (serialize obj :hashtable)))
-    (mongo:insert-op collection ht)))
+  (unless *deserializing*
+    (let ((collection (mongo:collection *db* (string (type-of obj))))
+          (ht (serialize obj :hashtable)))
+      (mongo:insert-op collection ht)
+      (new-transaction-object obj))))
 
-(defvar *in-transaction* nil)
+(defvar *transaction* nil)
 
 (defmacro with-transaction (&body body)
   "All modified objects will be sent back to mongo when the transaction exits normally"
-  `(if *in-transaction*
-       (cerror "Already in transaction")
+  `(if *transaction*
+       (error "Already in transaction")
        (catch 'rollback-transaction
-         (let ((*in-transaction* t))
+         (let ((*transaction* (list nil)))
            (values
             (prog1
                 (progn
@@ -213,38 +243,104 @@
               (commit-transaction))
             t)))))
 
-(defmethod (setf slot-value-using-class) :around (new-value (class persistent-class) obj (slot persistent-effective-slot-definition))
-  (if (or *in-transaction*
-          (eq (slot-definition-name slot) 'key))
+(defmethod slot-value-using-class :around
+  ((class persistent-class) obj (slot persistent-effective-slot-definition))
+  (if (or (eq 'state (slot-definition-name slot))
+          (not (eq :deleted (persistent-object-state obj))))
       (call-next-method)
-      (cerror "CONTINUE" "Attempt to modify a slot of persistent object while not inside a transaction")))
+      (error "Attempt to access a slot of deleted persistent object")))
+
+(defmethod (setf slot-value-using-class) :around
+    (new-value (class persistent-class) obj (slot persistent-effective-slot-definition))
+  (if (or (eq (slot-definition-name slot) 'state)
+          (not (slot-boundp obj 'state))
+          *deserializing*
+          (eq :rw (persistent-object-state obj)))
+      (call-next-method)
+      (error "Attempt to modify a slot of read-only persistent object")))
 
 (defun commit-transaction ()
-  (unless *in-transaction*
-    (cerror "CONTINUE" "Attempt to rollback while not inside transaction")
-    (return-from commit-transaction))
-  nil)
+  (unless *transaction*
+    (error "Attempt to commit while not inside transaction"))
+  (dolist (obj *transaction*)
+    (when obj
+      (setf (persistent-object-state obj) :ro)
+      (let ((ht (serialize obj))
+            (collection (obj-collection obj)))
+        (mongo:delete-op collection (son (symbol-fqn 'key) (serializable-object-key obj)))
+        (mongo:insert-op collection ht)))))
 
 (defun rollback-transaction ()
-  (if *in-transaction*
-      (throw 'rollback-transaction (values nil nil))
-      (cerror "CONTINUE" "Attempt to rollback while not inside transaction")))
+  "Invalidates all transaction objects. Doesn't modify the DB."
+  (cond (*transaction*
+         (dolist (obj *transaction*)
+           (when obj
+             (setf (persistent-object-state obj)
+                   :deleted)))
+         (throw 'rollback-transaction (values nil nil)))
+        (t
+         (error "Attempt to rollback while not inside transaction"))))
+
+(defun new-transaction-object (obj)
+  (setf (persistent-object-state obj)
+        (cond (*transaction*
+               (pushnew obj *transaction*
+                        :key (lambda (o) (when o (serializable-object-key o)))
+                        :test #'equal)
+               :rw)
+              (t
+               :ro)))
+  obj)
 
 (defun getobj (class key)
+  "Fetch an object from the database. The object will be read-only unless it's done inside
+a transaction."
   (let* ((collection (mongo:collection *db* (string class)))
-         (ht (mongo:find-one collection :query (son (string 'key) key))))
-    (remhash "_id" ht)
-    (deserialize ht :hashtable)))
+         (ht (mongo:find-one collection
+                             :query (son (symbol-fqn 'key) key)
+                             :selector (son "_id" 0))))
+    (when ht
+      (new-transaction-object (deserialize ht :hashtable)))))
+
+(defun remobj (obj-or-class &optional key)
+  "Deletes an object from the database.
+  Call either as (remobj 'class 1234) or (remobj (getobj 'class 1234)).
+  The object will be deleted from the database immediately and become inaccessible in-memory."
+  (flet ((invalid-arguments ()
+           (error "REMOBJ requires either persistent-object or both class and key")))
+    (typecase obj-or-class
+      (symbol
+       (if key
+           (let ((collection (mongo:collection *db* (string obj-or-class))))
+             (mongo:delete-op collection (son (symbol-fqn 'key) key)))
+           (invalid-arguments)))
+      (persistent-object
+       (mongo:delete-op (obj-collection obj-or-class)
+                        (son (symbol-fqn 'key) (serializable-object-key obj-or-class)))
+       (setf (persistent-object-state obj-or-class) :deleted)
+       (when *transaction*
+         (alexandria:deletef *transaction* obj-or-class)))
+      (t
+       (invalid-arguments)))))
 
 ;;;; Utils
 
 (defun symbol-fqn (symbol)
-  (concatenate 'string (package-name (symbol-package symbol)) "::" (symbol-name symbol)))
+  (substitute #\; #\.
+              (concatenate 'string
+                           (package-name (symbol-package symbol))
+                           "::"
+                           (symbol-name symbol))))
+
+(defun fqn-symbol (fqn)
+  (read-from-string (substitute #\. #\; fqn)))
 
 (let ((counter (make-array 1 :initial-element 1 :element-type 'sb-ext:word)))
   (defun next-autokey ()
     (let ((new-counter (sb-ext:atomic-incf (aref counter 0))))
-      (princ-to-string
-       (+ new-counter
-          (* (get-universal-time)
-             (expt 10 (1+ (truncate (log new-counter 10))))))))))
+      (+ new-counter
+         (* (get-universal-time)
+            (expt 10 (1+ (truncate (log new-counter 10)))))))))
+
+(defun obj-collection (obj)
+  (mongo:collection *db* (string (type-of obj))))

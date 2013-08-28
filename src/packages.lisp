@@ -47,8 +47,14 @@
            #:serialize
            #:deserialize
            ;; ^^^^ Serialization
-           ;; vvvv Persistense
-           ;; Nothing here yet though. ;-)
+           ;; vvvv Persistence
+           #:connect
+           #:persistent-class
+           #:persistent-object
+           #:getobj
+           #:remobj
+           #:with-transaction
+           #:rollback-transaction
            ))
 
 (in-package #:eshop)
