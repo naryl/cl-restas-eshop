@@ -40,6 +40,8 @@
 
 (defpackage #:eshop.odm
   (:use :c2cl
+        :anaphora
+        :alexandria
         :mongo-cl-driver.sugar)
   (:export #:serializable-class
            #:serializable-object
@@ -52,6 +54,9 @@
            #:persistent-class
            #:persistent-object
            #:getobj
+           #:setobj
+           #:mapobj
+           #:doobj
            #:remobj
            #:with-transaction
            #:rollback-transaction

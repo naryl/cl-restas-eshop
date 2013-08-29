@@ -66,6 +66,48 @@
                  42))
     (eshop.odm:remobj obj)))
 
+(addtest double-getobj
+  (let* ((obj (make-instance 'persistent :slot 42))
+         (key (eshop.odm:serializable-object-key obj)))
+    (eshop.odm:with-transaction
+      (let ((store-obj (eshop.odm:getobj 'persistent key)))
+        (setf (slot-value store-obj 'slot) 43)
+        (ensure (eql (slot-value (eshop.odm:getobj 'persistent key) 'slot) 43))))
+    (eshop.odm:remobj obj)))
+
+(addtest nested-transaction
+  (eshop.odm:with-transaction
+    (eshop.odm:with-transaction
+      (ensure (eq t t)))))
+
+(addtest setobj
+  (let* ((obj (make-instance 'persistent :slot 42))
+         (key (eshop.odm:serializable-object-key obj)))
+    (eshop.odm:setobj obj 'slot 43)
+    (ensure (eq (slot-value (eshop.odm:getobj 'persistent key) 'slot) 43))
+    (eshop.odm:setobj 'persistent key 'slot 44)
+    (ensure (eq (slot-value (eshop.odm:getobj 'persistent key) 'slot) 44))
+    (eshop.odm:remobj obj)))
+
+(addtest mapobj
+  (let ((objs (dotimes (i 10)
+                (make-instance 'persistent :slot i))))
+    (ensure (equal (alexandria:iota 10)
+                   (eshop.odm:mapobj #'(lambda (o)
+                                         (slot-value o 'slot))
+                                     'persistent))))
+  (eshop.odm:mapobj #'eshop.odm:remobj 'persistent))
+
+(addtest doobj
+  (let ((obj (dotimes (i 10)
+                (make-instance 'persistent :slot i))))
+    (ensure (equal (alexandria:iota 10)
+                   (nreverse
+                    (eshop.odm:doobj (obj 'persistent result)
+                      (push (slot-value obj 'slot) result))))))
+  (eshop.odm:doobj (obj 'persistent)
+    (eshop.odm:remobj obj)))
+
 (addtest errors
  (let ((obj (make-instance 'persistent :slot 42)))
    (ensure-error (setf (slot-value obj 'slot) 43))

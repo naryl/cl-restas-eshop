@@ -25,7 +25,8 @@
 ;; When inside this macro you can get objects and set their slots. They'll be written
 ;; back into mongo as soon as the transaction closes. Be aware that objects become read-only
 ;; if the transaction was committed or invalid if it was rolled back. Commit is
-;; automatic at end of body.
+;; automatic at end of body. When several transactions are nested all but the outermost
+;; are ignored.
 ;;
 ;; ROLLBACK-TRANSACTION
 ;; Aborts the current transaction. The DB is untouched and the objects become invalid.
@@ -88,7 +89,7 @@
 
 (defvar *deserializing* nil)
 
-(alexandria:define-constant +class-key+ "%CLASS%" :test #'equal)
+(define-constant +class-key+ "%CLASS%" :test #'equal)
 
 (defun serialize (obj &optional (target :hashtable))
   (serialize% obj target))
@@ -232,16 +233,18 @@
 
 (defmacro with-transaction (&body body)
   "All modified objects will be sent back to mongo when the transaction exits normally"
-  `(if *transaction*
-       (error "Already in transaction")
-       (catch 'rollback-transaction
-         (let ((*transaction* (list nil)))
-           (values
-            (prog1
-                (progn
-                  ,@body)
-              (commit-transaction))
-            t)))))
+  (with-gensyms (transaction)
+    `(flet ((,transaction ()
+              ,@body))
+       (if *transaction*
+           (,transaction)
+           (catch 'rollback-transaction
+             (let ((*transaction* (list nil)))
+               (values
+                (prog1
+                    (,transaction)
+                  (commit-transaction))
+                t)))))))
 
 (defmethod slot-value-using-class :around
   ((class persistent-class) obj (slot persistent-effective-slot-definition))
@@ -295,11 +298,18 @@
 (defun getobj (class key)
   "Fetch an object from the database. The object will be read-only unless it's done inside
 a transaction."
+  (if *transaction*
+      (awhen (find key *transaction* :key #'(lambda (o)
+                                              (when o
+                                                (serializable-object-key o))))
+        (return-from getobj it)))
   (let* ((collection (mongo:collection *db* (string class)))
          (ht (mongo:find-one collection
                              :query (son (symbol-fqn 'key) key)
                              :selector (son "_id" 0))))
-    (when ht
+    (when (and ht
+               (string= (symbol-fqn class)
+                        (gethash +class-key+ ht)))
       (new-transaction-object (deserialize ht :hashtable)))))
 
 (defun remobj (obj-or-class &optional key)
@@ -319,9 +329,59 @@ a transaction."
                         (son (symbol-fqn 'key) (serializable-object-key obj-or-class)))
        (setf (persistent-object-state obj-or-class) :deleted)
        (when *transaction*
-         (alexandria:deletef *transaction* obj-or-class)))
+         (deletef *transaction* obj-or-class)))
       (t
        (invalid-arguments)))))
+
+(defun setobj (obj-or-class &rest slots-values)
+  "Modifies an object in a transaction.
+  Call either as (setobj (getobj 'class 1234) 'a 1 'b 2)
+  or (setobj 'class 1234 'a 1 'b 2)"
+  (flet ((invalid-arguments ()
+           (error "SETOBJ requires either persistent-object or both class and key")))
+    (let (class key)
+      (typecase obj-or-class
+        (symbol
+         (setf class obj-or-class
+               key (pop slots-values)))
+        (persistent-object
+         (setf class (type-of obj-or-class)
+               key (serializable-object-key obj-or-class)))
+        (t
+         (invalid-arguments)))
+      (with-transaction
+        (let ((obj (getobj class key)))
+          (doplist (slot value slots-values)
+            (setf (slot-value obj slot) value))
+          obj)))))
+
+(defun all-keys (class)
+  (mapcar #'(lambda (obj)
+              (gethash (symbol-fqn 'key) obj))
+          (mongo:find-list (mongo:collection *db* (string class))
+                           :query (son +class-key+ (symbol-fqn class))
+                           :fields (son (symbol-fqn 'key) 1
+                                        "_id" 0))))
+
+(defun mapobj (function class)
+  (nreverse
+   (let (result)
+     (dolist (key (all-keys class) result)
+       (push (funcall function (getobj class key)) result))
+     result)))
+
+(defmacro doobj ((obj-var class &optional result-raw) &body body)
+  (let* ((result-raw (ensure-list result-raw))
+         (result-name (first result-raw))
+         (result-init (second result-raw)))
+    `(let (,@(cond ((null result-name)
+                    nil)
+                   ((symbolp result-name)
+                    `((,result-name ,result-init)))))
+       (dolist (,obj-var (all-keys ,class))
+         (let ((,obj-var (getobj ,class ,obj-var)))
+           ,@body))
+       ,result-name)))
 
 ;;;; Utils
 
