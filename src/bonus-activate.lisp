@@ -15,7 +15,7 @@
     (if (and
          ekk
          (= 6 (length ekk))
-         (string<= "075025" ekk)
+         (string<= "070000" ekk)
          (string>= "085024" ekk)
          (not (gethash ekk *bonus-ekk*)))
         (progn
