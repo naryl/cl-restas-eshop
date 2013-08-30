@@ -132,19 +132,25 @@
   (:method ((ht hash-table) (source (eql :hashtable)))
     (let ((*deserializing* t))
       (let* ((class-name (read-from-string (gethash +class-key+ ht)))
-             (class (find-class class-name))
-             (obj (make-instance class)))
-        (maphash #'(lambda (k v)
-                     (unless (string= k +class-key+)
-                       (let ((slot-name (fqn-symbol k)))
-                         (setf (slot-value obj slot-name)
-                               (deserialize v :hashtable)))))
-                 ht)
-        obj)))
+             (class (find-class class-name)))
+        (remhash +class-key+ ht)
+        (make-instance class 'ht ht))))
   (:method ((string string) (source (eql :hashtable)))
     string)
   (:method ((number number) (source (eql :hashtable)))
     number))
+
+(defmethod shared-initialize :around ((instance serializable-object) slots &rest initargs &key ((ht ht)) &allow-other-keys)
+  (if *deserializing*
+      (progn
+        (apply #'call-next-method instance nil initargs)
+        (maphash #'(lambda (k v)
+                     (unless (string= k +class-key+)
+                       (let ((slot-name (fqn-symbol k)))
+                         (setf (slot-value instance slot-name)
+                               (deserialize v :hashtable)))))
+                 ht))
+      (call-next-method)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; PERSISTENT
 
@@ -220,6 +226,9 @@
   (setf *db* (make-instance 'mongo:database
                             :name *db-name*
                             :mongo-client *mongo-client*)))
+
+(defmethod initialize-instance :before ((obj persistent-object) &key &allow-other-keys)
+  (setf (slot-value obj 'state) :rw))
 
 (defmethod initialize-instance :after ((obj persistent-object) &key &allow-other-keys)
   "Stores newly created persistent object in the database"

@@ -3,9 +3,9 @@
 
 (in-package #:eshop)
 
-(defvar *session-secret*)
+(defvar *session-secret* nil)
 
-(defclass session (eshop.odm:serializable-object)
+(defclass session (eshop.odm:persistent-object)
   ((session-string :reader session-string
                    :serializable t
                    :documentation "The session string encodes enough
@@ -29,7 +29,7 @@ when this session was started as returned by REAL-REMOTE-ADDR.")
             :serializable t
             :initform ""
             :type string))
-  (:metaclass eshop.odm:serializable-class))
+  (:metaclass eshop.odm:persistent-class))
 
 (defmethod key ((session session))
   (eshop.odm:serializable-object-key session))
@@ -47,11 +47,11 @@ USER-AGENT and REMOTE-ADDR"
   ;; vulnerabilities of MD5 encoding
   (md5-hex (concatenate 'string
             *session-secret*
-            (md5-hex (concatenate 'string
-                                  *session-secret*
-                                  id
-                                  user-agent
-                                  remote-addr)))))
+            (md5-hex (format nil "~A~D~A~A"
+                             *session-secret*
+                             id
+                             user-agent
+                             remote-addr)))))
 
 (defun stringify-session (session)
   "Creates a string representing the SESSION object SESSION. See
@@ -60,9 +60,10 @@ ENCODE-SESSION-STRING."
                          (session-user-agent session)
                          (session-remote-addr session)))
 
-(defmethod initialize-instance :after ((session session) &rest init-args)
+(defmethod initialize-instance ((session session) &rest init-args)
   "Set SESSION-STRING slot after the session has been initialized."
   (declare (ignore init-args))
+  (call-next-method)
   (setf (slot-value session 'session-string) (stringify-session session)))
 
 (defmethod hunchentoot:session-cookie-value ((session session))
@@ -79,7 +80,7 @@ ENCODE-SESSION-STRING."
   (destructuring-bind (id-string session-string)
         (split ":" session-identifier :limit 2)
       (let* ((id (parse-integer id-string))
-             (session (get-stored-session id))
+             (session (eshop.odm:getobj 'session id))
              (user-agent (hunchentoot:user-agent hunchentoot:*request*))
              (remote-addr (hunchentoot:remote-addr hunchentoot:*request*)))
         (cond
@@ -99,8 +100,6 @@ ENCODE-SESSION-STRING."
                     session-identifier user-agent remote-addr)
           nil)
          (t
-          ;; no session was found under the ID given, presumably
-          ;; because it has expired.
           (log:info "No session for session identifier '~A' (User-Agent: '~A', IP: '~A')"
                     session-identifier user-agent remote-addr)
           nil)))))
@@ -114,7 +113,6 @@ case the function will also send a session cookie to the browser."
       (return-from start-session session))
     (setf session (make-instance 'session)
           (hunchentoot:session hunchentoot:*request*) session)
-    (store-session session)
     (hunchentoot:set-cookie (hunchentoot:session-cookie-name hunchentoot:*acceptor*)
                 :value (hunchentoot:session-cookie-value session)
                 :path "/")

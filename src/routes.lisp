@@ -20,7 +20,6 @@
 (defmethod restas:process-route :around ((route proxy-route-timer) bindings)
   "log timing and additional data for current route processing and
    update current thread information"
-  (init-session) ; Ensure this connection has an up-to-date session object
   (let ((*current-route-symbol*
          (restas:route-symbol (routes:proxy-route-target route))))
     (sb-ext:call-with-timing #'log.timer #'call-next-method)))
