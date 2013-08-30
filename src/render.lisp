@@ -281,15 +281,25 @@
                        items)))
 
 
-(defun render.get-upsale-products (gr)
-  (get-randoms-from-list (remove-if-not #'active (products gr)) 4))
-
+(defun render.get-upsale-products (obj)
+  (cond
+    ((groupp obj) (get-randoms-from-list (remove-if-not #'active (products obj)) 4))
+    ((filterp obj) (get-randoms-from-list (remove-if-not #'active
+                                                         (filters.filter obj :obj-set (products (parent obj)))) 4))
+    (t nil)))
 
 (defmethod render.prepare-upsale-full ((object group))
   (list :groupnameskl (sklonenie (name object) 2)
-        :upsaleblocks (mapcar #'(lambda (gr)
-                                  (render.prepare-upsale-block (name gr) (render.get-upsale-products gr)))
-                              (upsale-links object))))
+        :upsaleblocks (remove-if #'null
+                       (mapcar #'(lambda (obj)
+                                   (cond
+                                     ((groupp obj) (render.prepare-upsale-block (name obj)
+                                                                                (render.get-upsale-products obj)))
+                                     ((filterp obj) (render.prepare-upsale-block (getf (data obj) :name)
+                                                                                (render.get-upsale-products obj)))
+                                     (t nil)))
+                              (upsale-links object))
+                       )))
 
 
 (defun render.%add-button (product)
