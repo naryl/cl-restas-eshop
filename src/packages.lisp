@@ -36,7 +36,8 @@
            :static-pages.restore
            :articles.restore
            :main-page.restore
-           :cartrige.restore))
+           :cartrige.restore
+           :log-to-this-console))
 
 (defpackage #:eshop.odm
   (:use :c2cl)
