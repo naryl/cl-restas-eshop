@@ -36,7 +36,8 @@
 (defmethod rightblocks ((object group) (parameters list))
   (list (soy.catalog:rightblock1)
         (soy.catalog:rightblock2)
-        (if (not (groupp object))
+        (if (or (not (groupp object))
+                (getf parameters :page))
             ""
             (soy.catalog:seotext
              (list :text
