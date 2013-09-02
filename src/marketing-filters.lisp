@@ -239,7 +239,8 @@ Filter's key is concatenated group's and default-filter's keys"
   (marketing-filters.%create-util-filter (getobj "komputery" 'group) 1000)
   (marketing-filters.%create-util-filter (getobj "komputery" 'group) 2000)
   (marketing-filters.%create-util-filter (getobj "komputery" 'group) 5000)
-  (marketing-filters.%create-setting-%filter)
+  (marketing-filters.%create-setting-%filter (getobj "stiralnie-mashiny") "Установка и подключение стиральных машин" "Стиральные машины")
+  (marketing-filters.%create-setting-%filter (getobj "holodilniki-i-morozilniki") "Подключение холодильников" "Холодильники")
   (mapcar #'(lambda (group-key)
               (marketing-filters.create-sale-filter (getobj group-key 'group)))
           (list "netbuki"
