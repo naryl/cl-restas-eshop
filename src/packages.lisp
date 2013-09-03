@@ -40,14 +40,28 @@
            :log-to-this-console))
 
 (defpackage #:eshop.odm
-  (:use :c2cl)
+  (:use :c2cl
+        :anaphora
+        :alexandria
+        :cl-skip-list
+        :mongo-cl-driver.sugar)
   (:export #:serializable-class
            #:serializable-object
+           #:serializable-object-key
            #:serialize
            #:deserialize
            ;; ^^^^ Serialization
-           ;; vvvv Persistense
-           ;; Nothing here yet though. ;-)
+           ;; vvvv Persistence
+           #:connect
+           #:persistent-class
+           #:persistent-object
+           #:getobj
+           #:setobj
+           #:mapobj
+           #:doobj
+           #:remobj
+           #:with-transaction
+           #:rollback-transaction
            ))
 
 (in-package #:eshop)

@@ -34,7 +34,7 @@
            (make-jso :alist accum)
            accum)))
      (:hashtable
-      (let ((accum (make-hash-table)))
+      (let ((accum (make-hash-table :test 'equal)))
         (gather-comma-separated
          stream #\} "object literal"
          (lambda ()

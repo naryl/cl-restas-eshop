@@ -2,7 +2,8 @@
   :depends-on (#:restas #:hunchentoot #:closure-template
                #:cl-csv #:cl-mime #:data-sift #:cl-heap #:st-json
                #:mongo-cl-driver #:mongo-cl-driver.usocket
-               #:closer-mop
+               #:sb-concurrency #:closer-mop #:bordeaux-threads
+               #:cl-skip-list
                #:log4cl #:drakma
                #:anaphora #:alexandria #:parse-float)
   :pathname "src"
