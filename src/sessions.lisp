@@ -23,11 +23,9 @@ was sent when this session was created.")
 when this session was started as returned by REAL-REMOTE-ADDR.")
    (cart :initarg :cart
          :serializable t
-         :initform ""
          :type string)
-   (nc-user :initarg :cart
+   (nc-user :initarg :nc-user
             :serializable t
-            :initform ""
             :type string))
   (:metaclass eshop.odm:persistent-class))
 
@@ -78,31 +76,33 @@ ENCODE-SESSION-STRING."
   "Restore the session object and verify that the client is the one who started it.
   Return the session object or nil. Or create a new session instead of returning nil."
   (destructuring-bind (id-string session-string)
-        (split ":" session-identifier :limit 2)
+      (split ":" session-identifier :limit 2)
+    (eshop.odm:with-transaction
       (let* ((id (parse-integer id-string))
              (session (eshop.odm:getobj 'session id))
              (user-agent (hunchentoot:user-agent hunchentoot:*request*))
              (remote-addr (hunchentoot:remote-addr hunchentoot:*request*)))
         (cond
-         ((and session
-               (string= session-string
-                        (session-string session))
-               (string= session-string
-                        (encode-session-string id
-                                               user-agent
-                                               (hunchentoot:real-remote-addr hunchentoot:*request*))))
-          ;; the session key presented by the client is valid
-          session)
-         (session
-          ;; the session ID pointed to an existing session, but the
-          ;; session string did not match the expected session string
-          (log:warn "Fake session identifier '~A' (User-Agent: '~A', IP: '~A')"
-                    session-identifier user-agent remote-addr)
-          nil)
-         (t
-          (log:info "No session for session identifier '~A' (User-Agent: '~A', IP: '~A')"
-                    session-identifier user-agent remote-addr)
-          nil)))))
+          ((and session
+                (string= session-string
+                         (session-string session))
+                (string= session-string
+                         (encode-session-string id
+                                                user-agent
+                                                (hunchentoot:real-remote-addr hunchentoot:*request*))))
+           ;; the session key presented by the client is valid
+           (merge-session session)
+           session)
+          (session
+           ;; the session ID pointed to an existing session, but the
+           ;; session string did not match the expected session string
+           (log:warn "Fake session identifier '~A' (User-Agent: '~A', IP: '~A')"
+                     session-identifier user-agent remote-addr)
+           nil)
+          (t
+           (log:info "No session for session identifier '~A' (User-Agent: '~A', IP: '~A')"
+                     session-identifier user-agent remote-addr)
+           nil))))))
 
 (defun start-session ()
   "Returns the current SESSION object. If there is no current session,
@@ -118,6 +118,16 @@ case the function will also send a session cookie to the browser."
                 :path "/")
     (hunchentoot:session-created hunchentoot:*acceptor* session)
     (setq hunchentoot:*session* session)))
+
+(defun merge-session (session)
+  (dolist (cookie '("cart" "nc-user"))
+    (let ((slot (anything-to-symbol cookie))
+          (value (hunchentoot:cookie-in cookie)))
+      (if (and (slot-boundp session slot)
+               (not value))
+          (hunchentoot:set-cookie cookie :value (slot-value session slot))
+          (when value
+            (setf (slot-value session slot) value))))))
 
 (defmethod hunchentoot:session-verify ((request hunchentoot:request))
  (let ((session-identifier (or (when-let (session-cookie (hunchentoot:cookie-in (hunchentoot:session-cookie-name hunchentoot:*acceptor*) request))

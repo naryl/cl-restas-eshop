@@ -38,6 +38,11 @@
 
 (declaim (optimize (safety 3) (debug 3)))
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (defmacro db-eval (&body body)
+    `(db-call #'(lambda ()
+                  ,@body))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; SERIALIZABLE
 
 ;;;; Metaclasses
@@ -216,6 +221,7 @@
   (declare (ignore hostname port))
   (setf *server-config* (apply #'make-instance 'mongo:server-config server-config))
   (setf *db-name* database)
+  (ensure-db-thread)
   (reconnect)
   (values))
 
@@ -233,9 +239,10 @@
 (defmethod initialize-instance :after ((obj persistent-object) &key &allow-other-keys)
   "Stores newly created persistent object in the database"
   (unless *deserializing*
-    (let ((collection (mongo:collection *db* (string (type-of obj))))
+    (let ((collection (obj-collection obj))
           (ht (serialize obj :hashtable)))
-      (mongo:insert-op collection ht)
+      (db-eval
+        (mongo:insert-op collection ht))
       (new-transaction-object obj))))
 
 (defvar *transaction* nil)
@@ -279,8 +286,9 @@
       (setf (persistent-object-state obj) :ro)
       (let ((ht (serialize obj))
             (collection (obj-collection obj)))
-        (mongo:delete-op collection (son (symbol-fqn 'key) (serializable-object-key obj)))
-        (mongo:insert-op collection ht)))))
+        (db-eval
+          (mongo:delete-op collection (son (symbol-fqn 'key) (serializable-object-key obj)))
+          (mongo:insert-op collection ht))))))
 
 (defun rollback-transaction ()
   "Invalidates all transaction objects. Doesn't modify the DB."
@@ -312,10 +320,11 @@ a transaction."
                                               (when o
                                                 (serializable-object-key o))))
         (return-from getobj it)))
-  (let* ((collection (mongo:collection *db* (string class)))
-         (ht (mongo:find-one collection
-                             :query (son (symbol-fqn 'key) key)
-                             :selector (son "_id" 0))))
+  (let ((ht (let ((collection (mongo:collection *db* (string class))))
+              (db-eval
+                (mongo:find-one collection
+                                :query (son (symbol-fqn 'key) key)
+                                :selector (son "_id" 0))))))
     (when (and ht
                (string= (symbol-fqn class)
                         (gethash +class-key+ ht)))
@@ -331,11 +340,13 @@ a transaction."
       (symbol
        (if key
            (let ((collection (mongo:collection *db* (string obj-or-class))))
-             (mongo:delete-op collection (son (symbol-fqn 'key) key)))
+             (db-eval
+               (mongo:delete-op collection (son (symbol-fqn 'key) key))))
            (invalid-arguments)))
       (persistent-object
-       (mongo:delete-op (obj-collection obj-or-class)
-                        (son (symbol-fqn 'key) (serializable-object-key obj-or-class)))
+       (db-eval
+         (mongo:delete-op (obj-collection obj-or-class)
+                          (son (symbol-fqn 'key) (serializable-object-key obj-or-class))))
        (setf (persistent-object-state obj-or-class) :deleted)
        (when *transaction*
          (deletef *transaction* obj-or-class)))
@@ -365,12 +376,13 @@ a transaction."
           obj)))))
 
 (defun all-keys (class)
-  (mapcar #'(lambda (obj)
-              (gethash (symbol-fqn 'key) obj))
-          (mongo:find-list (mongo:collection *db* (string class))
-                           :query (son +class-key+ (symbol-fqn class))
-                           :fields (son (symbol-fqn 'key) 1
-                                        "_id" 0))))
+  (db-eval
+    (mapcar #'(lambda (obj)
+                (gethash (symbol-fqn 'key) obj))
+            (mongo:find-list (mongo:collection *db* (string class))
+                             :query (son +class-key+ (symbol-fqn class))
+                             :fields (son (symbol-fqn 'key) 1
+                                          "_id" 0)))))
 
 (defun mapobj (function class)
   (nreverse
@@ -391,6 +403,36 @@ a transaction."
          (let ((,obj-var (getobj ,class ,obj-var)))
            ,@body))
        ,result-name)))
+
+;;;; DB thread
+
+(defvar *db-thread* nil)
+
+(defvar *db-mailbox* (sb-concurrency:make-mailbox :name "DB-MAILBOX"))
+
+(defun ensure-db-thread ()
+  (unless *db-thread*
+    (setf *db-thread* (bt:make-thread #'db-thread :name "DB-THREAD"))))
+
+(defun db-thread ()
+  (loop
+     (handler-case
+         (awhen (sb-concurrency:receive-message *db-mailbox* :timeout 1)
+           (destructuring-bind (result gate func) it
+             (setf (aref result 0)
+                   (funcall func))
+             (sb-concurrency:open-gate gate)))
+       (error (e)
+         #-debug (log:error "Error in DB thread: ~S" e)
+         #+debug (invoke-debugger e)))))
+
+(declaim (inline db-call))
+(defun db-call (func)
+  (let ((result (make-array 1))
+        (gate (sb-concurrency:make-gate :name "DB-CALL GATE" :open nil)))
+    (sb-concurrency:send-message *db-mailbox* (list result gate func))
+    (sb-concurrency:wait-on-gate gate)
+    (aref result 0)))
 
 ;;;; Utils
 

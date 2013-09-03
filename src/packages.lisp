@@ -42,6 +42,7 @@
   (:use :c2cl
         :anaphora
         :alexandria
+        :cl-skip-list
         :mongo-cl-driver.sugar)
   (:export #:serializable-class
            #:serializable-object

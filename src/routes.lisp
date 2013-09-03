@@ -22,6 +22,7 @@
    update current thread information"
   (let ((*current-route-symbol*
          (restas:route-symbol (routes:proxy-route-target route))))
+    (start-session)
     (sb-ext:call-with-timing #'log.timer #'call-next-method)))
 
 (defun log.timer (&key real-time-ms user-run-time-us system-run-time-us
