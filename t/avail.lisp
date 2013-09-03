@@ -3,7 +3,7 @@
 
 (declaim (optimize (debug 3) (safety 3)))
 
-(deftestsuite avail ()
+(deftestsuite avail (eshop-test)
   ((base-url  "http://localhost:4246/")))
 
 (addtest avail (verify-page base-url ""))
