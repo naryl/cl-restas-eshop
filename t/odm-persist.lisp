@@ -20,10 +20,6 @@
     (ensure (eql (slot-value store-obj 'slot)
                  (slot-value obj 'slot)))
     (eshop.odm:remobj obj)
-    (ensure (eq (eshop.odm:getobj 'persistent key) nil)))
-  (let* ((obj (make-instance 'persistent :slot 42))
-         (key (eshop.odm:serializable-object-key obj)))
-    (eshop.odm:remobj 'persistent key)
     (ensure (eq (eshop.odm:getobj 'persistent key) nil))))
 
 (addtest print-persistent
@@ -66,6 +62,23 @@
                  42))
     (eshop.odm:remobj obj)))
 
+(addtest rollback-remobj
+  (let* ((obj (make-instance 'persistent :slot 42))
+         (key (eshop.odm:serializable-object-key obj)))
+    (eshop.odm:with-transaction
+      (eshop.odm:remobj (eshop.odm:getobj 'persistent key))
+      (eshop.odm:rollback-transaction))
+    (ensure (eshop.odm:getobj 'persistent key))
+    (eshop.odm:remobj obj)))
+
+(addtest rollback-makeobj
+  (let (key)
+    (eshop.odm:with-transaction
+      (let ((obj (make-instance 'persistent :slot 42)))
+        (setf key (eshop.odm:serializable-object-key obj)))
+      (eshop.odm:rollback-transaction))
+    (ensure (eq (eshop.odm:getobj 'persistent key) nil))))
+
 (addtest double-getobj
   (let* ((obj (make-instance 'persistent :slot 42))
          (key (eshop.odm:serializable-object-key obj)))
@@ -85,11 +98,10 @@
          (key (eshop.odm:serializable-object-key obj)))
     (eshop.odm:setobj obj 'slot 43)
     (ensure (eq (slot-value (eshop.odm:getobj 'persistent key) 'slot) 43))
-    (eshop.odm:setobj 'persistent key 'slot 44)
-    (ensure (eq (slot-value (eshop.odm:getobj 'persistent key) 'slot) 44))
     (eshop.odm:remobj obj)))
 
 (addtest mapobj
+  (eshop.odm:mapobj #'eshop.odm:remobj 'persistent)
   (let ((objs (dotimes (i 10)
                 (make-instance 'persistent :slot i))))
     (ensure (equal (alexandria:iota 10)
@@ -99,6 +111,7 @@
   (eshop.odm:mapobj #'eshop.odm:remobj 'persistent))
 
 (addtest doobj
+  (eshop.odm:mapobj #'eshop.odm:remobj 'persistent)
   (let ((obj (dotimes (i 10)
                 (make-instance 'persistent :slot i))))
     (ensure (equal (alexandria:iota 10)
