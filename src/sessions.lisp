@@ -7,7 +7,6 @@
 
 (defclass session (eshop.odm:persistent-object)
   ((session-string :reader session-string
-                   :serializable t
                    :documentation "The session string encodes enough
 data to safely retrieve this session.  It is sent to the browser as a
 cookie value or as a GET parameter.")

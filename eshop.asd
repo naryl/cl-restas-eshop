@@ -3,7 +3,7 @@
                #:cl-csv #:cl-mime #:data-sift #:cl-heap #:st-json
                #:mongo-cl-driver #:mongo-cl-driver.usocket
                #:sb-concurrency #:closer-mop #:bordeaux-threads
-               #:cl-skip-list
+               #:function-cache
                #:log4cl #:drakma
                #:anaphora #:alexandria #:parse-float)
   :pathname "src"
