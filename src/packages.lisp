@@ -53,6 +53,7 @@
            ;; ^^^^ Serialization
            ;; vvvv Persistence
            #:connect
+           #:reconnect
            #:persistent-class
            #:persistent-object
            #:getobj

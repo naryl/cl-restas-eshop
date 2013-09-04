@@ -228,8 +228,11 @@
   (values))
 
 (defun reconnect ()
-  (when *db-running*
-    (setf *db-running* :stop))
+  (unless (and *db-name* *server-config*)
+    (error "Can't reconnect before making initial connection"))
+  (when *db-thread*
+    (send-message *db-mailbox* :stop)
+    (bt:join-thread *db-thread*))
   (ignore-errors
     (mongo-cl-driver.adapters:mongo-client-close *mongo-client*))
   (setf *mongo-client* (make-instance 'mongo.usocket:mongo-client :server *server-config*))
@@ -424,25 +427,18 @@ a transaction."
 
 (defvar *db-mailbox* (make-mailbox :name "DB-MAILBOX"))
 
-(defvar *db-running* nil)
-
 (defun ensure-db-thread ()
-  (flet ((start-thread ()
-           (setf *db-running* t)
-           (setf *db-thread* (bt:make-thread #'db-thread :name "DB-THREAD"))))
-    (case *db-running*
-      ((t) nil)
-      ((nil)
-       (start-thread))
-      ((:stop)
-       (bt:join-thread *db-thread*)
-       (start-thread)))))
+  (unless *db-thread*
+    (bt:make-thread #'db-thread :name "DB-THREAD")))
 
 (defun db-thread ()
+  (setf *db-thread* (bt:current-thread))
   (unwind-protect
        (loop
-          :while (eq *db-running* t)
+          :named db-loop
           :do (awhen (receive-message *db-mailbox* :timeout 1)
+                (when (eq it :stop)
+                    (return-from db-loop))
                 (destructuring-bind (result gate func) it
                   (handler-case
                       (progn
@@ -455,7 +451,7 @@ a transaction."
                                 (open-gate gate)
                                 (log:error "Error in DB thread: ~S" e))
                       #+debug (invoke-debugger e))))))
-    (setf *db-running* nil)))
+    (setf *db-thread* nil)))
 
 (declaim (inline db-call))
 (defun db-call (func)
