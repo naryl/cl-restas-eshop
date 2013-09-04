@@ -228,6 +228,7 @@
   (values))
 
 (defun reconnect ()
+  (log:info "Connecting to mongo...")
   (unless (and *db-name* *server-config*)
     (error "Can't reconnect before making initial connection using CONNECT"))
   (when *db-thread*
@@ -429,6 +430,7 @@ a transaction."
 
 (defun ensure-db-thread ()
   (unless *db-thread*
+    (log:info "Starting DB thread...")
     (bt:make-thread #'db-thread :name "DB-THREAD")))
 
 (defun process-message (result gate func)
@@ -450,6 +452,7 @@ a transaction."
                (when (eq it :stop)
                  (return))
                (apply #'process-message it)))
+    (log:warn "Database thread exiting")
     (setf *db-thread* nil)))
 
 (defun db-call (func)
