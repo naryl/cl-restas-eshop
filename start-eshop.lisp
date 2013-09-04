@@ -2,7 +2,13 @@
 (defparameter *path-to-libs* (sb-unix::posix-getenv "LIBS_PATH"))
 (defparameter *path-to-eshop* (sb-unix::posix-getenv "ESHOP_PATH"))
 (defparameter *path-to-config* (sb-unix::posix-getenv "CONFIG_PATH"))
+(defparameter *debug* (sb-unix::posix-getenv "DEBUG"))
 (defparameter *swank-port* (parse-integer (sb-unix::posix-getenv "SWANK_PORT")))
+
+(when *debug*
+    (push :debug *features*)
+    (restrict-compiler-policy 'debug 3)
+    (restrict-compiler-policy 'safety 3))
 
 ;; регестрация путей для asdf
 (load (merge-pathnames "load.lisp" *path-to-eshop*))
