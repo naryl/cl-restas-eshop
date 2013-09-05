@@ -61,7 +61,7 @@
            #:setobj
            #:mapobj
            #:doobj
-           #:remobj
+           ;; #:remobj ; Don't do it
            #:with-transaction
            #:rollback-transaction
            ))
