@@ -40,7 +40,7 @@
                                            :imgstyle style
                                            :groups (mapcar #'(lambda (g)
                                                                (format nil "<a href=\"/~a\">~a</a>~%" (key g) (name g)))
-                                                           (storage.get-all-sorted-child-groups node)))))))
+                                                           (storage.get-all-sorted-child-groups node #'storage.alphabet-group-sorter #'active)))))))
                            roots))
              (when col1
                (nconc res (list col1)))
