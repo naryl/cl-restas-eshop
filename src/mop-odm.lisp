@@ -342,7 +342,8 @@
 
 (defun getobj (class key)
   "Fetch an object from the database. The object will be read-only unless it's done inside
-a transaction."
+  a transaction."
+  (metric:count "getobj")
   (if *transaction*
       (awhen (find key *transaction* :key #'(lambda (o)
                                               (when o

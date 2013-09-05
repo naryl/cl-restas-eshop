@@ -22,6 +22,7 @@
    :cl-ppcre
    :cl-fad
    :alexandria
+   :function-cache
    ;; :sendmail
    :mongo-cl-driver.sugar ; (son)
    )

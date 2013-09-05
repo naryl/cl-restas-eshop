@@ -4,7 +4,7 @@
                #:mongo-cl-driver #:mongo-cl-driver.usocket
                #:sb-concurrency #:closer-mop #:bordeaux-threads
                #:function-cache
-               #:log4cl #:drakma
+               #:metric #:log4cl #:drakma
                #:anaphora #:alexandria #:parse-float)
   :pathname "src"
   :serial t
