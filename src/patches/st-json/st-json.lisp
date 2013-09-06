@@ -54,8 +54,8 @@
     ((t :true) (write-string "true" stream))
     (:false (write-string "false" stream))
     ((:null :undefined) (write-string "null" stream))
-    (t (if (keywordp element)
-           (dash-camel (string element))
+    (t (if (symbolp element)
+           (write-string (dash-camel (string element)) stream)
            (raise 'json-write-error "Can not write object of type ~A as JSON." (type-of element))))))
 
 (defun dash-camel (string)
