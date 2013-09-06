@@ -43,6 +43,7 @@
                                                                                       :type :path)
          :path-to-sitemap              (list :value #P"~/eshop-dev/htconf/"             :type :path)
          :path-to-dropbox-backup       (list :value #P"~/Dropbox/eshop-backups/"        :type :path)
+         :graphite-prefix              (list :value nil                                 :type :string?)
          :send-emails                  (list :value nil                               :type :bool)
          :gateway-warn-emails          (list :value (list "Supplers@alpha-pc.com"
                                                           "web_design@alpha-pc.com"
@@ -146,6 +147,10 @@ Return format is plist"
 
 (defmethod config.%validate-option ((type (eql :string)) option &key)
   (stringp option))
+
+(defmethod config.%validate-option ((type (eql :string?)) option &key)
+  (or (null option)
+      (stringp option)))
 
 (defmethod config.%validate-option ((type (eql :list)) option &key)
   (listp option))

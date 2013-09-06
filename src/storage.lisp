@@ -12,6 +12,7 @@
 If no type given, search in all storages.
 Note: returned object is NOT setfable (but its fields are)"
   (declare ((or null string) key) (symbol type))
+  (metric:count "getobj")
   (when key
     (let ((cached (if type
                       (gethash key
