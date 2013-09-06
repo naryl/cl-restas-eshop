@@ -506,6 +506,7 @@ Params appended with default filter data before passing to filter function"
 (defun filters.add-filter (filter inner-filter)
   (declare (filter filter) ((or filter basic-filter) inner-filter))
   ;; TODO: get rid of gensym
+  ;; FIXME: use eshop.odm::next-autokey instead of gensym
   (setf (gethash (gensym) (filters filter))
         inner-filter))
 

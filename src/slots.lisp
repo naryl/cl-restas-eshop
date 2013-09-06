@@ -182,7 +182,7 @@ Type: ~A" type))
      :collect (getf pair-plist :value)))
 
 (defmethod slots.%encode-to-string ((type (eql 'string-plist)) value)
-  (encode-json-plist-to-string value))
+  (st-json:write-json-to-string (alexandria:plist-hash-table value)))
 
 (defmethod slots.%decode-from-string ((type (eql 'string-plist)) string)
   (declare (string string))
@@ -295,13 +295,14 @@ Type: ~A" type))
 (defmethod slots.%encode-to-string ((type (eql 'filters-hash-table)) hash-table)
   (declare (hash-table hash-table))
   (st-json:write-json-to-string
-   (loop
-      :for key :being :the hash-keys :in hash-table
-      :using (hash-value filter)
-      :collect (cons
-                key
-                (st-json:write-json-to-string
-                 (backup.serialize-entity filter))))))
+   (alexandria:alist-hash-table
+    (loop
+       :for key :being :the hash-keys :in hash-table
+       :using (hash-value filter)
+       :collect (cons
+                 key
+                 (st-json:write-json-to-string
+                  (backup.serialize-entity filter)))))))
 
 (defmethod slots.%decode-from-string ((type (eql 'filters-hash-table)) string)
   (declare (string string))
