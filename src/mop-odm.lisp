@@ -228,8 +228,9 @@
   (values))
 
 (defun reconnect ()
+  (log:info "Connecting to mongo...")
   (unless (and *db-name* *server-config*)
-    (error "Can't reconnect before making initial connection"))
+    (error "Can't reconnect before making initial connection using CONNECT"))
   (when *db-thread*
     (send-message *db-mailbox* :stop)
     (bt:join-thread *db-thread*))
@@ -341,7 +342,8 @@
 
 (defun getobj (class key)
   "Fetch an object from the database. The object will be read-only unless it's done inside
-a transaction."
+  a transaction."
+  (metric:count "getobj")
   (if *transaction*
       (awhen (find key *transaction* :key #'(lambda (o)
                                               (when o
@@ -429,32 +431,33 @@ a transaction."
 
 (defun ensure-db-thread ()
   (unless *db-thread*
+    (log:info "Starting DB thread...")
     (bt:make-thread #'db-thread :name "DB-THREAD")))
+
+(defun process-message (result gate func)
+  (handler-case
+      (progn
+        (setf (aref result 0)
+              (funcall func))
+        (open-gate gate))
+    (error (e)
+      (setf (aref result 0) (list 'error e))
+      (open-gate gate)
+      #-debug (log:error "Error in DB thread: ~S" e)
+      #+debug (invoke-debugger e))))
 
 (defun db-thread ()
   (setf *db-thread* (bt:current-thread))
   (unwind-protect
-       (loop
-          :named db-loop
-          :do (awhen (receive-message *db-mailbox* :timeout 1)
-                (when (eq it :stop)
-                    (return-from db-loop))
-                (destructuring-bind (result gate func) it
-                  (handler-case
-                      (progn
-                        (setf (aref result 0)
-                              (funcall func))
-                        (open-gate gate))
-                    (error (e)
-                      #-debug (progn
-                                (setf (aref result 0) (list 'error e))
-                                (open-gate gate)
-                                (log:error "Error in DB thread: ~S" e))
-                      #+debug (invoke-debugger e))))))
+       (loop (awhen (receive-message *db-mailbox* :timeout 1)
+               (when (eq it :stop)
+                 (return))
+               (apply #'process-message it)))
+    (log:warn "Database thread exiting")
     (setf *db-thread* nil)))
 
-(declaim (inline db-call))
 (defun db-call (func)
+  (ensure-db-thread)
   (let ((result (make-array 1))
         (gate (make-gate :name "DB-CALL GATE" :open nil)))
     (send-message *db-mailbox* (list result gate func))
@@ -462,7 +465,7 @@ a transaction."
     (let ((result (aref result 0)))
       (if (and (listp result)
                (eq (first result) 'error))
-          (signal (second result))
+          (error (second result))
           result))))
 
 ;;;; Utils

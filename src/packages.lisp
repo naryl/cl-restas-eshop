@@ -22,6 +22,7 @@
    :cl-ppcre
    :cl-fad
    :alexandria
+   :function-cache
    ;; :sendmail
    :mongo-cl-driver.sugar ; (son)
    )
@@ -61,7 +62,7 @@
            #:setobj
            #:mapobj
            #:doobj
-           #:remobj
+           ;; #:remobj ; Don't do it
            #:with-transaction
            #:rollback-transaction
            ))
