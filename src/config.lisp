@@ -40,11 +40,13 @@
    :critical
    (list :path-to-conf                 (list :value #P"~/eshop-dev/htconf/"             :type :path)
          :path-to-order-id-file        (list :value #P"~/eshop-dev/htconf/dev-order-id.txt"
-                                                                                      :type :path)
+                                                                                        :type :path)
          :path-to-sitemap              (list :value #P"~/eshop-dev/htconf/"             :type :path)
          :path-to-dropbox-backup       (list :value #P"~/Dropbox/eshop-backups/"        :type :path)
          :graphite-prefix              (list :value nil                                 :type :string?)
-         :send-emails                  (list :value nil                               :type :bool)
+         :graphite-host                (list :value "localhost"                         :type :string?)
+         :graphite-port                (list :value 2003                                :type :string?)
+         :send-emails                  (list :value nil                                 :type :bool)
          :gateway-warn-emails          (list :value (list "Supplers@alpha-pc.com"
                                                           "web_design@alpha-pc.com"
                                                           "wolforus@gmail.com")         :type :string-list)

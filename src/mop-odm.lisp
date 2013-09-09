@@ -138,7 +138,6 @@
     (let ((*deserializing* t))
       (let* ((class-name (read-from-string (gethash +class-key+ ht)))
              (class (find-class class-name)))
-        (remhash +class-key+ ht)
         (make-instance class 'ht ht))))
   (:method ((string string) (source (eql :hashtable)))
     string)
@@ -154,7 +153,8 @@
                        (let ((slot-name (fqn-symbol k)))
                          (setf (slot-value instance slot-name)
                                (deserialize v :hashtable)))))
-                 ht))
+                 ht)
+        (setf (slot-value instance 'modified) nil))
       (call-next-method)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; PERSISTENT
@@ -218,12 +218,19 @@
 (defvar *mongo-client*)
 (defvar *db*)
 
+(defvar *db-cache-timer* (sb-ext:make-timer #'purge-all-caches
+                    :name "Cache cleaner"
+                    :thread t))
+
 (defun connect (database &rest server-config &key hostname port)
   "Sets the server parameters and creates a mongo connection. Reconnection is automatic in
   case of network failure."
   (declare (ignore hostname port))
   (setf *server-config* (apply #'make-instance 'mongo:server-config server-config))
   (setf *db-name* database)
+  (unless (sb-ext:timer-scheduled-p *db-cache-timer*)
+    (sb-ext:schedule-timer *db-cache-timer*
+                           60 :repeat-interval 60))
   (reconnect)
   (values))
 
@@ -281,7 +288,7 @@
                 t)))))))
 
 (defmethod slot-value-using-class :around
-  ((class persistent-class) obj (slot persistent-effective-slot-definition))
+    ((class persistent-class) obj (slot persistent-effective-slot-definition))
   (if (or (member (slot-definition-name slot)
                   '(state key modified))
           (not (eq :deleted (persistent-object-state obj))))
@@ -290,13 +297,13 @@
 
 (defmethod (setf slot-value-using-class) :around
     (new-value (class persistent-class) obj (slot persistent-effective-slot-definition))
-  (if (or (member (slot-definition-name slot)
-                  '(state modified))
+  (if (or (not (slot-serializable-p slot))
           (not (slot-boundp obj 'state))
           *deserializing*
           (eq :rw (persistent-object-state obj)))
       (progn
-        (unless (eq (slot-definition-name slot) 'modified)
+        (when (and (slot-serializable-p slot)
+                   (not *deserializing*))
           (setf (slot-value obj 'modified) t))
         (call-next-method))
       (error "Attempt to modify a slot of read-only persistent object")))
@@ -307,6 +314,7 @@
   (dolist (obj *transaction*)
     (when (and obj
                (persistent-object-modified obj))
+      (clear-cache-partial-arguments *getobj-cache-cache* (list (type-of obj) (serializable-object-key obj)))
       (case (persistent-object-state obj)
         (:rw
          (setf (persistent-object-state obj) :ro)
@@ -340,6 +348,17 @@
                :ro)))
   obj)
 
+(defcached (getobj-cache :timeout 600) (class key)
+  (let ((ht (let ((collection (obj-collection class)))
+                (db-eval
+                  (mongo:find-one collection
+                                  :query (son (symbol-fqn 'key) key)
+                                  :selector (son "_id" 0))))))
+      (when (and ht
+                 (string= (symbol-fqn class)
+                          (gethash +class-key+ ht)))
+        ht)))
+
 (defun getobj (class key)
   "Fetch an object from the database. The object will be read-only unless it's done inside
   a transaction."
@@ -349,15 +368,9 @@
                                               (when o
                                                 (serializable-object-key o))))
         (return-from getobj it)))
-  (let ((ht (let ((collection (obj-collection class)))
-              (db-eval
-                (mongo:find-one collection
-                                :query (son (symbol-fqn 'key) key)
-                                :selector (son "_id" 0))))))
-    (when (and ht
-               (string= (symbol-fqn class)
-                        (gethash +class-key+ ht)))
-      (new-transaction-object (deserialize ht :hashtable)))))
+  (when-let* ((db-obj (getobj-cache class key))
+              (obj (deserialize db-obj :hashtable)))
+    (new-transaction-object obj)))
 
 (defun remobj (obj)
   "Deletes an object from the database"
@@ -492,3 +505,6 @@
     (mongo:collection *db* (string class)))
   (:method ((obj persistent-object))
     (mongo:collection *db* (string (type-of obj)))))
+
+(metric:defmetric getobj-cache-size ("getobj.cache")
+  (cached-results-count *getobj-cache-cache*))
