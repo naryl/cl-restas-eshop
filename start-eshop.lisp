@@ -18,8 +18,10 @@
 (asdf:load-system :eshop)
 
 ;; Metrics
-(metric:configure :interval 60
-                  :prefix (eshop:config.get-option :critical :graphite-prefix))
+(metric:configure (eshop:config.get-option :critical :graphite-prefix)
+                  :host (eshop:config.get-option :critical :graphite-host)
+                  :port (eshop:config.get-option :critical :graphite-port)
+                  :interval 60)
 (setf metric:*error-handler* #'(lambda (e) (log:error "Error submitting metrics: ~S" e)))
 
 ;; json serializer config
