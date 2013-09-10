@@ -40,7 +40,7 @@
    'product :func #'sitemap.get-item-route))
 
 (defun sitemap.get-filters-routes ()
-  (collect-storage 'filter :func #'sitemap.get-item-route))
+  (collect-storage 'filter :func #'sitemap.get-item-route :when-fn #'(lambda (v) (not (null (parents v))))))
 
 (defun sitemap.get-articles-routes ()
   ;;; TOCHECK: is key in article the same as key in storage?

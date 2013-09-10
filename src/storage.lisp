@@ -2,8 +2,6 @@
 
 (in-package #:eshop)
 
-(arnesi:enable-sharp-l-syntax)
-
 (defun get-storage (type)
   "Get storage for given type objects"
   (declare (symbol type))
@@ -14,6 +12,7 @@
 If no type given, search in all storages.
 Note: returned object is NOT setfable (but its fields are)"
   (declare ((or null string) key) (symbol type))
+  (metric:count "getobj")
   (when key
     (let ((cached (if type
                       (gethash key
@@ -30,7 +29,8 @@ Note: returned object is NOT setfable (but its fields are)"
 
 (defun getobj-from-db (key &optional type)
   "Get object from mongo. If type is nil it will try all collections"
-  (let ((types (if type
+  nil ; Pending migration to mongo
+  #+(or)(let ((types (if type
                     (list type)
                     (alexandria:hash-table-keys *classes*))))
     (dolist (type types)
@@ -185,7 +185,7 @@ where key is vendor name and value is number of products with this vendor"
   (declare (group root) (function when-fn))
   (aif (remove-if-not when-fn (groups root))
        ;; no need for sort in mapcan, because it will be sorted anyway
-       (mapcan #L(storage.get-all-child-groups !1 when-fn) it)
+       (mapcan #'(lambda (group) (storage.get-all-child-groups group when-fn)) it)
        (list root))) ; else
 
 

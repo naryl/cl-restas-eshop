@@ -281,15 +281,25 @@
                        items)))
 
 
-(defun render.get-upsale-products (gr)
-  (get-randoms-from-list (remove-if-not #'active (products gr)) 4))
-
+(defun render.get-upsale-products (obj)
+  (cond
+    ((groupp obj) (get-randoms-from-list (remove-if-not #'active (products obj)) 4))
+    ((filterp obj) (get-randoms-from-list (remove-if-not #'active
+                                                         (filters.filter obj :obj-set (products (parent obj)))) 4))
+    (t nil)))
 
 (defmethod render.prepare-upsale-full ((object group))
   (list :groupnameskl (sklonenie (name object) 2)
-        :upsaleblocks (mapcar #'(lambda (gr)
-                                  (render.prepare-upsale-block (name gr) (render.get-upsale-products gr)))
-                              (upsale-links object))))
+        :upsaleblocks (remove-if #'null
+                       (mapcar #'(lambda (obj)
+                                   (cond
+                                     ((groupp obj) (render.prepare-upsale-block (name obj)
+                                                                                (render.get-upsale-products obj)))
+                                     ((filterp obj) (render.prepare-upsale-block (getf (data obj) :name)
+                                                                                (render.get-upsale-products obj)))
+                                     (t nil)))
+                              (upsale-links object))
+                       )))
 
 
 (defun render.%add-button (product)
@@ -297,7 +307,7 @@
   (let ((fields (list :articul (articul product)
                       :name (name-seo product)
                       :pic (first (get-pics product))
-                      :deliveryprice (yml.get-product-delivery-price1 product)
+                      :deliveryprice (get-product-delivery-price product)
                       :siteprice (siteprice product)
                       :price (price product))))
     (if (active product)
@@ -352,19 +362,19 @@
             :bestprice (plusp (delta-price object))
             :groupd (groupd.is-groupd object)
             ;;TODO
-            :freedelivery (zerop (yml.get-product-delivery-price1 object))
+            :freedelivery (zerop (get-product-delivery-price object))
             :groupd_holiday (groupd.holiday.is-groupd object)
             :firstpic (car pics)
             :promotiontext (concatenate 'string
                                         (get-option object "Secret" "Продающий текст")
                                         " "
-                                        (if (zerop (yml.get-product-delivery-price1 object))
+                                        (if (zerop (get-product-delivery-price object))
                                             " Бесплатная доставка при заказе прямо сейчас!"
-                                            (if (= 100 (yml.get-product-delivery-price1 object))
+                                            (if (= 100 (get-product-delivery-price object))
                                                 " Акция: доставка по городу 100 рублей!"
-                                                (if (= 200 (yml.get-product-delivery-price1 object))
+                                                (if (= 200 (get-product-delivery-price object))
                                                     " Акция: скидка на доставку 30%. Закажи сейчас!"
-                                                    (if (= 400 (yml.get-product-delivery-price1 object))
+                                                    (if (= 400 (get-product-delivery-price object))
                                                         " Акция: скидка на доставку 20. Закажи сейчас!")))))
             :keyopts (render.get-catalog-keyoptions object)
             :ymlname (aif (get-option object "Общие характеристики" "Код производителя")
@@ -506,7 +516,7 @@
                              :siteprice (siteprice object)
                              :storeprice (price object)
                              :bestprice (plusp (delta-price object))
-                             :freedelivery (zerop (yml.get-product-delivery-price1 object))
+                             :freedelivery (zerop (get-product-delivery-price object))
                              :groupd (groupd.is-groupd object)
                              :groupd_holiday (groupd.holiday.is-groupd object)
                              :bonuscount (when (and (bonuscount object)
@@ -530,13 +540,13 @@
                              :slogan (concatenate 'string
                                                   (get-option object "Secret" "Продающий текст")
                                                   " "
-                                                  (if (zerop (yml.get-product-delivery-price1 object))
+                                                  (if (zerop (get-product-delivery-price object))
                                                       " Бесплатная доставка при заказе прямо сейчас!"
-                                                      (if (= 100 (yml.get-product-delivery-price1 object))
+                                                      (if (= 100 (get-product-delivery-price object))
                                                           " Акция: доставка по городу 100 рублей!"
-                                                          (if (= 200 (yml.get-product-delivery-price1 object))
+                                                          (if (= 200 (get-product-delivery-price object))
                                                               " Акция: скидка на доставку 30%. Закажи сейчас!"
-                                                              (if (= 400 (yml.get-product-delivery-price1 object))
+                                                              (if (= 400 (get-product-delivery-price object))
                                                                   " Акция: скидка на доставку 20%. Закажи сейчас!")))))
                              :others (soy.product:others
                                       (list :others (mapcar #'(lambda (x)

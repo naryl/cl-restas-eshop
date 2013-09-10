@@ -1,7 +1,5 @@
 (in-package #:eshop)
 
-(arnesi:enable-sharp-l-syntax)
-
 (alexandria:define-constant +phone-next-template+
     (make-instance 'sendmail:email
                    :from (config.get-option :critical :from-email)
@@ -32,7 +30,7 @@
         (email.phone-next-mail (soy.sendmail:phonemail (list :phone phone)))
         (setf error-id 2)) ;; no phone number in parameters
     (setf (errorid answer) error-id)
-    (json:encode-json-to-string answer)))
+    (st-json:write-json-to-string answer)))
 
 
 (defvar *sbr-orders* (make-hash-table :test #'equal))
@@ -66,7 +64,7 @@
         (pricesum 0)
         (bonuscount nil))
     (when (not (null cart-cookie))
-      (setf cart (json:decode-json-from-string cart-cookie))
+      (setf cart (st-json:read-json-from-string cart-cookie))
       (multiple-value-bind (lst cnt sm bc) (newcart-cart-products cart)
         (setf products (remove-if #'null lst))
         (setf count cnt)
@@ -135,10 +133,10 @@
         (bonuscount)) ;; сумма бонусов
     ;; кукисы пользователя
     (mapcar #'(lambda (cookie)
-                (string-case (car cookie)
-                  ("cart" (setf cart (json:decode-json-from-string
+                (switch ((car cookie) :test #'string=)
+                  ("cart" (setf cart (st-json:read-json-from-string
                                       (hunchentoot:url-decode(cdr cookie)))))
-                  ("user-nc" (setf user (json:decode-json-from-string
+                  ("user-nc" (setf user (st-json:read-json-from-string
                                          (hunchentoot:url-decode(cdr cookie)))))
                   (t nil)))
             (hunchentoot:cookies-in hunchentoot:*request*))
@@ -173,7 +171,7 @@
                  (setf deliverysum 100))
             (let ((result-obj)
                   (url (format nil "https://3dsec.sberbank.ru/payment/rest/registerPreAuth.do?userName=320_8080-api&password=320_8080&orderNumber=~A&amount=~A&returnUrl=http%3A%2F%2F320-8080.ru%2Fr%2F~A" order-id (* (+ pricesum deliverysum) 100) order-id)))
-              (setf result-obj (json:decode-json-from-string (drakma:http-request url)))
+              (setf result-obj (st-json:read-json-from-string (drakma:http-request url)))
               (setf (gethash order-id *sbr-orders*) result-obj)
               (hunchentoot:redirect (cdr (assoc :form-url result-obj)) :code 301)
               ))))))

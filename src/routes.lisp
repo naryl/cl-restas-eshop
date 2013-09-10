@@ -17,32 +17,17 @@
 
 (defvar *current-route-symbol* nil)
 
+(defcached route-name (&optional (route *current-route-symbol*))
+  (string-downcase (symbol-name route)))
+
 (defmethod restas:process-route :around ((route proxy-route-timer) bindings)
   "log timing and additional data for current route processing and
    update current thread information"
   (let ((*current-route-symbol*
          (restas:route-symbol (routes:proxy-route-target route))))
-    (sb-impl::call-with-timing #'log.timer #'call-next-method)))
-
-(defun log.timer (&key real-time-ms user-run-time-us system-run-time-us
-                  gc-run-time-ms processor-cycles eval-calls
-                  lambdas-converted page-faults bytes-consed
-                  aborted)
-  (declare (ignore real-time-ms
-                  gc-run-time-ms eval-calls
-                  lambdas-converted page-faults bytes-consed
-                  aborted))
-  (request-log-message "~A"
-                       (cl-csv:write-csv-row
-                        (list (time.encode.backup)
-                              (+ user-run-time-us system-run-time-us)
-                              processor-cycles
-                              *current-route-symbol*
-                              (tbnl:request-uri*)
-                              (tbnl:real-remote-addr)
-                              (tbnl:user-agent)
-                              (tbnl:referer)))))
-
+    (start-session)
+    (metric:time ((concatenate 'string "process-route." (route-name)))
+      (call-next-method))))
 
 (defmacro define-tracing-route (name (template &rest args) &body body)
   "Like RESTAS:DEFINE-ROUTE, except add default decorators"
@@ -248,9 +233,6 @@
 
 (define-tracing-route yml/-route ("/yml/")
   (yml-page))
-
-(define-tracing-route parseryml-route ("/parseryml")
-  (yml-page-for-parser))
 
 ;; ARTICLES
 ;;TODO возможно проверять входные тэги

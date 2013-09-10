@@ -239,6 +239,8 @@ Filter's key is concatenated group's and default-filter's keys"
   (marketing-filters.%create-util-filter (getobj "komputery" 'group) 1000)
   (marketing-filters.%create-util-filter (getobj "komputery" 'group) 2000)
   (marketing-filters.%create-util-filter (getobj "komputery" 'group) 5000)
+  (marketing-filters.%create-setting-%filter (getobj "stiralnie-mashiny") "Установка и подключение стиральных машин" "Стиральные машины")
+  (marketing-filters.%create-setting-%filter (getobj "holodilniki-i-morozilniki") "Подключение холодильников" "Холодильники")
   (mapcar #'(lambda (group-key)
               (marketing-filters.create-sale-filter (getobj group-key 'group)))
           (list "netbuki"
@@ -290,3 +292,28 @@ Filter's key is concatenated group's and default-filter's keys"
 
 (defun marketing-filters.get-seria-filters ()
   (collect-storage 'filter :when-fn #'(lambda (filter) (getf (data filter) :seria))))
+
+(defun marketing-filters.%create-setting-%filter (grp fltr-name opt-name)
+    (let* ((group (getobj "podkluchenie-bitovoi-tehniki"))
+           (key (format nil "~A-setting-filter" (key grp)))
+           (filter (make-instance 'filter
+                             :key key
+                             :parents (list group)
+                             :default-set 'product
+                             :data (list :name fltr-name)
+                             :serialize nil)))
+    ;; setup basic filters
+    ;; TODO: get rid of gensym
+    (setf (gethash (gensym) (filters filter))
+          (filters.create-basic-filter 'function-filter
+                                       :func-text
+                                       (format nil "#'(lambda (obj &optional params) (declare (ignore params))
+                                      (string= (get-option obj ~S ~S) ~S)) "
+                                               "Общие характеристики" "Вид техники" opt-name))
+          ;; add filter to group's filters slot
+          (gethash key (filters group)) filter)
+    (setobj key filter 'filter)
+    (setf (upsale-links grp) (append (list filter) (upsale-links grp)))))
+
+;; (marketing-filters.%create-setting-%filter (getobj "stiralnie-mashiny") "Установка и подключение стиральных машин" "Стиральные машины")
+;; (marketing-filters.%create-setting-%filter (getobj "holodilniki-i-morozilniki") "Подключение холодильников" "Холодильники")

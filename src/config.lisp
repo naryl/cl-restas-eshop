@@ -22,46 +22,46 @@
          )
    ;; PATHS section
    :paths
-   (list :path-to-dropbox              (list :value #P"Dropbox/"                      :type :path)
-         :path-to-last-backup          (list :value #P"eshop-dev/last-backup/"        :type :path)
-         :path-to-templates            (list :value #P"Dropbox/httpls/release/"       :type :path)
-         :path-to-articles             (list :value #P"Dropbox/content/articles/"     :type :path)
-         :path-to-static-pages         (list :value #P"Dropbox/content/static-pages/" :type :path)
-         :path-to-pics                 (list :value #P"htpics1/"                      :type :path)
-         :path-to-logs                 (list :value #P"eshop-logs/"                   :type :path)
-         :path-to-gateway              (list :value #P"eshop-logs/gateway/"           :type :path)
-         :path-to-backups              (list :value #P"eshop-dev/backups/"            :type :path)
-         :path-to-big-images-backup    (list :value #P"source-big-images-bkps/"       :type :path)
-         :path-to-main-page            (list :value #P"Dropbox/mainPage/"             :type :path)
-         :path-to-seo                  (list :value #P"Dropbox/seo/"                  :type :path)
-         :path-to-reports              (list :value #P"Dropbox/reports/"              :type :path)
-         :path-to-xls                  (list :value #P"Dropbox/xls/"                  :type :path)
+   (list :path-to-dropbox              (list :value #P"~/Dropbox/"                      :type :path)
+         :path-to-last-backup          (list :value #P"~/eshop-dev/last-backup/"        :type :path)
+         :path-to-templates            (list :value #P"~/Dropbox/httpls/release/"       :type :path)
+         :path-to-articles             (list :value #P"~/Dropbox/content/articles/"     :type :path)
+         :path-to-static-pages         (list :value #P"~/Dropbox/content/static-pages/" :type :path)
+         :path-to-pics                 (list :value #P"~/htpics1/"                      :type :path)
+         :path-to-logs                 (list :value #P"~/eshop-logs/"                   :type :path)
+         :path-to-gateway              (list :value #P"~/eshop-logs/gateway/"           :type :path)
+         :path-to-backups              (list :value #P"~/eshop-dev/backups/"            :type :path)
+         :path-to-big-images-backup    (list :value #P"~/source-big-images-bkps/"       :type :path)
+         :path-to-main-page            (list :value #P"~/Dropbox/mainPage/"             :type :path)
+         :path-to-reports              (list :value #P"~/Dropbox/reports/"              :type :path)
+         :path-to-xls                  (list :value #P"~/Dropbox/xls/"                  :type :path)
          )
    ;; CRITICAL section, options should be different for dev and release servers
    :critical
-   (list :path-to-conf                 (list :value #P"eshop-dev/htconf/"             :type :path)
-         :path-to-order-id-file        (list :value #P"eshop-dev/htconf/dev-order-id.txt"
-                                                                                      :type :path)
-         :path-to-sitemap              (list :value #P"eshop-dev/htconf/"             :type :path)
-         :path-to-dropbox-backup       (list :value #P"Dropbox/eshop-backups/"        :type :path)
-         :send-emails                  (list :value nil                               :type :bool)
+   (list :path-to-conf                 (list :value #P"~/eshop-dev/htconf/"             :type :path)
+         :path-to-order-id-file        (list :value #P"~/eshop-dev/htconf/dev-order-id.txt"
+                                                                                        :type :path)
+         :path-to-sitemap              (list :value #P"~/eshop-dev/htconf/"             :type :path)
+         :path-to-dropbox-backup       (list :value #P"~/Dropbox/eshop-backups/"        :type :path)
+         :graphite-prefix              (list :value nil                                 :type :string?)
+         :graphite-host                (list :value "localhost"                         :type :string?)
+         :graphite-port                (list :value 2003                                :type :string?)
+         :send-emails                  (list :value nil                                 :type :bool)
          :gateway-warn-emails          (list :value (list "Supplers@alpha-pc.com"
                                                           "web_design@alpha-pc.com"
-                                                          "wolforus@gmail.com"
-                                                          "slamly@gmail.com")         :type :string-list)
+                                                          "wolforus@gmail.com")         :type :string-list)
          :xls-warn-emails              (list :value (list "wolforus@gmail.com"
                                                           "web_design@alpha-pc.com")  :type :string-list)
          :order-emails                 (list :value (list "internetorder@alpha-pc.com"
                                                           "shop@320-8080.ru"
                                                           "zakaz320@yandex.ru"
-                                                          "slamly@gmail.com"
                                                           "wolforus@gmail.com")       :type :string-list)
          :from-email                   (list :value "shop@320-8080.ru"                :type :string)
          )
    ;; OTHER-OPTIONS section
    :other-options (list
                    ;; 24 hours in seconds
-                   :pics-cache-ttl     (list :value 86400 :type :int)))
+                   :pics-cache-ttl     (list :value #.(* 24 60 60) :type :int)))
 "Variable for storing config options")
 
 (defun config.parse-config (&optional (path-to-config (sb-unix::posix-getenv "CONFIG_PATH")))
@@ -149,6 +149,10 @@ Return format is plist"
 
 (defmethod config.%validate-option ((type (eql :string)) option &key)
   (stringp option))
+
+(defmethod config.%validate-option ((type (eql :string?)) option &key)
+  (or (null option)
+      (stringp option)))
 
 (defmethod config.%validate-option ((type (eql :list)) option &key)
   (listp option))

@@ -2,55 +2,71 @@
 (defparameter *path-to-libs* (sb-unix::posix-getenv "LIBS_PATH"))
 (defparameter *path-to-eshop* (sb-unix::posix-getenv "ESHOP_PATH"))
 (defparameter *path-to-config* (sb-unix::posix-getenv "CONFIG_PATH"))
+(defparameter *debug* (sb-unix::posix-getenv "DEBUG"))
 (defparameter *swank-port* (parse-integer (sb-unix::posix-getenv "SWANK_PORT")))
+
+(when *debug*
+    (push :debug *features*)
+    (restrict-compiler-policy 'debug 3)
+    (restrict-compiler-policy 'safety 3))
 
 ;; регестрация путей для asdf
 (load (merge-pathnames "load.lisp" *path-to-eshop*))
-(load.register-libs)
+(load.register-libs *path-to-libs*)
 
 ;; load swank libs
 (asdf:load-system :swank)
-;; для того чтобы загружался esrap
-(load (merge-pathnames "slime-archimag/contrib/swank-indentation.lisp" *path-to-libs*))
-;; swank server start
-(print swank::*application-hints-tables*)
-(setq swank:*use-dedicated-output-stream* nil)
 (swank:create-server :dont-close t
-					 :port *swank-port*)
-
+                     :port *swank-port*)
 
 ;; load eshop
 (push *path-to-eshop* asdf:*central-registry*)
 (asdf:load-system :eshop)
 
+;; Metrics
+(metric:configure (eshop:config.get-option :critical :graphite-prefix)
+                  :host (eshop:config.get-option :critical :graphite-host)
+                  :port (eshop:config.get-option :critical :graphite-port)
+                  :interval 60)
+(setf metric:*error-handler* #'(lambda (e) (log:error "Error submitting metrics: ~S" e)))
+
+;; json serializer config
+(setf st-json:*decode-objects-as* :alist)
+(setf st-json:*read-null-as* nil)
+(setf st-json:*map-keys* #'(lambda (key) (intern
+                                          (st-json:camel-dash (string key))
+                                          :keyword)))
+
 ;; alternative order numbering for developers server
 (if (and (not (eshop:config.get-option :start-options :release))
-				 (eshop:config.get-option :start-options :dbg-on))
+         (eshop:config.get-option :start-options :dbg-on))
     ;; нумерация заказов
     (setf eshop::*order-id* 1))
 
 (if (eshop:config.get-option :start-options :dbg-on)
-		(restas:debug-mode-on)
-		(restas:debug-mode-off))
+    (restas:debug-mode-on)
+    (restas:debug-mode-off))
 (setf hunchentoot:*catch-errors-p* (eshop:config.get-option :start-options :catch-errors))
 
+(eshop.odm:connect "zifry")
+
 (let ((*package* (find-package :eshop)))
-	;;; content
+    ;;; content
   (when (eshop:config.get-option :start-options :load-storage)
     (eshop:sklonenie.restore)
-		(eshop:class-core.unserialize-all)
-		(eshop:gateway.load))
-	(when (eshop:config.get-option :start-options :load-xls)
-		(eshop:xls.update-options-from-xls)
+    (eshop:class-core.unserialize-all :filesystem)
+    (eshop:gateway.load))
+  (when (eshop:config.get-option :start-options :load-xls)
+    (eshop:xls.update-options-from-xls)
     (eshop:cartrige.restore))
-	(when (eshop:config.get-option :start-options :load-content)
-		(eshop:static-pages.restore)
-		(eshop:articles.restore)
-		(eshop:main-page.restore))
-	(when (eshop:config.get-option :start-options :run-cron-jobs)
-		;; making timer for backups
-		(cl-cron:make-cron-job #'eshop::backup.serialize-all :minute 0 :hour 17)
-		(cl-cron:start-cron))
+  (when (eshop:config.get-option :start-options :load-content)
+    (eshop:static-pages.restore)
+    (eshop:articles.restore)
+    (eshop:main-page.restore))
+  (when (eshop:config.get-option :start-options :run-cron-jobs)
+    ;; making timer for backups
+    (cl-cron:make-cron-job #'eshop::backup.serialize-all :minute 0 :hour 17)
+    (cl-cron:start-cron))
   ;;; business logic
   (eshop::filters.create-standard-filters)
   (when (eshop:config.get-option :start-options :make-marketing-filters)
@@ -62,9 +78,8 @@
 (setf cl-csv:*newline* (string #\Newline)
       cl-csv:*separator* #\;)
 
-(print (format nil "ESHOP load finished. Time : ~A" (eshop::time.msecs-to-hms (get-internal-real-time))))
-(print "Server info: ")
-(room)
+(log:info "ESHOP load finished. Time : ~A" (eshop::time.msecs-to-hms (get-internal-real-time)))
+(log:info "Server info: ~A" (with-output-to-string (*standard-output*) (room)))
 
 ;; запуск Restas
 (restas:start '#:eshop :port (eshop:config.get-option :start-options :server-port))

@@ -22,25 +22,8 @@
                                       (getf slot :serialize))
                                   class-slots))
          ht))
-    (defmethod backup.serialize-entity ((object ,name))
-       (format nil "{~{~A~^,~}}"
-               (remove-if #'null
-                          (list
-                           ,@(mapcar #'(lambda (slot)
-                                         `(let ((slot-value (,(getf slot :name) object)))
-                                            (when (slots.%serialize-p
-                                                   ',(getf slot :type)
-                                                   ;; initform should be passed unevaluated
-                                                   slot-value ',(getf slot :initform))
-                                              (format nil "~A:~A"
-                                                      (encode-json-to-string ',(getf slot :name))
-                                                      (encode-json-to-string (slots.%encode-to-string
-                                                                              ',(getf slot :type)
-                                                                              slot-value))))))
-                                     (remove-if-not #'(lambda (slot)
-                                                        (getf slot :serialize))
-                                                    class-slots))))))))
-
+     (defmethod backup.serialize-entity ((object ,name))
+       (st-json:write-json-to-string (backup.serialize-entity-to-hashtable object)))))
 
 (defun backup.serialize-storage-to-file (type filepath)
   "Serialize storage of given type to file."

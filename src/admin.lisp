@@ -5,11 +5,6 @@
 (restas:define-route admin-route ("/administration-super-panel")
   (restas:redirect 'admin/-route))
 
-(restas:define-route admin/-route ("/administration-super-panel/test")
-  (require-authorization
-  (format t "~A" (hunchentoot:authorization)))
-  (show-admin-page "info"))
-
 (restas:define-route admin/-route ("/administration-super-panel/")
   (show-admin-page "info"))
 
@@ -57,7 +52,7 @@
 
 
 (restas:define-route admin-filter-create ("administration-super-panel/filter-create" :method :get)
-  (string-case (hunchentoot:get-parameter "get")
+  (switch ((hunchentoot:get-parameter "get") :test #'string=)
     ("filter-types"
      ;; FIXME: use json encode, not format
      (format nil "[~{~A~^,~}]" (mapcar #'encode-json-plist-to-string
@@ -68,7 +63,7 @@
 
 (restas:define-route admin-edit-slot-route ("administration-super-panel/edit-slot" :method :post)
   (let ((object (getobj (hunchentoot:post-parameter "key")))
-        (slot (symbolicate (hunchentoot:post-parameter "slot")))
+        (slot (anything-to-symbol (hunchentoot:post-parameter "slot")))
         (value (hunchentoot:post-parameter "value")))
     (if object
         (handler-case
@@ -128,7 +123,7 @@
          (restas:redirect 'admin-edit-get-route)
          ;; else
          (if (and (valid-string-p type)
-                  (class-exist-p (symbolicate type)))
+                  (class-exist-p (anything-to-symbol type)))
              (soy.class_forms:formwindow
               (list :key key
                     :type type
@@ -149,7 +144,7 @@
         (restas:redirect 'admin-edit-get-route :type type :key key)
         (progn
           ;; FIXME
-          (setobj key (make-instance (string-case (string-downcase type)
+          (setobj key (make-instance (switch (type :test #'string-equal)
                                        ("product" 'product)
                                        ("group" 'group)) :key key))
           (admin.post-make-fix (getobj key))
@@ -190,7 +185,7 @@
 
 (restas:define-route admin-make-post-route ("/administration-super-panel/make" :method :post)
   (let* ((key (hunchentoot:post-parameter "key"))
-         (type (symbolicate (hunchentoot:post-parameter "type")))
+         (type (anything-to-symbol (hunchentoot:post-parameter "type")))
          (item (getobj key)))
     (log:debug (hunchentoot:post-parameters*))
     (if (not (class-exist-p type))
@@ -270,7 +265,8 @@
                       (format nil "Successfully compiled ~a" name))
                   (error (e) (format  nil "ERROR:~%~a" e)))
                 (format nil "File ~a not found" name))))
-    (soy.admin:compile-template (list :output output))))
+    (soy.admin:compile-template (list :output output
+                                      :tmpls (mapcar #'pathname-name (get-all-template-paths))))))
 
 (defun admin.make-backup (post-data)
   (let ((dobackup (getf post-data :dobackup))
@@ -286,7 +282,7 @@
 
 (defun admin.do-action (action)
   (handler-case
-      (string-case (ensure-string action)
+      (switch ((ensure-string action) :test #'string=)
         ("do-gc"
          (sb-ext:gc :full t)
          (htmlize
@@ -362,7 +358,7 @@
            :groups (slots.%view 'group-list nil "GROUPS" nil)))))
 
 (defun admin.vendor-seo-upload (post-data)
-  (let* ((get-params (servo.alist-to-plist (hunchentoot:get-parameters hunchentoot:*request*)))
+  (let* ((get-params (alist-plist (hunchentoot:get-parameters hunchentoot:*request*)))
          (group-key (getf post-data :group))
          (vendor-key (string-downcase (getf post-data :vendor)))
          (new-text (getf post-data :text)))
@@ -392,10 +388,10 @@
     (soy.admin:black-list (list :output output :errortext errortext))))
 
 (defun show-admin-page (&optional (key ""))
-  (let ((post-data (servo.alist-to-plist (hunchentoot:post-parameters hunchentoot:*request*))))
+  (let ((post-data (alist-plist (hunchentoot:post-parameters hunchentoot:*request*))))
     (soy.admin:main
      (list :content
-           (string-case (ensure-string key)
+           (switch ((ensure-string key) :test #'string=)
              ("info" (soy.admin:info (list :info (admin.get-info))))
              ("actions" (soy.admin:action-buttons (list :post post-data
                                                         :info (admin.do-action

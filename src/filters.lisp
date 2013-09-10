@@ -59,7 +59,7 @@
                               `(:selected "selected")))))
 
 (defun filters.get-basic-fields (basic-id)
-  (let ((data (gethash (symbolicate basic-id) *basic-filters-data*)))
+  (let ((data (gethash (anything-to-symbol basic-id) *basic-filters-data*)))
     (loop :for field :being :the hash-values :in (fields data)
        :using (hash-key key)
        :collect `(:name ,(getf field :name)
@@ -109,7 +109,7 @@ Needed keys (in params): :optgroup, :optname, :variant-[0-n] (:variant-0, :varia
                      (loop
                         :for variant :in variants
                         :for i :from 0
-                        :collect (make-keyword (format nil "variant-~D" i))
+                        :collect (anything-to-keyword (format nil "variant-~D" i))
                         :collect variant))
              ;; else, use variants from params
              params)))
@@ -124,7 +124,7 @@ Needed keys (in params): :optgroup, :optname, :variant-[0-n] (:variant-0, :varia
          ;; FIXME: bad way to collect options
          (opt-variants (loop
                           :for i :from 0
-                          :for variant-keyword := (make-keyword
+                          :for variant-keyword := (anything-to-keyword
                                                    (format nil "variant~D" i))
                           :while (getf params variant-keyword)
                           :collect (getf params variant-keyword))))
@@ -156,7 +156,7 @@ Needed keys (in params): :optgroup, :optname, :variants (like in checkbox)"))
                      (loop
                         :for variant :in variants
                         :for i :from 0
-                        :collect (make-keyword (format nil "variant-~D" i))
+                        :collect (anything-to-keyword (format nil "variant-~D" i))
                         :collect variant))
              ;; else, use variants from params
              params)))
@@ -171,7 +171,7 @@ Needed keys (in params): :optgroup, :optname, :variants (like in checkbox)"))
          ;; FIXME: bad way to collect options
          (opt-variants (loop
                           :for i :from 0
-                          :for variant-keyword := (make-keyword
+                          :for variant-keyword := (anything-to-keyword
                                                    (format nil "variant~D" i))
                           :while (getf params variant-keyword)
                           :collect (getf params variant-keyword))))
@@ -335,7 +335,7 @@ Needed keys (in params): :slot-name, :slot-min (optional), :slot-max (optional).
   (declare (ignore outer-params) (list obj-set outer-params))
   ;; TODO: range, interval, half-interval, equal
   (let* ((params (data filter))
-         (slot-name (symbolicate (getf params :slot-name)))
+         (slot-name (anything-to-symbol (getf params :slot-name)))
          (min (awhen (getf params :slot-min)
                 (parse-float it)))
          (max (awhen (getf params :slot-max)
@@ -373,8 +373,8 @@ Needed keys (in params): :slot-name, :slot-value"))
   ;; TODO: use outer-params
   (declare (ignore outer-params) (list obj-set outer-params))
   (let* ((params (data filter))
-         (slot-name (symbolicate (getf params :slot-name)))
-         (slot-value (symbolicate (getf params :slot-value))))
+         (slot-name (anything-to-symbol (getf params :slot-name)))
+         (slot-value (anything-to-symbol (getf params :slot-value))))
     (remove-if-not
      #'(lambda (obj)
          ;; format is for converting to string (as in params stored string value)
@@ -400,7 +400,7 @@ Needed keys (in params): :slot-name, :slot-value"))
   ;; TODO: use outer-params
   (declare (ignore outer-params) (list obj-set outer-params))
   (let* ((params (data filter))
-         (slot-name (symbolicate (getf params :slot-name)))
+         (slot-name (anything-to-symbol (getf params :slot-name)))
          (slot-value (getf params :slot-value)))
     (remove-if-not
      #'(lambda (obj)
@@ -506,6 +506,7 @@ Params appended with default filter data before passing to filter function"
 (defun filters.add-filter (filter inner-filter)
   (declare (filter filter) ((or filter basic-filter) inner-filter))
   ;; TODO: get rid of gensym
+  ;; FIXME: use eshop.odm::next-autokey instead of gensym
   (setf (gethash (gensym) (filters filter))
         inner-filter))
 

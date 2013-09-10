@@ -5,7 +5,7 @@
 (defmacro with-sorted-paginator (get-products request-get-plist body)
   `(let* ((products ,get-products)
           (sorting  (getf ,request-get-plist :sort))
-          (sorted-products (string-case sorting
+          (sorted-products (switch (sorting :test #'string=)
                              ("pt" (sort products #'< :key #'siteprice))
                              ("pb" (sort products #'> :key #'siteprice))
                              (t products))))
@@ -36,7 +36,8 @@
 (defmethod rightblocks ((object group) (parameters list))
   (list (soy.catalog:rightblock1)
         (soy.catalog:rightblock2)
-        (if (not (groupp object))
+        (if (or (not (groupp object))
+                (getf parameters :page))
             ""
             (soy.catalog:seotext
              (list :text
@@ -59,8 +60,8 @@
          (setf value-f "0"))
        (unless (valid-string-p value-t)
          (setf value-t "99999999"))
-       (setf value-f (arnesi:parse-float (format nil "~as" value-f)))
-       (setf value-t (arnesi:parse-float (format nil "~as" value-t)))
+       (setf value-f (parse-float (format nil "~as" value-f)))
+       (setf value-t (parse-float (format nil "~as" value-t)))
        (<= value-f value-x value-t))))
 
 
@@ -79,9 +80,9 @@
        (when (or (null value-t)
                  (string= value-t ""))
          (setf value-t "99999999"))
-       (setf value-f (arnesi:parse-float (format nil "~as" value-f)))
-       (setf value-t (arnesi:parse-float (format nil "~as" value-t)))
-       (setf value-x (arnesi:parse-float (format nil "~as" value-x)))
+       (setf value-f (parse-float (format nil "~as" value-f)))
+       (setf value-t (parse-float (format nil "~as" value-t)))
+       (setf value-x (parse-float (format nil "~as" value-x)))
        (and (<= value-f value-x value-t)))))
 
 ;;Фильтруем по наличию опции
@@ -230,7 +231,7 @@
                                      content
                                      (format nil "<pre>'~a' ~%'~a' ~%'~a'</pre>"
                                              (request-str)
-                                             (hunchentoot:request-uri *request*)
+                                             (hunchentoot:request-uri hunchentoot:*request*)
                                              (hunchentoot:header-in* "User-Agent"))))))
 
 
@@ -580,6 +581,14 @@
                 (closure-template:compile-template :common-lisp-backend pathname)))
           tmpl-name))
 
+(defun anything-to-keyword (anything)
+  "Convert anything that has print method to keyword; Case insensitive"
+  (intern (format nil "~:@(~A~)" anything) :keyword))
+
+(defun anything-to-symbol (anything &optional (package (find-package :eshop)))
+  "Convert anything that has print method to symbol; Case insensitive"
+  (intern (format nil "~:@(~A~)" anything) package))
+
 (defun alistp (obj)
   "Checks whether object is association list (e.g. list of conses)"
   (when (listp obj) (every #'consp obj)))
@@ -593,16 +602,16 @@
   (loop
      :for (key . value)
      :in alist
-     :collect (make-keyword key)
+     :collect (anything-to-keyword key)
      :collect value))
 
 (defun servo.recursive-alist-to-plist (alist)
-  "Rcursive convertion from association list to property list"
+  "Recursive convertion from association list to property list"
   (declare (alist alist))
   (loop
      :for (key . value)
      :in alist
-     :collect (make-keyword key)
+     :collect (anything-to-keyword key)
      :collect (if (alistp value)
                   (servo.recursive-alist-to-plist value)
                   value)))
@@ -623,19 +632,6 @@
                         value)))
        (setf plist (cddr plist)))
     result))
-
-(defun servo.list-to-hashtasble (list)
-  "Converting list (hash1 val1 hash2 val2...) to hashtable"
-  ;; (sb-pcl::doplist
-  (let ((res (make-hash-table :test #'equal)))
-    (loop
-       :for x :from 0 :to (- (length list) 1)
-       :when (evenp x)
-       :do
-       (let ((key (nth x list))
-             (value (nth (+ 1 x) list)))
-         (setf (gethash key res) value)))
-    res))
 
 (defun servo.diff-percentage (full part)
   "Returns difference in percents. (1 - part / full) * 100%"
@@ -698,11 +694,11 @@
   "Replacing all chars in char-list from string"
   (coerce
    (remove-if #'null
-              (map 'list (lambda (c)
-                           (if (some #'(lambda (c1) (char= c c1))
-                                     char-list)
-                               replacement
-                               c))
+              (map 'list #'(lambda (c)
+                             (if (some #'(lambda (c1) (char= c c1))
+                                       char-list)
+                                 replacement
+                                 c))
                    string))
    'string))
 
@@ -719,10 +715,6 @@
                              t)
        ;; for returning t if valid (not number)
        t))
-
-(defun ensure-list (obj)
-  "When obj is list return obj, otherwise return list with only element - obj"
-  (if (consp obj) obj (list obj)))
 
 (defun ensure-string (obj)
   "If obj is string return obj, if obj is nil, convert to empty string, otherwise throw error"
@@ -756,7 +748,7 @@ Used for printing system info to browser"
   "Parse float and convert to smallest integer not less than original number give back nil input is nil"
   (declare ((or string t) string))
   (aif string
-       (ceiling (arnesi:parse-float it))
+       (ceiling (parse-float it))
        nil))
 
 (defmacro with-getter ((getter-sym object &optional use-slot-value) &body body)
@@ -770,6 +762,58 @@ instead of: (let ((object (compute-object))) (setf (field1 object) (field2 objec
                          ``(slot-value ,',var ',slot)
                          ``(,slot ,',var))))
          ,@body))))
+
+(defmacro dolines ((line-var filename &optional result-raw) &body body)
+  "Execute body for all file's lines in order"
+  (let* ((result-raw (ensure-list result-raw))
+         (result-name (first result-raw))
+         (result-init (second result-raw)))
+    (with-gensyms (file)
+      `(let (,@(cond ((null result-name)
+                      nil)
+                     ((symbolp result-name)
+                      `((,result-name ,result-init)))))
+         (with-open-file (,file ,filename)
+           (loop
+              :for ,line-var := (read-line ,file nil :eof)
+              :until (eq ,line-var :eof)
+              :do (progn ,@body)))
+         ,result-name))))
+
+(defun ensure-plist-keys (keys plist)
+  (let ((keys (copy-list keys)))
+    (unless (= (* 2 (length keys))
+               (length plist))
+      (log:warn "Wrong number of values in plist ~A. Expected keys are ~A." plist keys))
+    (dolist (item plist)
+      (when (keywordp item)
+        (deletef keys item)))
+    (unless (null keys)
+      (log:warn "Missing keys in plist ~A. Keys are ~A." plist keys)))
+  plist)
+
+(defun parse-float (flt)
+  (declare ((or number string null) flt))
+  (cond
+   ((numberp flt) flt)
+   ((stringp flt) (or
+                   (parse-float:parse-float flt :junk-allowed t)
+                   0))
+   (t 0)))
+
+(defun md5-hex (string)
+  "Calculates the md5 sum of the string STRING and returns it as a hex string."
+  (with-output-to-string (s)
+    (loop for code across (md5:md5sum-sequence string)
+      do (format s "~2,'0x" code))))
+
+(defun create-random-string (&optional (n 10) (base 16))
+  "Returns a random number \(as a string) with base BASE and N
+digits."
+  (with-output-to-string (s)
+    (dotimes (i n)
+      (format s "~VR" base
+              (random base)))))
 
 ;; (defun t.pics-cache-to-string ()
 ;;   (let (lst)

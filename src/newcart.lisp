@@ -72,8 +72,8 @@
 (defun newcart-yandex-cookie ()
   (let* ((cookie (hunchentoot:url-decode (hunchentoot:cookie-in "user-nc")))
          (cookie-data (when cookie
-                        (servo.alist-to-plist (decode-json-from-string cookie))))
-         (post-data (servo.alist-to-plist (hunchentoot:post-parameters hunchentoot:*request*)))
+                        (alist-plist (st-json:read-json-from-string cookie))))
+         (post-data (alist-plist (hunchentoot:post-parameters hunchentoot:*request*)))
          (street (getf post-data :street))
          (building (getf post-data :building))
          (suite (getf post-data :suite))
@@ -140,7 +140,7 @@
         (pricesum 0)
         (bonuscount nil))
     (when (not (null cart-cookie))
-      (setf cart (json:decode-json-from-string cart-cookie))
+      (setf cart (st-json:read-json-from-string cart-cookie))
       (multiple-value-bind (lst cnt sm bc) (newcart-cart-products cart)
         (setf products (remove-if #'null lst))
         (setf count cnt)
@@ -180,7 +180,7 @@
         (pricesum))
     (when cart-cookie
       (setf cart-cookie (hunchentoot:url-decode cart-cookie))
-      (setf cart (json:decode-json-from-string cart-cookie))
+      (setf cart (st-json:read-json-from-string cart-cookie))
       (multiple-value-bind (lst cnt sm) (newcart-cart-products cart)
         (setf products (remove-if #'null lst))
         (setf count cnt)
@@ -226,7 +226,7 @@
     (if (string= pickpoint-address "") (setf pickpoint-address "Постамат не выбран."))
     ;;Выставляем адрес доставки для филиалов
     (when (string= delivery-type "pickup")
-      (setf addr (string-case pickup
+      (setf addr (switch (pickup :test #'string=)
                    ("pickup-1" "Левашовский пр., д.12")
                    ("pickup-2" "Петергоф, ул. Ботаническая, д.18, к.3")
                    ("pickup-3" pickpoint-address)
@@ -246,10 +246,10 @@
         (bonuscount)) ;; сумма бонусов
     ;; кукисы пользователя
     (mapcar #'(lambda (cookie)
-                (string-case (car cookie)
-                  ("cart" (setf cart (json:decode-json-from-string
+                (switch ((car cookie) :test #'string=)
+                  ("cart" (setf cart (st-json:read-json-from-string
                                       (hunchentoot:url-decode(cdr cookie)))))
-                  ("user-nc" (setf user (json:decode-json-from-string
+                  ("user-nc" (setf user (st-json:read-json-from-string
                                          (hunchentoot:url-decode(cdr cookie)))))
                   (t nil)))
             (hunchentoot:cookies-in hunchentoot:*request*))
@@ -279,7 +279,7 @@
             ;; Временно доставка 300 на все
             ;; существует два вида доставки: курьером и самовывоз (express | pickup)
             (if  (string= delivery-type "express")
-                 (setf deliverysum (yml.get-delivery-price (newcart-cart-products cart))))
+                 (setf deliverysum (get-delivery-price (newcart-cart-products cart))))
             (if  (and (string= delivery-type "pickup")
                       (string= pickup "pickup-3"))
                  (setf deliverysum 100))
@@ -290,13 +290,13 @@
                          :name (report.convert-name (format nil "~a ~a" name family))
                          :family "" ;; Фамилия не передается отдельно
                          :city city
-                         :paytype (string-case payment
+                         :paytype (switch (payment :test #'string=)
                                     ("payment_method-1" "Наличными")
                                     ("payment_method-2" "Кредитной картой")
                                     ("payment_method-3" "Безналичный расчет")
                                     ("payment_method-4" "Банковским переводом")
                                     (t payment))
-                         :deliverytype (string-case delivery-type
+                         :deliverytype (switch (delivery-type :test #'string=)
                                          ("express" "Курьер")
                                          ("pickup" "Самовывоз")
                                          (t delivery-type))
@@ -312,7 +312,7 @@
                                         (nth (skls.get-count-skls bonuscount)
                                              (list "бонус" "бонуса" "бонусов")))
                          :email email
-                         :comment (string-case delivery-type
+                         :comment (switch (delivery-type :test #'string=)
                                     ("express" courier_comment)
                                     ("pickup" pickup_comment)
                                     (t ""))
@@ -325,7 +325,7 @@
                                   :name (report.convert-name (format nil "~a ~a" name family))
                                   :family ""
                                   :addr addr
-                                  :isdelivery (string-case delivery-type
+                                  :isdelivery (switch (delivery-type :test #'string=)
                                                 ("express" "Доставка")
                                                 ("pickup" (if (string= "pickup-3" pickup)
                                                                "PickPoint"
@@ -335,7 +335,7 @@
                                   :email email
                                   :date (time.get-date)
                                   :time (time.get-time)
-                                  :comment (string-case delivery-type
+                                  :comment (switch (delivery-type :test #'string=)
                                              ("express" courier_comment)
                                              ("pickup" pickup_comment)
                                              (t ""))
@@ -343,7 +343,12 @@
                                                     (if (string= delivery-type "express")
                                                         (list (list :articul "107209"
                                                                     :cnt "1"
-                                                                    :siteprice 300))))))
+                                                                    :siteprice 300)))
+                                                    (if (and (string= delivery-type "express")
+                                                             (string= "pickup-3" pickup))
+                                                        (list (list :articul "186039"
+                                                                    :cnt "1"
+                                                                    :siteprice 100))))))
             (setf filename (format nil "~a_~a.txt" (time.get-short-date) order-id))
             ;;сорханение заказа
             (save-order-text order-id client-mail)
@@ -369,11 +374,13 @@
                    :leftcells (soy.newcart:thanks
                                (list :sum pricesum
                                      :deliverysum deliverysum
-                                     :comment  (let ((comment (format nil "~a"
-                                                                      (string-case delivery-type
-                                                                        ("express" courier_comment)
-                                                                        ("pickup" pickup_comment)
-                                                                        (t "")))))
+                                     :comment  (let ((comment
+                                                      (format nil "~a"
+                                                              (switch (delivery-type
+                                                                       :test #'string=)
+                                                                ("express" courier_comment)
+                                                                ("pickup" pickup_comment)
+                                                                (t "")))))
                                                  (when (valid-string-p comment) comment))
                                      :email (if (equal email "") nil email)
                                      :name (if (equal name "") nil (report.convert-name name))
@@ -385,7 +392,7 @@
                                                          (list "бонус" "бонуса" "бонусов")))
                                      :pickup pickup
                                      :courier (equal delivery-type "express")
-                                     :oplata (string-case payment
+                                     :oplata (switch (payment :test #'string=)
                                                ("payment_method-1"
                                                 "<p class=\"h2\">Оплата наличными</p><p>Вы получите кассовый товарный чек</p>")
                                                ("payment_method-2"

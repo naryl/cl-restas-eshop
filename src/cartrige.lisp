@@ -12,7 +12,7 @@
 (defparameter *printer-storage* (make-hash-table :test #'equal))
 
 (restas:define-route cartrige-select-route ("/cartriges-select")
-  (let* ((get-data (servo.alist-to-plist (hunchentoot:get-parameters hunchentoot:*request*)))
+  (let* ((get-data (alist-plist (hunchentoot:get-parameters hunchentoot:*request*)))
          (vendor (getf get-data :vendor))
          (type (getf get-data :type))
          (printers (cartrige.get-printers-by-params :vendor vendor :printer-type type)))
@@ -22,7 +22,7 @@
                     printers))))
 
 (restas:define-route cartrige-select-type-route ("/cartriges-select-type")
-  (let* ((get-data (servo.alist-to-plist (hunchentoot:get-parameters hunchentoot:*request*)))
+  (let* ((get-data (alist-plist (hunchentoot:get-parameters hunchentoot:*request*)))
          (vendor (getf get-data :vendor)))
     (when vendor
       (format nil "[~{\"~a\"~^,~}]" (cartrige.get-types-by-vendor vendor)))))

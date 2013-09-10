@@ -2,14 +2,14 @@
 
 (in-package #:eshop)
 
-(arnesi:enable-sharp-l-syntax)
+(declaim (optimize (speed 0) (safety 3) (debug 3)))
 
 (defmacro class-core.define-class (name slot-list)
   "Macro for making class by given list of slots"
   `(defclass ,name ()
      ,(mapcar #'(lambda (field)
                   `(,(getf field :name)
-                     :initarg ,(make-keyword (getf field :name))
+                     :initarg ,(anything-to-keyword (getf field :name))
                      :initform ,(getf field :initform)
                      :accessor ,(getf field :name)))
               slot-list)))
@@ -66,7 +66,7 @@ Note: function must be called during request, so functions like
       :key (hunchentoot:post-parameter "key")
       ,@(mapcan #'(lambda (slot)
            (unless (getf slot :disabled)
-             `(,(make-keyword (getf slot :name))
+             `(,(anything-to-keyword (getf slot :name))
                 (slots.%get-data ',(getf slot :type)
                                  (hunchentoot:post-parameter
                                   ,(format nil "~(~A~)" (getf slot :name)))))))
@@ -102,7 +102,7 @@ Note: function must be called during request, so functions like
         ',name
         ,@(mapcan
            #'(lambda (field)
-               (let ((name (make-keyword (getf field :name)))
+               (let ((name (anything-to-keyword (getf field :name)))
                      (initform (getf field :initform)))
                  `(,name
                    (let ((val (gethash (string ',name) hash-table)))
@@ -111,12 +111,12 @@ Note: function must be called during request, so functions like
                          ,initform)))))
            slot-list)))
      (defmethod %unserialize ((type (eql ',name)) line)
-       (let ((raw (decode-json-from-string line)))
+       (let ((raw (st-json:read-json-from-string line)))
          (make-instance
           ',name
           ,@(mapcan
              #'(lambda (field)
-                 (let ((name (make-keyword (getf field :name)))
+                 (let ((name (anything-to-keyword (getf field :name)))
                        (initform (getf field :initform)))
                    `(,name
                      (let ((val (cdr (assoc ,name raw))))
@@ -134,15 +134,13 @@ Note: function must be called during request, so functions like
       (loop
          :for line := (read-line file nil 'EOF)
          :until (eq line 'EOF)
-         :do
-         (progn
-           (let ((item (%unserialize type line))
-                 (cur-pos (round (* 100 (/ (cl:file-position file) file-length)))))
-             (when (> cur-pos percent)
-               (setf percent cur-pos)
-               (when (zerop (mod percent 10))
-                 (log:info "Done percent: ~a%" percent)))
-             (setf (gethash (key item) storage) item)))))))
+         :do (let ((item (%unserialize type line))
+                   (cur-pos (round (* 100 (/ (cl:file-position file) file-length)))))
+               (when (> cur-pos percent)
+                 (setf percent cur-pos)
+                 (when (zerop (mod percent 10))
+                   (log:info "Done percent: ~a%" percent)))
+               (setf (gethash (key item) storage) item))))))
 
 (defun class-core.bind-product-to-group (product group)
   "Bind product to group, and push product to group's children"
@@ -236,13 +234,15 @@ Reload this method if more actions required"
   "Do post-unserialize actions with vendor object"
   ;; convert seo-texts from list to hash-table
   (when (listp (seo-texts item))
-    (setf (seo-texts item) (servo.list-to-hashtasble
+    (setf (seo-texts item) (plist-hash-table
                             (copy-list (seo-texts item)))))
   ;; make pointers to vendor in group's hashtable of vendors
   (let ((vendor-key (key item)))
     (maphash #'(lambda (k v)
                  (declare (ignore v))
                  (let ((group (getobj k 'group)))
+                   (unless group
+                     (break "~S" k))
                    (setf (gethash vendor-key (vendors group)) item)))
              (seo-texts item))))
 
@@ -326,7 +326,7 @@ such as pointer to storage, serialize flag, etc.")
   (getf (gethash type *classes*) :instance))
 
 (defmethod get-instance ((type string))
-  (get-instance (anything-to-symbol type)))
+  (get-instance (symbolicate type)))
 
 (defun get-last-bakup-pathname (type)
   "Return pathname for file of last backup objects of given type"
@@ -347,7 +347,7 @@ such as pointer to storage, serialize flag, etc.")
 
 (defmacro class-core.define-slot-type-getter (name slots)
   `(defmethod slot-type ((class (eql ',name)) slot)
-     (case (anything-to-symbol slot)
+     (case (symbolicate slot)
        ,@(mapcar #'(lambda (slot-plist)
                      `(',(getf slot-plist :name) ',(getf slot-plist :type)))
                  slots))))

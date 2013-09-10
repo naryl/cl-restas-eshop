@@ -2,8 +2,6 @@
 
 (in-package #:eshop)
 
-(arnesi:enable-sharp-l-syntax)
-
 (defclass gateway.dump ()
   ((products-num :initform 0 :accessor product-num)
    (is-loaded :initform nil :accessor is-loaded)
@@ -32,7 +30,7 @@
   (declare (gateway.erp-data-dump dump))
   (push data (list-raw-data dump)))
 
-(defun %gateway.processing-fist-package (data &optional (dump *gateway.dump*))
+(defun %gateway.processing-first-package (data &optional (dump *gateway.dump*))
   "Prepare dump, start to collect packet data & give back answer"
   (declare (gateway.erp-data-dump dump))
   (%gateway.clear-dump)
@@ -95,11 +93,8 @@
 (defun %gateway.decode-json-from-file (pathname)
   "Read file and decode json data to appended list"
   (declare (pathname pathname))
-  (with-open-file (file pathname)
-      (loop
-         :for line := (read-line file nil 'EOF)
-         :until (eq line 'EOF)
-         :nconc (json:decode-json-from-string line))))
+  (dolines (line pathname result)
+    (setf result (nconc (st-json:read-json-from-string line) result))))
 
  (defun %product-update-name (product name)
   "Update product field name"
@@ -188,7 +183,7 @@
 (defun %gateway.process-products-dump-data (items)
   "Process list items. Where items a alist example: ((:ID . \"158354\") (:NAME . \"USB HUB 4port mobileData HB-65\") (:ISNEW . \"0\"))"
   (loop :for item :in items
-     :do (%gateway.process-product (servo.alist-to-plist item))))
+     :do (%gateway.process-product (alist-plist item))))
 
 (defun %gateway.update-actives (items)
   "Update actives for products not entered the itmes"
@@ -211,19 +206,16 @@
 (defun gateway.restore-singles (dump-timestamp &optional (current-timestamp (get-universal-time)))
   "Load singles products witch came between dump-timestamp and current-timestamp"
   (declare (number dump-timestamp current-timestamp))
-  (let* ((data))
+  (let ((data))
     (labels ((@time (line) (subseq line 0 19))
              (@json (line) (subseq line 21))
              (@validp (line) (<= dump-timestamp (time.decode.backup (@time line))
                                 current-timestamp)))
-      (with-open-file (file (%gateway.singles-pathname))
-        (loop
-           :for line = (read-line file nil 'EOF)
-           :until (eq line 'EOF)
-           :when (@validp line)
-           :do (let ((*gateway.import-time* (time.decode.backup (@time line))))
-                 (setf data (json:decode-json-from-string (@json line)))
-                 (%gateway.process-products-dump-data data)))))))
+      (dolines (line (%gateway.singles-pathname))
+        (when (@validp line)
+          (let ((*gateway.import-time* (time.decode.backup (@time line))))
+            (setf data (st-json:read-json-from-string (@json line)))
+            (%gateway.process-products-dump-data data)))))))
 
 (defun gateway.%process-data (data last-dump-ts &optional (timestamp (get-universal-time)))
   "Process products data and do post proccess"
@@ -244,9 +236,9 @@
 (defun gateway.%load-dump (raw)
   "Load products from raw"
   (let ((data (loop
-                 :for line :in raw
-                 :nconc (json:decode-json-from-string
-                         (%gateway.prepare-raw-data line))))
+                  :for line :in raw
+                  :nconc (st-json:read-json-from-string
+                          (%gateway.prepare-raw-data line))))
         (last-dump-ts (get-universal-time)))
     (gateway.%process-data data last-dump-ts)))
 
@@ -267,8 +259,8 @@
   (%gateway.add-data->dump data dump)
   (setf (date dump) (get-universal-time))
   (let ((raw (list-raw-data dump)))
-        (bt:make-thread #L(gateway.%store-and-processed-dump raw)
-                        :name "store-and-processed-dump"))
+    (bt:make-thread #'(lambda () (gateway.%store-and-processed-dump raw))
+                    :name "store-and-processed-dump"))
   (%gateway.clear-dump)
   "last")
 
@@ -286,7 +278,7 @@
   (let ((*gateway.import-time* (get-universal-time))
         (data (%gateway.prepare-raw-data raw)))
     (gateway.store-single-gateway data)
-    (%gateway.process-products-dump-data (json:decode-json-from-string data))
+    (%gateway.process-products-dump-data (st-json:read-json-from-string data))
     ;; возможно тут необходимо пересчитать списки активных товаров или еще что-то
     "single"))
 
@@ -296,10 +288,10 @@
   (let ((num (format nil "~A" (hunchentoot:get-parameter "num")))
         (single (format nil "~A" (hunchentoot:get-parameter "single"))))
     (aif (hunchentoot:raw-post-data)
-         (string-case num
-           ("1" (%gateway.processing-fist-package it))
+         (switch (num :test #'string=)
+           ("1" (%gateway.processing-first-package it))
            ("0" (%gateway.processing-last-package it))
-           (t (string-case single
+           (t (switch (single :test #'string=)
                 ("1" (%gateway.processing-single-package it))
                 (t (%gateway.processing-package it)))))
          "NIL")))

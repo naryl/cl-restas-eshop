@@ -13,23 +13,20 @@
 
 ;;; TODO: make separated package eshop-core (class-core, slots, backup, etc.)
 (restas:define-module #:eshop
-    (:use
-     ;; system and libs' packages
-     :cl
-     :closure-template
-     :anaphora
-     :split-sequence
-     :cl-ppcre
-     :json
-     :cl-fad
-     :string-case
-     ;; :sendmail
-     :mongo-cl-driver.sugar ; (son)
-     )
-  (:import-from :arnesi :parse-float)
-  (:import-from :alexandria :read-file-into-string)
-  (:import-from :alexandria :rcurry)
-  (:import-from :alexandria :make-keyword :symbolicate)
+  (:use
+   ;; system and libs' packages
+   :c2cl
+   :closure-template
+   :anaphora
+   :split-sequence
+   :cl-ppcre
+   :cl-fad
+   :alexandria
+   :function-cache
+   ;; :sendmail
+   :mongo-cl-driver.sugar ; (son)
+   )
+  (:shadowing-import-from :cl-fad :copy-stream :copy-file)
   (:export :config.parse-config
            :config.get-option
            :servo.compile-soy
@@ -40,8 +37,35 @@
            :static-pages.restore
            :articles.restore
            :main-page.restore
-           :cartrige.restore))
+           :cartrige.restore
+           :log-to-this-console))
 
+(defpackage #:eshop.odm
+  (:use :c2cl
+        :anaphora
+        :alexandria
+        :sb-concurrency
+        :function-cache
+        :mongo-cl-driver.sugar)
+  (:export #:serializable-class
+           #:serializable-object
+           #:serializable-object-key
+           #:serialize
+           #:deserialize
+           ;; ^^^^ Serialization
+           ;; vvvv Persistence
+           #:connect
+           #:reconnect
+           #:persistent-class
+           #:persistent-object
+           #:getobj
+           #:setobj
+           #:mapobj
+           #:doobj
+           ;; #:remobj ; Don't do it
+           #:with-transaction
+           #:rollback-transaction
+           ))
 
 (in-package #:eshop)
 ;;; registering classes for proper compilation of methods
