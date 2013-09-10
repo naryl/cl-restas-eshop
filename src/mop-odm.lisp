@@ -56,13 +56,15 @@
 
 (defclass serializable-direct-slot-definition (standard-direct-slot-definition)
   ((serializable :initarg :serializable
+                 :type boolean
                  :initform nil
                  :reader slot-serializable-p)))
 
 (defclass serializable-effective-slot-definition (standard-effective-slot-definition)
   ((serializable :initarg :serializable
-               :initform nil
-               :reader slot-serializable-p)))
+                 :type boolean
+                 :initform nil
+                 :reader slot-serializable-p)))
 
 (defmethod direct-slot-definition-class ((class serializable-class) &rest initargs)
   (declare (ignore initargs))
@@ -152,7 +154,7 @@
                      (unless (string= k +class-key+)
                        (let ((slot-name (fqn-symbol k)))
                          (setf (slot-value instance slot-name)
-                               (deserialize v :hashtable)))))
+                               (deserialize v)))))
                  ht)
         (setf (slot-value instance 'modified) nil))
       (call-next-method)))
@@ -161,7 +163,21 @@
 
 ;;;; Metaclasses
 
-(defclass persistent-class (standard-class) ())
+(defclass persistent-class (serializable-class)
+  ((versioned :initform nil
+              :type boolean
+              :reader persistent-class-versioned)))
+
+(defmethod persistent-class-versioned ((class standard-class))
+  (declare (ignore class))
+  nil)
+
+(defmethod initialize-instance :after ((class persistent-class)
+                                        &key direct-slots direct-superclasses
+                                        &allow-other-keys)
+  (setf (slot-value class 'versioned)
+        (or (some #'(lambda (slot) (getf slot :versioned)) direct-slots)
+            (some #'persistent-class-versioned direct-superclasses))))
 
 (defmethod validate-superclass ((sub persistent-class) (super standard-class))
   t)
@@ -170,10 +186,27 @@
   t)
 
 (defclass persistent-direct-slot-definition (serializable-direct-slot-definition)
-  ())
+  ((versioned :initform nil
+              :type boolean
+              :initarg :versioned
+              :reader slot-versioned)))
 
 (defclass persistent-effective-slot-definition (serializable-effective-slot-definition)
-  ())
+  ((versioned :initform nil
+              :type boolean
+              :initarg :versioned
+              :reader slot-versioned)
+   (modified :initform nil
+             :type boolean
+             :accessor slot-modified)))
+
+(defmethod slot-versioned ((slot serializable-direct-slot-definition))
+  (declare (ignore slot))
+  nil)
+
+(defmethod slot-versioned ((slot standard-direct-slot-definition))
+  (declare (ignore slot))
+  nil)
 
 (defmethod direct-slot-definition-class ((class persistent-class) &rest initargs)
   (declare (ignore initargs))
@@ -185,9 +218,13 @@
 
 (defmethod compute-effective-slot-definition :around
     ((class persistent-class) slot-name direct-slot-definitions)
-  (let ((slot (call-next-method)))
-    (setf (slot-value slot 'serializable)
-          (some #'slot-serializable-p direct-slot-definitions))
+  (let ((slot (call-next-method))
+        (versioned (some #'slot-versioned direct-slot-definitions)))
+    (when (and versioned
+               (not (slot-serializable-p slot)))
+      (error "Versioned but not serializable slot makes no sense. Slot: ~A. Class: ~A"
+             slot-name class))
+    (setf (slot-value slot 'versioned) versioned)
     slot))
 
 (defclass persistent-object (serializable-object)
@@ -262,13 +299,42 @@
 
 (defun store-instance (obj)
   (let ((collection (obj-collection obj))
-        (ht (serialize obj :hashtable)))
+        (ht (serialize obj)))
       (db-eval
         (mongo:insert-op collection ht))))
 
 (defun delete-instance (obj)
- (mongo:delete-op (obj-collection obj)
-                  (son (symbol-fqn 'key) (serializable-object-key obj))))
+  (db-eval
+    (mongo:delete-op (obj-collection obj)
+                     (son (symbol-fqn 'key) (serializable-object-key obj)))))
+
+(defun update-instance (obj)
+  (let ((class (class-of obj)))
+    (let ((ht (serialize obj))
+          (collection (obj-collection obj))
+          (version-collection (obj-collection obj t))
+          (slot-changes (and (persistent-class-versioned class)
+                             (collect-slot-changes obj))))
+      (db-eval
+        (mongo:delete-op collection (son (symbol-fqn 'key) (serializable-object-key obj)))
+        (mongo:insert-op collection ht)
+        (when slot-changes
+          (mongo:insert-op version-collection slot-changes))))))
+
+(defun collect-slot-changes (obj)
+  (let ((time (get-unix-time)))
+    (mapcan #'(lambda (slot)
+                (when (and (slot-versioned slot)
+                           (slot-modified slot))
+                  (setf (slot-modified slot) nil)
+                  (let ((slot-name (slot-definition-name slot)))
+                    (list
+                     (son +class-key+ (symbol-fqn (type-of obj))
+                          (symbol-fqn 'key) (serializable-object-key obj)
+                          "TIMESTAMP" time
+                          "SLOT" (symbol-fqn slot-name)
+                          "VALUE" (serialize (slot-value obj slot-name)))))))
+            (class-slots (class-of obj)))))
 
 (defvar *transaction* nil)
 
@@ -297,16 +363,17 @@
 
 (defmethod (setf slot-value-using-class) :around
     (new-value (class persistent-class) obj (slot persistent-effective-slot-definition))
-  (if (or (not (slot-serializable-p slot))
-          (not (slot-boundp obj 'state))
-          *deserializing*
-          (eq :rw (persistent-object-state obj)))
-      (progn
-        (when (and (slot-serializable-p slot)
-                   (not *deserializing*))
-          (setf (slot-value obj 'modified) t))
-        (call-next-method))
-      (error "Attempt to modify a slot of read-only persistent object")))
+  (cond ((and (not *deserializing*)
+              (slot-boundp obj 'state)
+              (not (eq :rw (persistent-object-state obj))))
+         (error "Attempt to modify a slot of read-only persistent object"))
+        ((and (slot-serializable-p slot)
+              (not *deserializing*)
+              (not (equal new-value (slot-value obj (slot-definition-name slot)))))
+         (setf (persistent-object-modified obj) t
+               (slot-modified slot) t)))
+  (call-next-method))
+
 
 (defun commit-transaction ()
   (unless *transaction*
@@ -318,11 +385,7 @@
       (case (persistent-object-state obj)
         (:rw
          (setf (persistent-object-state obj) :ro)
-         (let ((ht (serialize obj))
-               (collection (obj-collection obj)))
-           (db-eval
-             (mongo:delete-op collection (son (symbol-fqn 'key) (serializable-object-key obj)))
-             (mongo:insert-op collection ht))))
+         (update-instance obj))
         (:deleted
          (delete-instance obj))))))
 
@@ -369,7 +432,7 @@
                                                 (serializable-object-key o))))
         (return-from getobj it)))
   (when-let* ((db-obj (getobj-cache class key))
-              (obj (deserialize db-obj :hashtable)))
+              (obj (deserialize db-obj)))
     (new-transaction-object obj)))
 
 (defun remobj (obj)
@@ -500,11 +563,26 @@
          (* (get-universal-time)
             (expt 10 (1+ (truncate (log new-counter 10)))))))))
 
-(defgeneric obj-collection (obj)
-  (:method ((class symbol))
-    (mongo:collection *db* (string class)))
-  (:method ((obj persistent-object))
-    (mongo:collection *db* (string (type-of obj)))))
+(defgeneric obj-collection (obj &optional versions)
+  (:method ((class symbol) &optional versions)
+    (declare (ignore versions))
+    (string class))
+  (:method ((obj persistent-object) &optional versions)
+    (declare (ignore versions))
+    (string (type-of obj)))
+  (:method :around (obj &optional versions)
+    (mongo:collection *db* (format nil "~A~:[~;_VERSIONS~]"
+                                   (call-next-method)
+                                   versions))))
 
 (metric:defmetric getobj-cache-size ("getobj.cache")
   (cached-results-count *getobj-cache-cache*))
+
+(defvar *unix-epoch-difference*
+  (encode-universal-time 0 0 0 1 1 1970 0))
+
+(defun universal-to-unix-time (universal-time)
+  (- universal-time *unix-epoch-difference*))
+
+(defun get-unix-time (&optional (universal-time (get-universal-time)))
+  (universal-to-unix-time universal-time))

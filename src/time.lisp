@@ -3,11 +3,8 @@
 (in-package #:eshop)
 
 ;;TODO убрать значение в time-zone после рестарта
-(defun time.get-decode-timestamp (&optional timestamp)
-  (let ((ts timestamp))
-    (if (not ts)
-        (setf ts (get-universal-time)))
-    (decode-universal-time ts -4)))
+(defun time.get-decode-timestamp (&optional (timestamp (get-universal-time)))
+  (decode-universal-time timestamp -4))
 
 ;; year 2011 month 9 date 30 -> 20110930
 (defun time.get-short-date ()

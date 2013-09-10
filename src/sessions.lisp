@@ -22,6 +22,7 @@ was sent when this session was created.")
 when this session was started as returned by REAL-REMOTE-ADDR.")
    (cart :initarg :cart
          :serializable t
+         :versioned t
          :type string)
    (nc-user :initarg :nc-user
             :serializable t
