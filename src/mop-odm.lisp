@@ -313,8 +313,8 @@
     (let ((ht (serialize obj))
           (collection (obj-collection obj))
           (version-collection (obj-collection obj t))
-          (slot-changes (and (persistent-class-versioned class)
-                             (collect-slot-changes obj))))
+          (slot-changes (when (persistent-class-versioned class)
+                          (collect-slot-changes obj))))
       (db-eval
         (mongo:delete-op collection (son (symbol-fqn 'key) (serializable-object-key obj)))
         (mongo:insert-op collection ht)
@@ -363,15 +363,14 @@
 
 (defmethod (setf slot-value-using-class) :around
     (new-value (class persistent-class) obj (slot persistent-effective-slot-definition))
-  (cond ((and (not *deserializing*)
-              (slot-boundp obj 'state)
-              (not (eq :rw (persistent-object-state obj))))
-         (error "Attempt to modify a slot of read-only persistent object"))
-        ((and (slot-serializable-p slot)
-              (not *deserializing*)
-              (not (equal new-value (slot-value obj (slot-definition-name slot)))))
-         (setf (persistent-object-modified obj) t
-               (slot-modified slot) t)))
+  (unless *deserializing*
+    (cond ((and (slot-boundp obj 'state)
+                (not (eq :rw (persistent-object-state obj))))
+           (error "Attempt to modify a slot of read-only persistent object"))
+          ((and (slot-serializable-p slot)
+                (not (equal new-value (slot-value obj (slot-definition-name slot)))))
+           (setf (persistent-object-modified obj) t
+                 (slot-modified slot) t))))
   (call-next-method))
 
 
