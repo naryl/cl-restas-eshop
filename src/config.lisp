@@ -45,7 +45,7 @@
          :path-to-dropbox-backup       (list :value #P"~/Dropbox/eshop-backups/"        :type :path)
          :graphite-prefix              (list :value nil                                 :type :string?)
          :graphite-host                (list :value "localhost"                         :type :string?)
-         :graphite-port                (list :value 2003                                :type :string?)
+         :graphite-port                (list :value 2003                                :type :int)
          :send-emails                  (list :value nil                                 :type :bool)
          :gateway-warn-emails          (list :value (list "Supplers@alpha-pc.com"
                                                           "web_design@alpha-pc.com"
