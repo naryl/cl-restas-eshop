@@ -36,8 +36,6 @@
 
 (in-package eshop.odm)
 
-(declaim (optimize (safety 3) (debug 3)))
-
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (defmacro db-eval (&body body)
     `(db-call #'(lambda ()
@@ -291,11 +289,13 @@
 
 (defmethod initialize-instance :after ((obj persistent-object) &key &allow-other-keys)
   "Stores newly created persistent object in the database"
-  (unless *deserializing*
-    (if *transaction*
-        (setf (slot-value obj 'modified) t)
-        (store-instance obj))
-    (new-transaction-object obj)))
+  (cond (*deserializing* ; Fetching a persistent object
+         (setf (slot-value obj 'state) :ro))
+        (t ; Actually making a new one
+         (if *transaction*
+             (setf (slot-value obj 'modified) t)
+             (store-instance obj))
+         (new-transaction-object obj))))
 
 (defun store-instance (obj)
   (let ((collection (obj-collection obj))
@@ -316,8 +316,10 @@
           (slot-changes (when (persistent-class-versioned class)
                           (collect-slot-changes obj))))
       (db-eval
-        (mongo:delete-op collection (son (symbol-fqn 'key) (serializable-object-key obj)))
-        (mongo:insert-op collection ht)
+        (mongo:update-op collection
+                         (son (symbol-fqn 'key)
+                              (serializable-object-key obj))
+                         ht)
         (when slot-changes
           (mongo:insert-op version-collection slot-changes))))))
 
@@ -329,8 +331,7 @@
                   (setf (slot-modified slot) nil)
                   (let ((slot-name (slot-definition-name slot)))
                     (list
-                     (son +class-key+ (symbol-fqn (type-of obj))
-                          (symbol-fqn 'key) (serializable-object-key obj)
+                     (son (symbol-fqn 'key) (serializable-object-key obj)
                           "TIMESTAMP" time
                           "SLOT" (symbol-fqn slot-name)
                           "VALUE" (serialize (slot-value obj slot-name)))))))
@@ -361,11 +362,15 @@
       (call-next-method)
       (error "Attempt to access a slot of deleted persistent object")))
 
+(defun allow-modifying-slot (obj slot)
+  (or (eq (slot-definition-name slot) 'state)
+      (not (slot-boundp obj 'state))
+      (eq :rw (persistent-object-state obj))))
+
 (defmethod (setf slot-value-using-class) :around
     (new-value (class persistent-class) obj (slot persistent-effective-slot-definition))
   (unless *deserializing*
-    (cond ((and (slot-boundp obj 'state)
-                (not (eq :rw (persistent-object-state obj))))
+    (cond ((not (allow-modifying-slot obj slot))
            (error "Attempt to modify a slot of read-only persistent object"))
           ((and (slot-serializable-p slot)
                 (not (equal new-value (slot-value obj (slot-definition-name slot)))))
@@ -497,6 +502,43 @@
          (let ((,obj-var (getobj ,class ,obj-var)))
            ,@body))
        ,result-name)))
+
+;;;; Version queries
+
+(defun object-slot-history (class key slot)
+  (let ((raw-data
+         (db-eval
+           (mongo:find-list (obj-collection class t)
+                            :query (son (symbol-fqn 'key) key
+                                        "SLOT" (symbol-fqn slot))
+                            :fields (son "_id" 0
+                                         "SLOT" 0)))))
+    (sort (mapcar #'(lambda (obj)
+                 (cons (gethash "TIMESTAMP" obj)
+                       (gethash "VALUE" obj)))
+                  raw-data)
+          #'<
+          :key #'car)))
+
+(defun getobj-for-date (class key time)
+  ;; Not using GETOBJ because we don't want a writable object here even in transaction
+  (let ((current-object (getobj-cache class key))
+        (version-collection (obj-collection class t)))
+    (let ((actual-slots
+           (mongo:aggregate version-collection
+                            (son "$match" (son "TIMESTAMP" (son "$lte" time)
+                                               (symbol-fqn 'key) key))
+                            (son "$sort" (son "TIMESTAMP" -1))
+                            (son "$group" (son "_id" "$SLOT"
+                                               "TIMESTAMP" (son "$first" "$TIMESTAMP")
+                                               "VALUE" (son "$first" "$VALUE")))
+                            (son "$project" (son "_id" 0
+                                                 "SLOT" "$_id"
+                                                 "VALUE" 1)))))
+      (dolist (slot actual-slots)
+        (setf (gethash (gethash "SLOT" slot) current-object)
+              (gethash "VALUE" slot)))
+      (deserialize current-object))))
 
 ;;;; DB thread
 

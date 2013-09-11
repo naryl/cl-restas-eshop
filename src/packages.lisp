@@ -61,6 +61,9 @@
            #:setobj
            #:mapobj
            #:doobj
+           ;; Versions
+           #:getobj-for-date
+           #:object-slot-history
            ;; #:remobj ; Don't do it
            #:with-transaction
            #:rollback-transaction
