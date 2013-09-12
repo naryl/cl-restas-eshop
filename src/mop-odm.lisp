@@ -105,16 +105,15 @@
 
 (define-constant +class-key+ "%CLASS%" :test #'equal)
 
-(defun serialize (obj &optional (target :hashtable))
-  (serialize% obj target))
+(defstruct obj-link
+  class
+  key)
 
-(defgeneric serialize% (obj target)
-  (:documentation "Serializes OBJ to TARGET data structure.
+(defgeneric serialize (obj)
+  (:documentation "Serializes OBJ to hashtable.
   SERIALIZE and DESERIALIZE are inverse. If you successfully serialized an object
   deserializing it should always yield exact same object.")
-  (:method ((obj serializable-object) (target (eql :json)))
-    (st-json:write-json-to-string (serialize obj :hashtable)))
-  (:method ((obj serializable-object) (target (eql :hashtable)))
+  (:method ((obj serializable-object))
     (let* ((class (class-of obj))
            (slots (class-slots class))
            (ht (make-hash-table :test #'equal)))
@@ -125,33 +124,44 @@
           (let ((slot-name (slot-definition-name slot)))
             (when (slot-boundp obj slot-name)
               (setf (gethash (symbol-fqn slot-name) ht)
-                    (serialize (slot-value obj slot-name) :hashtable))))))
-      ht))
-  (:method ((string string) (target (eql :hashtable)))
+                    (serialize-slot (slot-value obj slot-name)))))))
+      ht)))
+
+(defgeneric serialize-slot (obj)
+  (:method ((obj persistent-object))
+    (write-link (type-of obj) (serializable-object-key obj)))
+  (:method ((obj serializable-object))
+    (serialize obj))
+  (:method ((string string))
     string)
-  (:method ((number number) (target (eql :hashtable)))
+  (:method ((number number))
     number))
 
-(defun deserialize (data &optional (source :hashtable))
-  (deserialize% data source))
+(defun write-link (class key)
+  (plist-hash-table (list "%TYPE%" ":LINK"
+                          "%CLASS%" (symbol-fqn class)
+                          "%KEY%" (serialize-slot key))))
 
-(defgeneric deserialize% (data source)
+(defgeneric deserialize (data)
   (:documentation "Deserializes object from DATA using SOURCE data structure.
   SERIALIZE and DESERIALIZE are inverse. If you successfully serialized an object
   deserializing it should always yield exact same object.")
-  (:method ((string string) (target (eql :json)))
-    (let ((st-json:*decode-objects-as* :hashtable)
-          (st-json:*map-keys* #'identity))
-      (deserialize (st-json:read-json-from-string string) :hashtable)))
-  (:method ((ht hash-table) (source (eql :hashtable)))
+  (:method ((ht hash-table))
     (let ((*deserializing* t))
-      (let* ((class-name (read-from-string (gethash +class-key+ ht)))
-             (class (find-class class-name)))
-        (make-instance class 'ht ht))))
-  (:method ((string string) (source (eql :hashtable)))
+      (deserialize-ht ht (read-from-string (gethash "%TYPE%" ht ":OBJ")))))
+  (:method ((string string))
     string)
-  (:method ((number number) (source (eql :hashtable)))
+  (:method ((number number))
     number))
+
+(defgeneric deserialize-ht (ht class)
+  (:method (ht (class (eql :link)))
+    (make-obj-link :class (fqn-symbol (gethash "%CLASS%" ht))
+                   :key (gethash "%KEY%" ht)))
+  (:method (ht (class (eql :obj)))
+    (let* ((class-name (fqn-symbol (gethash +class-key+ ht)))
+           (class (find-class class-name)))
+      (make-instance class 'ht ht))))
 
 (defmethod shared-initialize :around ((instance serializable-object) slots &rest initargs &key ((ht ht)) &allow-other-keys)
   (if *deserializing*
@@ -365,11 +375,16 @@
 
 (defmethod slot-value-using-class :around
     ((class persistent-class) obj (slot persistent-effective-slot-definition))
-  (if (or (member (slot-definition-name slot)
-                  '(state key modified))
-          (not (eq :deleted (persistent-object-state obj))))
-      (call-next-method)
-      (error "Attempt to access a slot of deleted persistent object")))
+  (let ((slot-name (slot-definition-name slot)))
+    (if (or (member slot-name
+                    '(state key modified))
+            (not (eq :deleted (persistent-object-state obj))))
+        (let ((value (call-next-method)))
+          (if (typep value 'obj-link)
+              (getobj (obj-link-class value)
+                      (obj-link-key value))
+              value))
+        (error "Attempt to access a slot of deleted persistent object"))))
 
 (defun allow-modifying-slot (obj slot)
   (or (eq (slot-definition-name slot) 'state)
@@ -379,12 +394,14 @@
 (defmethod (setf slot-value-using-class) :around
     (new-value (class persistent-class) obj (slot persistent-effective-slot-definition))
   (unless *deserializing*
-    (cond ((not (allow-modifying-slot obj slot))
-           (error "Attempt to modify a slot of read-only persistent object"))
-          ((and (slot-serializable-p slot)
-                (not (equal new-value (slot-value obj (slot-definition-name slot)))))
-           (setf (persistent-object-modified obj) t
-                 (slot-modified slot) t))))
+    (let ((slot-name (slot-definition-name slot)))
+      (cond ((not (allow-modifying-slot obj slot))
+             (error "Attempt to modify a slot of read-only persistent object"))
+            ((and (slot-serializable-p slot)
+                  (slot-boundp obj slot-name)
+                  (not (equal new-value (slot-value obj (slot-definition-name slot)))))
+             (setf (persistent-object-modified obj) t
+                   (slot-modified slot) t)))))
   (call-next-method))
 
 
