@@ -37,6 +37,15 @@
 (in-package eshop.odm)
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
+  (defmacro defvar/type (type name value &optional doc)
+    `(progn (declaim (type ,type ,name))
+            (defvar ,name ,value ,doc)))
+  (defmacro defun/ftype (name args (func args-type ret-type) &body body)
+  "Declares a function as with DEFUN with declared type"
+  (declare (ignore func))
+  `(progn (declaim (ftype (function ,args-type (values ,ret-type &optional)) ,name))
+          (defun ,name ,args
+            ,@body)))
   (defmacro db-eval (&body body)
     `(db-call #'(lambda ()
                   ,@body))))
@@ -337,7 +346,7 @@
                           "VALUE" (serialize (slot-value obj slot-name)))))))
             (class-slots (class-of obj)))))
 
-(defvar *transaction* nil)
+(defvar/type list *transaction* nil)
 
 (defmacro with-transaction (&body body)
   "All modified objects will be sent back to mongo when the transaction exits normally"
@@ -426,7 +435,14 @@
                           (gethash +class-key+ ht)))
         ht)))
 
-(defun getobj (class key)
+(declaim (inline getobj))
+(defun/ftype getobj (class key &key time)
+    (function (symbol (or string number) &key (:time number)) persistent-object)
+  (if time
+      (getobj-for-date class key time)
+      (getobj-current class key)))
+
+(defun getobj-current (class key)
   "Fetch an object from the database. The object will be read-only unless it's done inside
   a transaction."
   (metric:count "getobj")
@@ -434,7 +450,7 @@
       (awhen (find key *transaction* :key #'(lambda (o)
                                               (when o
                                                 (serializable-object-key o))))
-        (return-from getobj it)))
+        (return-from getobj-current it)))
   (when-let* ((db-obj (getobj-cache class key))
               (obj (deserialize db-obj)))
     (new-transaction-object obj)))
