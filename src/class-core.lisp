@@ -314,7 +314,7 @@ Reloaded standard method %post-unserialize"
    *classes*))
 
 
-(defparameter *classes* (make-hash-table :test #'equal)
+(defvar *classes* (make-hash-table :test #'equal)
   "Hash-table of all classes, containing plist of options,
 such as pointer to storage, serialize flag, etc.")
 
