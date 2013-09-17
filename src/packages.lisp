@@ -39,11 +39,24 @@
            :main-page.restore
            :cartrige.restore))
 
+(defpackage #:eshop.proc
+  (:use :cl
+        :anaphora
+        :sb-concurrency
+        :bordeaux-threads)
+  (:export #:process
+           #:noproc
+           #:process-running
+           #:ensure-process
+           #:stop-process
+           #:process-call
+           #:process-exec))
+
 (defpackage #:eshop.odm
   (:use :c2cl
         :anaphora
         :alexandria
-        :sb-concurrency
+        :eshop.proc
         :function-cache
         :mongo-cl-driver.sugar)
   (:export #:serializable-class
