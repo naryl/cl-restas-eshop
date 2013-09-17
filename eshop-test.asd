@@ -6,6 +6,7 @@
                (:file "avail")
                (:file "odm-serialize")
                (:file "odm-persist"))
-  :depends-on (:drakma
+  :depends-on (:sb-cover
+               :drakma
                :lift
                ))
