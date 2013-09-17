@@ -332,7 +332,6 @@
   (ensure-process *db-proc*))
 
 (defun ensure-indexes ()
-  (ensure-process *db-proc*)
   (let ((cnt 0))
     (labels ((ensure-indexes (class)
                "Walks class hierarchy creating indexes for each indexed slot"

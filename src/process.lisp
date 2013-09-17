@@ -24,7 +24,10 @@
                   "_")))))
 
 (define-condition noproc ()
-  ((process :initarg :process)))
+  ((process :initarg :process))
+  (:report (lambda (condition stream)
+             (format stream "Process not running: ~S"
+                     (slot-value condition 'process)))))
 
 (defun process-running (process)
   (not (null (process-thread process))))
@@ -119,7 +122,7 @@
                      (eq (first result) 'error))
                 (error (second result))
                 result)))
-        (error 'noproc))))
+        (error 'noproc :process process))))
 
 (defmacro process-exec ((process) &body body)
   `(process-call ,process #'(lambda ()
