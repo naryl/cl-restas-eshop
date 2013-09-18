@@ -40,6 +40,7 @@
                (:file "rename")
                (:file "catalog")
                (:file "prerender")
+               (:file "process")
                (:file "mop-odm")
                (:file "storage")
                (:file "sessions")
