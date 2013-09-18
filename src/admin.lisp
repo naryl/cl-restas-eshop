@@ -89,6 +89,18 @@
         (admin.standard-ajax-response nil "Error: Object doesn't exist"))))
 
 
+
+;; login page
+(restas:define-route login-page-route1 ("administration-super-panel/login")
+  (log:info (hunchentoot:get-parameters*))
+  (soy.admin:main
+     (list :content (soy.admin:login
+                     (list :alerterror (hunchentoot:parameter "error")
+                           :name (hunchentoot:parameter "username")
+                           :pass (hunchentoot:parameter "password")
+                           :rem (hunchentoot:parameter "remember"))))))
+
+
 (defun admin-compile-templates ()
   (servo.compile-soy "admin.soy"
                      "class_forms.soy"))
