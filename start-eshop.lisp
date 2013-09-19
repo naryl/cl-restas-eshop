@@ -54,6 +54,7 @@
     ;;; content
   (when (eshop:config.get-option :start-options :load-storage)
     (eshop:sklonenie.restore)
+    (eshop:delivery-price.restore)
     (eshop:class-core.unserialize-all :filesystem)
     (eshop:gateway.load))
   (when (eshop:config.get-option :start-options :load-xls)
