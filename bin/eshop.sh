@@ -1,6 +1,6 @@
 ESHOP_PATH="$HOME/cl-restas-eshop/"
 CONFIG_PATH=$ESHOP_PATH"config/default.conf"
-LIBS_PATH="$HOME/cl-libs/"
+LIBS_PATH="$HOME/Dropbox/libs/"
 DEBUG="T"
 SWANK_PORT=4005
 
