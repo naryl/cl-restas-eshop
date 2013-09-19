@@ -241,6 +241,7 @@ Filter's key is concatenated group's and default-filter's keys"
   (marketing-filters.%create-util-filter (getobj "komputery" 'group) 5000)
   (marketing-filters.%create-setting-%filter (getobj "stiralnie-mashiny") "Установка и подключение стиральных машин" "Стиральные машины")
   (marketing-filters.%create-setting-%filter (getobj "holodilniki-i-morozilniki") "Подключение холодильников" "Холодильники")
+  (marketing-filters.create-free-delivery-filter (getobj "noutbuki"))
   (mapcar #'(lambda (group-key)
               (marketing-filters.create-sale-filter (getobj group-key 'group)))
           (list "netbuki"
@@ -317,3 +318,27 @@ Filter's key is concatenated group's and default-filter's keys"
 
 ;; (marketing-filters.%create-setting-%filter (getobj "stiralnie-mashiny") "Установка и подключение стиральных машин" "Стиральные машины")
 ;; (marketing-filters.%create-setting-%filter (getobj "holodilniki-i-morozilniki") "Подключение холодильников" "Холодильники")
+
+
+
+(defun marketing-filters.create-free-delivery-filter (group)
+  "Creating \"free delivery\" default filter"
+  (let* ((key (format nil "~A-free-filter" (key group)))
+         (filter (make-instance 'filter
+                                :key key
+                                :active nil
+                                :parents (list group)
+                                :default-set 'product
+                                :data (list :name "Бесплатная доставка!")
+                                :serialize nil)))
+    ;; setup basic filters
+    ;; TODO: get rid of gensym
+    (setf (gethash (gensym) (filters filter))
+          (filters.create-basic-filter 'function-filter
+                                       :func-text
+                                       "#'(lambda (obj &optional params)
+                                           (declare (ignore params))
+                                           (zerop (get-product-delivery-price obj)))")
+          ;; add filter to group's filters slot
+          (gethash key (filters group)) filter)
+    (setobj key filter 'filter)))

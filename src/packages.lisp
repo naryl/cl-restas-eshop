@@ -32,6 +32,7 @@
            :servo.compile-soy
            :xls.update-options-from-xls
            :sklonenie.restore
+           :delivery-price.restore
            :class-core.unserialize-all
            :gateway.load
            :static-pages.restore
