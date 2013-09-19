@@ -1,3 +1,5 @@
+(in-package #:cl-user)
+
 ;; загрузка модулей и файлов
 (defparameter *path-to-libs* (sb-unix::posix-getenv "LIBS_PATH"))
 (defparameter *path-to-eshop* (sb-unix::posix-getenv "ESHOP_PATH"))
@@ -5,14 +7,21 @@
 (defparameter *debug* (sb-unix::posix-getenv "DEBUG"))
 (defparameter *swank-port* (parse-integer (sb-unix::posix-getenv "SWANK_PORT")))
 
-(when *debug*
-    (push :debug *features*)
-    (restrict-compiler-policy 'debug 3)
-    (restrict-compiler-policy 'safety 3))
 
 ;; регестрация путей для asdf
 (load (merge-pathnames "load.lisp" *path-to-eshop*))
 (load.register-libs *path-to-libs*)
+
+
+(when *debug*
+    (restrict-compiler-policy 'debug 1)
+    (restrict-compiler-policy 'safety 1)
+    (restrict-compiler-policy 'speed 3)
+    (restrict-compiler-policy 'space 3)
+    (asdf:load-system :mongo-cl-driver :force t)
+    (push :debug *features*)
+    (restrict-compiler-policy 'debug 3)
+    (restrict-compiler-policy 'safety 3))
 
 ;; load swank libs
 (asdf:load-system :swank)
