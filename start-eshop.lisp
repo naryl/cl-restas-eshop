@@ -21,7 +21,9 @@
     (asdf:load-system :mongo-cl-driver :force t)
     (push :debug *features*)
     (restrict-compiler-policy 'debug 3)
-    (restrict-compiler-policy 'safety 3))
+    (restrict-compiler-policy 'safety 3)
+    (restrict-compiler-policy 'speed 1)
+    (restrict-compiler-policy 'space 1))
 
 ;; load swank libs
 (asdf:load-system :swank)
