@@ -20,6 +20,10 @@ was sent when this session was created.")
                 :reader session-remote-addr
                 :documentation "The remote IP address of the client
 when this session was started as returned by REAL-REMOTE-ADDR.")
+   (user :serializable t
+         :accessor session-user
+         :initform nil
+         :initarg :user)
    (cart :initarg :cart
          :serializable t
          :type string)
@@ -80,15 +84,21 @@ ENCODE-SESSION-STRING."
       (let* ((id (parse-integer id-string))
              (session (eshop.odm:getobj 'session id))
              (user-agent (hunchentoot:user-agent hunchentoot:*request*))
-             (remote-addr (hunchentoot:remote-addr hunchentoot:*request*)))
+             (remote-addr (hunchentoot:remote-addr hunchentoot:*request*))
+             (expected-session-string (when session
+                                        (encode-session-string
+                                         id
+                                         user-agent
+                                         (hunchentoot:real-remote-addr
+                                          hunchentoot:*request*))))
+             (session-session-string (when session
+                                       (session-string session))))
         (cond
           ((and session
                 (string= session-string
-                         (session-string session))
+                         session-session-string)
                 (string= session-string
-                         (encode-session-string id
-                                                user-agent
-                                                (hunchentoot:real-remote-addr hunchentoot:*request*))))
+                         expected-session-string))
            ;; the session key presented by the client is valid
            (merge-session session)
            session)
@@ -103,7 +113,12 @@ ENCODE-SESSION-STRING."
                      session-identifier user-agent remote-addr)
            nil))))))
 
-(defun start-session ()
+(defun new-session (&key persistent)
+  (setf (hunchentoot:session hunchentoot:*request*) nil)
+  (setf hunchentoot:*session* nil)
+  (start-session :persistent persistent))
+
+(defun start-session (&key persistent)
   "Returns the current SESSION object. If there is no current session,
 creates one and updates the corresponding data structures. In this
 case the function will also send a session cookie to the browser."
@@ -114,6 +129,10 @@ case the function will also send a session cookie to the browser."
           (hunchentoot:session hunchentoot:*request*) session)
     (hunchentoot:set-cookie (hunchentoot:session-cookie-name hunchentoot:*acceptor*)
                 :value (hunchentoot:session-cookie-value session)
+                :expires (if persistent
+                             (+ (get-universal-time)
+                                (* 60 60 24 30))
+                             nil)
                 :path "/")
     (hunchentoot:session-created hunchentoot:*acceptor* session)
     (setq hunchentoot:*session* session)))

@@ -10,48 +10,52 @@
 
 ;;;; Request tracking decoration
 
-(defclass proxy-route-timer (routes:proxy-route) ())
+(defclass timer-route (routes:proxy-route) ())
 
-(defun make-proxy-route-timer (route)
-  (make-instance 'proxy-route-timer :target route))
+(defun @timer (route)
+  (make-instance 'timer-route :target route))
+
+(defmethod restas:process-route :around ((route timer-route) bindings)
+  "log timing and additional data for current route processing and
+   update current thread information"
+  (let ((*current-route-symbol*
+         (restas:route-symbol (routes:proxy-route-target route))))
+    (metric:time ((concatenate 'string "process-route." (route-name)))
+      (call-next-method))))
+
+;;;; Session decoration
+
+(defclass session-route (routes:proxy-route) ())
+
+(defun @session (route)
+  (make-instance 'session-route :target route))
+
+(defmethod restas:process-route :before ((route session-route) bindings)
+  "Ensure session for this route"
+  (start-session))
 
 (defvar *current-route-symbol* nil)
 
 (defcached route-name (&optional (route *current-route-symbol*))
   (string-downcase (symbol-name route)))
 
-(defmethod restas:process-route :around ((route proxy-route-timer) bindings)
-  "log timing and additional data for current route processing and
-   update current thread information"
-  (let ((*current-route-symbol*
-         (restas:route-symbol (routes:proxy-route-target route))))
-    (start-session)
-    (metric:time ((concatenate 'string "process-route." (route-name)))
-      (call-next-method))))
-
-(defmacro define-tracing-route (name (template &rest args) &body body)
-  "Like RESTAS:DEFINE-ROUTE, except add default decorators"
-  (sunless (getf args :decorators)
-        (setf it ''(make-proxy-route-timer)))
-  `(restas:define-route ,name (,template ,@args) ,@body))
-
 ;; static content
 ;; Роуты до статиx файлов
 ;; Дублирует функционал nginx для развертывания на localhost
 
-(define-tracing-route request-static-route-img ("/img/*")
+(restas:define-route request-static-route-img ("/img/*")
   (let ((full-uri (format nil "~A" (restas:request-full-uri))))
     (hunchentoot:redirect (concatenate 'string "http://320-8080.ru"
                                        (subseq full-uri (search "/img/" full-uri)))
                           :code 301)))
 
-(define-tracing-route request-static-route-pic ("/pic/*")
+(restas:define-route request-static-route-pic ("/pic/*")
   (let* ((full-uri (format nil "~A" (restas:request-full-uri))))
     (hunchentoot:redirect (concatenate 'string "http://320-8080.ru"
                                        (subseq full-uri (search "/pic/" full-uri)))
                           :code 301)))
 
-(define-tracing-route request-static-route-css ("/css/*")
+(restas:define-route request-static-route-css ("/css/*")
   (let ((full-uri (format nil "~A" (restas:request-full-uri))))
     (merge-pathnames (concatenate 'string
                                   "htimgs/"
@@ -59,7 +63,7 @@
                                   (subseq full-uri (search "/css/" full-uri)))
                      (config.get-option :paths :path-to-dropbox))))
 
-(define-tracing-route request-static-route-js ("/js/*")
+(restas:define-route request-static-route-js ("/js/*")
   (let ((full-uri (format nil "~A" (restas:request-full-uri))))
     (merge-pathnames (concatenate 'string
                                   "htimgs/"
@@ -67,30 +71,31 @@
                                   (subseq full-uri (search "/js/" full-uri)))
                      (config.get-option :paths :path-to-dropbox))))
 
-(define-tracing-route request-route-static-favicon ("/favicon.ico")
+(restas:define-route request-route-static-favicon ("/favicon.ico")
   (merge-pathnames "htimgs/img/favicon.ico" (config.get-option :paths :path-to-dropbox)))
 
-(define-tracing-route request-route-static-robots ("/robots.txt")
+(restas:define-route request-route-static-robots ("/robots.txt")
   (merge-pathnames "robots.txt" (config.get-option :critical :path-to-conf)))
 
-(define-tracing-route request-route-static-yml ("/yml.xml")
+(restas:define-route request-route-static-yml ("/yml.xml")
   (merge-pathnames "yml.xml" (config.get-option :critical :path-to-conf)))
 
-(define-tracing-route request-route-static-sitemap ("/sitemap.xml")
+(restas:define-route request-route-static-sitemap ("/sitemap.xml")
   (merge-pathnames "sitemap.xml" (config.get-option :critical :path-to-conf)))
 
-(define-tracing-route request-route-static-sitemap-index ("/sitemap-index.xml")
+(restas:define-route request-route-static-sitemap-index ("/sitemap-index.xml")
   (merge-pathnames "sitemap-index.xml" (config.get-option :critical :path-to-conf)))
 
-(define-tracing-route request-route-static-sitemap1 ("/sitemap1.xml")
+(restas:define-route request-route-static-sitemap1 ("/sitemap1.xml")
   (merge-pathnames "sitemap1.xml" (config.get-option :critical :path-to-conf)))
 
-(define-tracing-route request-route-static-sitemap2 ("/sitemap2.xml")
+(restas:define-route request-route-static-sitemap2 ("/sitemap2.xml")
   (merge-pathnames "sitemap2.xml" (config.get-option :critical :path-to-conf)))
 
 (defvar *search-tips* (make-instance 'search-tips:search-tips))
 
-(define-tracing-route request-suggestions ("/api/suggestions" :method :get)
+(restas:define-route request-suggestions ("/api/suggestions" :method :get
+                                                             :decorators '(@timer))
   (let ((prefix (tbnl:get-parameter "prefix"))
         (k (aif (tbnl:get-parameter "k") (parse-integer it) 10)))
     (if (or (null prefix) (null k) (not (typep k 'integer)))
@@ -118,14 +123,14 @@
 (defun route-filter (filter)
   (getobj filter 'filter))
 
-(define-tracing-route filter/-route ("/:key/:filter/" :requirement #'test-route-filter)
+(restas:define-route filter-route ("/:key/:filter" :requirement #'test-route-filter
+                                                   :decorators '(@timer @session))
   (declare (ignore key))
   (route-filter filter))
 
-(define-tracing-route filter-route ("/:key/:filter" :requirement #'test-route-filter)
-  (declare (ignore key))
-  (route-filter filter))
-
+(restas:define-route filter/-route ("/:key/:filter/")
+  (hunchentoot:redirect (format nil "/~{~A~^/~}" key filter)
+                        :code hunchentoot:+http-moved-permanently+))
 
 ;; STORAGE OBJECT
 
@@ -158,31 +163,33 @@
             ;; else: static pages
             (gethash key static-pages.*storage*))))
 
-(define-tracing-route storage-object-route  ("/:key" :requirement #'test-route-storage-object)
+(restas:define-route storage-object-route  ("/:key" :requirement #'test-route-storage-object
+                                                    :decorators '(@timer @session))
   (route-storage-object key))
 
-(define-tracing-route storage-object/-route  ("/:key/" :requirement #'test-route-storage-object)
-  (route-storage-object key))
-
-
+(restas:define-route storage-object/-route ("/:key/")
+  (hunchentoot:redirect (concatenate 'string "/" key)
+                        :code hunchentoot:+http-moved-permanently+))
 
 ;; MAIN
 (defun test-get-parameters ()
   t) ;;(null (request-get-plist)))
 
-(define-tracing-route main-route ("/" :requirement #'test-get-parameters  :decorators '(make-proxy-route-timer))
+(restas:define-route main-route ("/" :requirement #'test-get-parameters
+                                     :decorators '(@timer @session))
   (main-page-show))
-
 
 ;; CATALOG
 
-(define-tracing-route catalog-page-route ("/catalog")
+(restas:define-route catalog-page-route ("/catalog"
+                                         :decorators '(@timer @session))
   (default-page (catalog.catalog-entity)
       :keywords "Купить компьютер и другую технику вы можете в Цифрах. Цифровая техника в Интернет-магазине 320-8080.ru"
       :description "каталог, компьютеры, купить компьютер, компьютерная техника, Петербург, Спб, Питер, Санкт-Петербург, продажа компьютеров, магазин компьютерной техники, магазин компьютеров, интернет магазин компьютеров, интернет магазин компьютерной техники, продажа компьютерной техники, магазин цифровой техники, цифровая техника, Цифры, 320-8080"
       :title "Каталог интернет-магазина: купить компьютер, цифровую технику, комплектующие в Санкт-Петербурге"))
 
-(define-tracing-route sitemap-page-route ("/sitemap")
+(restas:define-route sitemap-page-route ("/sitemap"
+                                         :decorators '(@timer @session))
   (default-page (catalog.sitemap-page)
       :keywords "Купить компьютер и другую технику вы можете в Цифрах. Цифровая техника в Интернет-магазине 320-8080.ru"
       :description "каталог, компьютеры, купить компьютер, компьютерная техника, Петербург, Спб, Питер, Санкт-Петербург, продажа компьютеров, магазин компьютерной техники, магазин компьютеров, интернет магазин компьютеров, интернет магазин компьютерной техники, продажа компьютерной техники, магазин цифровой техники, цифровая техника, Цифры, 320-8080"
@@ -191,48 +198,60 @@
 
 ;; CART & CHECKOUTS & THANKS
 
-(define-tracing-route cart-route ("/cart")
+(restas:define-route cart-route ("/cart"
+                                 :decorators '(@timer @session))
   (cart-page))
 
-(define-tracing-route checkout-route ("/checkout")
+(restas:define-route checkout-route ("/checkout"
+                                     :decorators '(@timer @session))
   (newcart-show))
 
-(define-tracing-route checkout-post-route ("/checkout" :method :post)
+(restas:define-route checkout-post-route ("/checkout" :method :post
+                                                      :decorators '(@timer @session))
   (newcart-show))
 
-(define-tracing-route checkout0-route ("/checkout0")
+(restas:define-route checkout0-route ("/checkout0"
+                                      :decorators '(@timer @session))
   (newcart-show))
 
-(define-tracing-route checkout1-route ("/checkout1")
+(restas:define-route checkout1-route ("/checkout1"
+                                      :decorators '(@timer @session))
   (newcart-show))
 
-(define-tracing-route checkout2-route ("/checkout2")
+(restas:define-route checkout2-route ("/checkout2"
+                                      :decorators '(@timer @session))
   (newcart-show))
 
-(define-tracing-route checkout3-route ("/checkout3")
+(restas:define-route checkout3-route ("/checkout3"
+                                      :decorators '(@timer @session))
   (newcart-show))
 
-(define-tracing-route thanks-route ("/thanks")
+(restas:define-route thanks-route ("/thanks"
+                                   :decorators '(@timer @session))
   (thanks-page))
 
 
 ;; GATEWAY
 
-(define-tracing-route gateway/post-route ("/gateway" :method :post)
+(restas:define-route gateway/post-route ("/gateway" :method :post
+                                                    :decorators '(@timer))
   (gateway-page))
 
 ;; SEARCH
 
-(define-tracing-route search-route ("/search")
+(restas:define-route search-route ("/search"
+                                   :decorators '(@timer @session))
   (search-page))
 
 ;; YML
 
-(define-tracing-route yml-route ("/yml")
+(restas:define-route yml-route ("/yml"
+                                :decorators '(@timer))
   (yml-page))
 
-(define-tracing-route yml/-route ("/yml/")
-  (yml-page))
+(restas:define-route yml/-route ("/yml/")
+  (hunchentoot:redirect "/yml"
+                        :code hunchentoot:+http-moved-permanently+))
 
 ;; ARTICLES
 ;;TODO возможно проверять входные тэги
@@ -244,46 +263,56 @@
   (not (null (gethash (caddr (request-list)) *storage-articles*))))
 
 ;;архив матерьялов
-(define-tracing-route article-route ("/articles" :requirement #'test-article-get-parameters)
+(restas:define-route article-route ("/articles" :requirement #'test-article-get-parameters
+                                                :decorators '(@timer @session))
   (articles-page (request-get-plist)))
 
 ;;список статей
-(define-tracing-route article-papers-route ("/articles/papers" :requirement #'test-article-get-parameters)
+(restas:define-route article-papers-route ("/articles/papers" :requirement #'test-article-get-parameters
+                                                              :decorators '(@timer @session))
   (let ((request-get-plist (request-get-plist)))
     (if (null (getf request-get-plist :tags))
         (setf (getf request-get-plist :tags) "Статьи"))
     (articles-page request-get-plist)))
 ;;список акции
-(define-tracing-route article-akcii-route ("/articles/akcii" :requirement #'test-article-get-parameters)
+(restas:define-route article-akcii-route ("/articles/akcii" :requirement #'test-article-get-parameters
+                                                             :decorators '(@timer @session))
   (let ((request-get-plist (request-get-plist)))
     (if (null (getf request-get-plist :tags))
         (setf (getf request-get-plist :tags) "текущии акции"))
     (articles-page request-get-plist)))
 
 ;;список новостей
-(define-tracing-route article-news-route ("/articles/news" :requirement #'test-article-get-parameters)
+(restas:define-route article-news-route ("/articles/news" :requirement
+                                                          #'test-article-get-parameters
+                                                          :decorators '(@timer @session))
   (let ((request-get-plist (request-get-plist)))
     (if (null (getf request-get-plist :tags))
         (setf (getf request-get-plist :tags) "Новости"))
     (articles-page request-get-plist)))
 
 ;;список обзоры
-(define-tracing-route article-review-route ("/articles/reviews" :requirement #'test-article-get-parameters)
+(restas:define-route article-review-route ("/articles/reviews" :requirement
+                                                               #'test-article-get-parameters
+                                                               :decorators '(@timer @session))
   (let ((request-get-plist (request-get-plist)))
     (if (null (getf request-get-plist :tags))
         (setf (getf request-get-plist :tags) "Обзоры"))
     (articles-page request-get-plist)))
 
 ;;конкретная статья
-(define-tracing-route article-key-route ("/articles/:key" :requirement #'test-route-article-object)
+(restas:define-route article-key-route ("/articles/:key" :requirement
+                                                         #'test-route-article-object
+                                                         :decorators '(@timer @session))
   (gethash (caddr (request-list)) *storage-articles*))
 
 
 ;; 404
 
 ;;необходимо отдавать 404 ошибку для несуществеющих страниц
-(define-tracing-route not-found-route ("*any")
-  ;; (log:info "error 404: ~A" any)
+(restas:define-route not-found-route ("*any"
+                                      :decorators '(@timer @session))
+  ;; (log:warn "error 404: ~A" any)
   (restas:abort-route-handler
    (babel:string-to-octets
     (default-page
@@ -307,15 +336,17 @@
    :return-code hunchentoot:+http-not-found+
    :content-type "text/html"))
 
-(define-tracing-route request-route ("/request")
+(restas:define-route request-route ("/request"
+                                    :decorators '(@timer @session))
   (oneclickcart.make-common-order (request-get-plist)))
 
-(define-tracing-route compare-route ("/compare")
+(restas:define-route compare-route ("/compare"
+                                    :decorators '(@timer @session))
   (log:debug "IP:~A" (tbnl:real-remote-addr))
      (soy.compare:compare-page
         (list :keywords "" ;;keywords
                     :description "" ;;description
                     :title ""
                     :header (soy.header:header (append (list :cart (soy.index:cart))
-                                                                             (main-page-show-banner "line" (banner *main-page.storage*))))
+                                                       (main-page-show-banner "line" (banner *main-page.storage*))))
                     :footer (soy.footer:footer))))
