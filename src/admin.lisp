@@ -116,7 +116,9 @@
                (declare (ignore e))
                (make-error "Account for this email already exists"))))))
   (soy.admin:main
-     (list :content (soy.admin:login
+     (list
+       :user (session-user (start-session))
+       :content (soy.admin:login
                      (list :alerterror "Login successful"
                            :name (hunchentoot:parameter "username")
                            :pass (hunchentoot:parameter "password")
@@ -293,7 +295,7 @@
     (soy.admin:pics-deleting (list :output output))))
 
 (defun admin.compile-template (post-data)
-  (let ((name (getf post-data :name))
+  (let ((name (hunchentoot:post-parameter "name"))
         (output))
     (when post-data
       (setf output
