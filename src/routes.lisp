@@ -316,7 +316,7 @@
   (restas:abort-route-handler
    (babel:string-to-octets
     (default-page
-      (soy.404:content
+      (soy.er404:content
        (list :menu (render.menu)
              :dayproducts (main-page-products-show (daily *main-page.storage*) 4)
              :olist (soy.main-page:olist)
