@@ -100,6 +100,13 @@
                            :pass (hunchentoot:parameter "password")
                            :rem (hunchentoot:parameter "remember"))))))
 
+;; logout page
+(restas:define-route logout-page-route ("administration-super-panel/logout")
+  (logout)
+  (hunchentoot:redirect "/administration-super-panel/login"
+                        :code hunchentoot:+http-moved-permanently+))
+
+
 
 (defun admin-compile-templates ()
   (servo.compile-soy "admin.soy"
@@ -402,7 +409,9 @@
 (defun show-admin-page (&optional (key ""))
   (let ((post-data (alist-plist (hunchentoot:post-parameters hunchentoot:*request*))))
     (soy.admin:main
-     (list :content
+     (list
+      :user (session-user (start-session))
+      :content
            (switch ((ensure-string key) :test #'string=)
              ("info" (soy.admin:info (list :info (admin.get-info))))
              ("actions" (soy.admin:action-buttons (list :post post-data
