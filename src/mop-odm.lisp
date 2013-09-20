@@ -133,7 +133,11 @@
   (:method ((string string))
     string)
   (:method ((number number))
-    number))
+    number)
+  (:method ((true (eql t)))
+    t)
+  (:method ((false (eql nil)))
+    nil))
 
 (defun write-link (class key)
   (plist-hash-table (list "%TYPE%" ":LINK"
@@ -150,7 +154,11 @@
   (:method ((string string))
     string)
   (:method ((number number))
-    number))
+    number)
+  (:method ((true (eql t)))
+    t)
+  (:method ((false (eql nil)))
+    nil))
 
 (defgeneric deserialize-ht (ht class)
   (:method (ht (class (eql :link)))
@@ -215,7 +223,7 @@
               :initarg :versioned
               :reader slot-versioned)
    (modified :initform nil
-             :type boolean
+             :type (or boolean symbol)
              :accessor slot-modified)
    (index :initform nil
           :initarg :index
@@ -367,7 +375,7 @@
          (setf (slot-value obj 'state) :ro))
         (t ; Actually making a new one
          (if *transaction*
-             (setf (slot-value obj 'modified) t)
+             (setf (slot-value obj 'modified) :new)
              (store-instance obj))
          (new-transaction-object obj))))
 
@@ -457,8 +465,10 @@
     (cond ((not (allow-modifying-slot obj slot))
            (error "Attempt to modify a slot of read-only persistent object"))
           ((slot-changed new-value obj slot)
-           (setf (persistent-object-modified obj) t
-                 (slot-modified slot) t))))
+           (unless (and (slot-boundp obj 'modified)
+                        (eq :new (persistent-object-modified obj)))
+             (setf (persistent-object-modified obj) t))
+           (setf (slot-modified slot) t))))
   (call-next-method))
 
 (defcached (getobj-cache :timeout 600) (class key)
@@ -483,7 +493,9 @@
         (case (persistent-object-state obj)
           (:rw
            (setf (persistent-object-state obj) :ro)
-           (update-instance obj)
+           (case (persistent-object-modified obj)
+             (:new (store-instance obj))
+             ((t) (update-instance obj)))
            (incf cnt))
           (:deleted
            (delete-instance obj)))))
@@ -593,6 +605,16 @@
          (let ((,obj-var (getobj ,class ,obj-var)))
            ,@body))
        ,result-name)))
+
+(defun get-one (class query)
+  "Fetches an object by mongo query and stores it in cache by key"
+  (let ((obj (db-eval
+               (mongo:find-one (obj-collection class)
+                               :query query
+                               :selector (son (symbol-fqn 'key) 1
+                                              "_id" 0)))))
+    (when obj
+      (getobj class (serializable-object-key obj)))))
 
 ;;;; Version queries
 

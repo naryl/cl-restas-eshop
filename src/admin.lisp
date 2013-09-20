@@ -91,11 +91,33 @@
 
 
 ;; login page
-(restas:define-route login-page-route1 ("administration-super-panel/login")
-  (log:info (hunchentoot:get-parameters*))
+(restas:define-route login-page-route ("administration-super-panel/login"
+                                       :decorators '(@timer @session))
+  (flet ((make-error (msg)
+           (return-from login-page-route
+             (soy.admin:main
+              (list :content (soy.admin:login
+                              (list :alerterror msg
+                                    :name (hunchentoot:parameter "username")
+                                    :pass (hunchentoot:parameter "password")
+                                    :rem (hunchentoot:parameter "remember"))))))))
+    (cond ((hunchentoot:get-parameter "log")
+           (handler-case
+               (login (hunchentoot:get-parameter "username")
+                      (hunchentoot:get-parameter "password"))
+             (account-error (e)
+               (declare (ignore e))
+               (make-error "Wrong login or password"))))
+          ((hunchentoot:get-parameter "reg")
+           (handler-case
+               (register (hunchentoot:get-parameter "username")
+                         (hunchentoot:get-parameter "password"))
+             (account-error (e)
+               (declare (ignore e))
+               (make-error "Account for this email already exists"))))))
   (soy.admin:main
      (list :content (soy.admin:login
-                     (list :alerterror (hunchentoot:parameter "error")
+                     (list :alerterror "Login successful"
                            :name (hunchentoot:parameter "username")
                            :pass (hunchentoot:parameter "password")
                            :rem (hunchentoot:parameter "remember"))))))

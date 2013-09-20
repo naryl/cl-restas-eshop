@@ -73,6 +73,7 @@
            #:persistent-class
            #:persistent-object
            #:getobj
+           #:get-one
            #:setobj
            #:mapobj
            #:doobj
