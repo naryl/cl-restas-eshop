@@ -155,3 +155,52 @@
   (declare (group group))
   (remove-if-not #'yml.available-for-order-p
                  (storage.get-recursive-products group (complement #'active))))
+
+;;;
+;;; icontext full offers markup
+(restas:define-route yml-icontext-route ("/yml-icontext"
+                                :decorators '(@timer))
+  (yml-page-icontext))
+
+
+(defun yml.%offers-icontext ()
+  (format nil "~{~a~}"
+          (collect-storage
+           'product
+           ;;продукт должен находиться в группе маркированной как ymlshow
+           ;;быть активным и иметь не нулевую цену
+           :when-fn #'yml.yml-show-p
+           :func #'(lambda (product)
+                     (soy.yml:offer-full
+                      (list :articul (articul product)
+                            :available (active product) ; если не active, то прошел available-for-order
+                            :deliveryprice (get-product-delivery-price product)
+                            :price (siteprice product)
+                            :category (yml-id (parent product))
+                            :picture (let ((pics (get-pics
+                                                  (key product))))
+                                       (when pics
+                                         (encode-uri (car pics))))
+                            :vendorcode (get-option product "Общие характеристики" "Код производителя")
+                            :vendor (get-option product "Общие характеристики" "Производитель")
+                            :model (get-option product "Общие характеристики" "Модель")
+                            :name (let ((yml-name (get-option product "Secret" "Yandex")))
+                                    (if (or (null yml-name)
+                                            (string= "" (stripper yml-name))
+                                            (string= "No" (stripper yml-name)))
+                                        (name-seo product)
+                                        yml-name))
+                            :description nil))))))
+
+
+(defun yml-page-icontext ()
+  (let ((data-yml))
+    (setf (hunchentoot:content-type*) "application/xml; charset=utf-8")
+    (setf data-yml (soy.yml:xml
+                    (list :datetime (time.get-date-time)
+                          :marketname "ЦиFры 320-8080"
+                          :marketcompany "ЦиFры 320-8080"
+                          :marketurl "http://www.320-8080.ru/"
+                          :categoryes (yml.%category)
+                          :offers (yml.%offers-icontext))))
+    data-yml))
