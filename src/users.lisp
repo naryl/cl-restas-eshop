@@ -31,12 +31,23 @@
    (items :type list
           :serializable t
           :accessor order-items
-          :initarg :address)
+          :initarg :items)
+   (delivery :type number
+             :serializable t
+             :accessor order-delivery
+             :initarg :delivery)
    (state :type string
           :serializable t
           :accessor order-state
           :initarg :state))
   (:metaclass eshop.odm:persistent-class))
+
+(defun order-total (order)
+  (+ (order-delivery order)
+     (reduce #'+ (order-items order)
+             :key #'(lambda (order-item)
+                      (* (order-item-price order-item)
+                         (order-item-count order-item))))))
 
 (defclass address (eshop.odm:serializable-object)
   ((city :type string
@@ -50,13 +61,20 @@
 (defclass order-item (eshop.odm:serializable-object)
   ((article :type string
             :serializable t
-            :accessor order-item-article)
+            :accessor order-item-article
+            :initarg :article)
    (name :type string
          :serializable t
-         :accessor order-item-name)
+         :accessor order-item-name
+         :initarg :name)
    (price :type number
           :serializable t
-          :accessor order-item-price))
+          :accessor order-item-price
+          :initarg :price)
+   (count :type number
+          :serializable t
+          :accessor order-item-count
+          :initarg :count))
   (:metaclass eshop.odm:serializable-class))
 
 (define-condition account-error (error)

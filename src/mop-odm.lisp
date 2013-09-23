@@ -137,7 +137,9 @@
   (:method ((true (eql t)))
     t)
   (:method ((false (eql nil)))
-    nil))
+    nil)
+  (:method ((list list))
+    (mapcar #'serialize-slot list)))
 
 (defun write-link (class key)
   (plist-hash-table (list "%TYPE%" ":LINK"
@@ -158,7 +160,9 @@
   (:method ((true (eql t)))
     t)
   (:method ((false (eql nil)))
-    nil))
+    nil)
+  (:method ((list list))
+    (mapcar #'deserialize list)))
 
 (defgeneric deserialize-ht (ht class)
   (:method (ht (class (eql :link)))
@@ -169,7 +173,9 @@
            (class (find-class class-name)))
       (make-instance class 'ht ht))))
 
-(defmethod shared-initialize :around ((instance serializable-object) slots &rest initargs &key ((ht ht)) &allow-other-keys)
+(defmethod shared-initialize :around ((instance serializable-object) slots
+                                      &rest initargs
+                                      &key ((ht ht)) &allow-other-keys)
   (if *deserializing*
       (progn
         (apply #'call-next-method instance nil initargs)
@@ -179,7 +185,8 @@
                          (setf (slot-value instance slot-name)
                                (deserialize v)))))
                  ht)
-        (setf (slot-value instance 'modified) nil))
+        (when (typep instance 'persistent-object)
+          (setf (slot-value instance 'modified) nil)))
       (call-next-method)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; PERSISTENT
