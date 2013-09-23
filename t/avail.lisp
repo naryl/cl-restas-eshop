@@ -1,8 +1,6 @@
 
 (in-package eshop-test)
 
-(declaim (optimize (debug 3) (safety 3)))
-
 (deftestsuite avail (eshop-avail-test)
   ((base-url  "http://localhost:8080/")
    (user "")

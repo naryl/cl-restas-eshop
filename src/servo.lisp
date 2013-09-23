@@ -792,12 +792,19 @@ instead of: (let ((object (compute-object))) (setf (field1 object) (field2 objec
       (log:warn "Missing keys in plist ~A. Keys are ~A." plist keys)))
   plist)
 
+;; parse-float behaviour
+;; (parse-float "54.") -> 54.0
+;; (parse-float 54.0) -> 54.0
+;; (parse-float 54) -> 54
+;; (parse-float "") -> 0
+;; (parse-float nil) -> 0
 (defun parse-float (flt)
   (declare ((or number string null) flt))
   (cond
    ((numberp flt) flt)
    ((stringp flt) (or
-                   (parse-float:parse-float flt :junk-allowed t)
+                   (parse-float:parse-float
+                    (concatenate 'string flt "x") :junk-allowed t)
                    0))
    (t 0)))
 
