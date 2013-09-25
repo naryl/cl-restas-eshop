@@ -31,7 +31,8 @@
    (date :type number
          :serializable t
          :reader order-date
-         :initform (get-universal-time))
+         :initform (get-universal-time)
+         :initarg :date)
    (address :type address
             :serializable t
             :accessor order-address

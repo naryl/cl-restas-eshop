@@ -44,8 +44,6 @@
 
 (defun make-order-obj (order-id phone email city address username userfamily ekk bonuscount
                        comment delivery products)
-  (list order-id phone email city address username userfamily ekk bonuscount
-        comment delivery products)
   (let ((address (make-instance 'address :city city :address address))
         (products (mapcar #'(lambda (product)
                               (flet ((@ (field)
