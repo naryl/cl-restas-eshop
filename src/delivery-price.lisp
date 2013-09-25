@@ -130,7 +130,7 @@
         (max-price 0))
     (mapcar #'(lambda (v)
                 (let* ((product (getobj (getf v :articul) 'product))
-                       (d (yml.get-product-delivery-price1 product)))
+                       (d (get-product-delivery-price product)))
                   (if (> d max-price)
                       (setf max-price d))
                   (if (< d min-price)
