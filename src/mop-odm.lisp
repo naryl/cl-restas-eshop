@@ -37,15 +37,6 @@
 (in-package eshop.odm)
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (defmacro defvar/type (type name value &optional doc)
-    `(progn (declaim (type ,type ,name))
-            (defvar ,name ,value ,doc)))
-  (defmacro defun/ftype (name args (func args-type ret-type) &body body)
-  "Declares a function as with DEFUN with declared type"
-  (declare (ignore func))
-  `(progn (declaim (ftype (function ,args-type (values ,ret-type &optional)) ,name))
-          (defun ,name ,args
-            ,@body)))
   (defmacro db-eval (&body body)
     `(process-exec (*db-proc*)
        ,@body)))
@@ -323,7 +314,7 @@
 
 (defvar *db-proc* (make-instance 'process :name "DB"))
 
-(defvar/type list *transaction* nil)
+(defvar *transaction* nil)
 
 (defun connect (database &rest server-config &key hostname port)
   "Sets the server parameters and creates a mongo connection. Reconnection is automatic in
@@ -393,12 +384,13 @@
          (new-transaction-object obj))))
 
 (defun delete-instance (obj)
-  (clear-cache-partial-arguments *getobj-cache-cache* (list (type-of obj) (serializable-object-key obj)))
+  (getobj-remcache obj)
   (db-eval
     (mongo:delete-op (obj-collection obj)
                      (son (symbol-fqn 'key) (serializable-object-key obj)))))
 
 (defun update-instance (obj)
+  (getobj-remcache obj)
   (let ((class (class-of obj)))
     (let ((ht (serialize obj))
           (collection (obj-collection obj))
@@ -436,7 +428,7 @@
        (if *transaction*
            (,transaction)
            (catch 'rollback-transaction
-             (let ((*transaction* (list nil)))
+             (let ((*transaction* (make-hash-table :test #'equal)))
                (values
                 (prog1
                     (,transaction)
@@ -481,6 +473,11 @@
 (defcached (getobj-cache :timeout 600) (class key)
   (fetch-object class key))
 
+(defun getobj-remcache (obj)
+  (clear-cache-partial-arguments *getobj-cache-cache*
+                                 (list (type-of obj)
+                                       (serializable-object-key obj))))
+
 (defun fetch-object (class key)
   (let ((ht (let ((collection (obj-collection class)))
               (db-eval
@@ -495,30 +492,25 @@
 (defun commit-transaction ()
   (unless *transaction*
     (error "Attempt to commit while not inside transaction"))
-  (let ((cnt 0))
-    (dolist (obj *transaction*)
-      (when (and obj
-                 (persistent-object-modified obj))
-        (clear-cache-partial-arguments *getobj-cache-cache* (list (type-of obj) (serializable-object-key obj)))
-        (case (persistent-object-state obj)
-          (:rw
-           (setf (persistent-object-state obj) :ro)
-           (when (persistent-object-modified obj)
-             (update-instance obj))
-           (incf cnt))
-          (:deleted
-           (delete-instance obj)))))
-    cnt))
+  (maphash #'(lambda (key obj)
+               (when (persistent-object-modified obj)
+                 (case (persistent-object-state obj)
+                   (:rw
+                    (setf (persistent-object-state obj) :ro)
+                    (update-instance obj))
+                   (:deleted
+                    (delete-instance obj)))))
+           *transaction*)
+  (values))
 
 (defun rollback-transaction ()
   "Invalidates all transaction objects. Doesn't modify the DB."
   (cond (*transaction*
-         (dolist (obj *transaction*)
-           (when obj
-             (clear-cache-partial-arguments *getobj-cache-cache*
-                                            (list (type-of obj) (serializable-object-key obj)))
-             (setf (persistent-object-state obj)
-                   :deleted)))
+         (maphash #'(lambda (key obj)
+                      (declare (ignore key))
+                      (getobj-remcache obj)
+                      (setf (persistent-object-state obj) :deleted))
+                  *transaction*)
          (throw 'rollback-transaction (values nil nil)))
         (t
          (error "Attempt to rollback while not inside transaction"))))
@@ -527,9 +519,10 @@
   (when obj
     (setf (persistent-object-state obj)
           (cond (*transaction*
-                 (pushnew obj *transaction*
-                          :key (lambda (o) (when o (serializable-object-key o)))
-                          :test #'equal)
+                 (setf (gethash (list (type-of obj)
+                                      (serializable-object-key obj))
+                                *transaction*)
+                       obj)
                  :rw)
                 (t
                  :ro)))
@@ -545,9 +538,7 @@
   a transaction."
   (metric:count "getobj")
   (if *transaction*
-      (awhen (find key *transaction* :key #'(lambda (o)
-                                              (when o
-                                                (serializable-object-key o))))
+      (awhen (gethash (list class key) *transaction*)
         (return-from getobj-current it)))
   (when-let* ((db-obj (getobj-cache class key))
               (obj (deserialize db-obj)))

@@ -5,7 +5,12 @@
 
 (deftestsuite odm-persist (eshop-test)
   ()
-  (:setup (eshop.odm:connect "zifry-test")))
+  (:setup (eshop.odm:connect "zifry-test")
+          (dolist (coll (mapcar #'eshop.odm::symbol-fqn
+                                '(persistent container
+                                  item inline-item
+                                  indexed versioned)))
+            (mongo:drop-collection eshop.odm::*db* coll))))
 
 (defclass persistent (eshop.odm:persistent-object)
   ((slot :serializable t :initarg :slot))
@@ -47,7 +52,9 @@
          (key (eshop.odm:serializable-object-key obj)))
     (eshop.odm:with-transaction
       (let ((store-obj (eshop.odm:getobj 'persistent key)))
-        (eshop.odm::remobj store-obj)))
+        (eshop.odm::remobj store-obj)
+        (ensure-error (setf (slot-value store-obj 'slot) 43))
+        (ensure-error (slot-value store-obj 'slot))))
     (ensure (eq (eshop.odm:getobj 'persistent key) nil))))
 
 (addtest rollback
