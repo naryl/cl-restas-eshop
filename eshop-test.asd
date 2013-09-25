@@ -6,7 +6,8 @@
                (:file "avail")
                (:file "servo")
                (:file "odm-serialize")
-               (:file "odm-persist"))
+               (:file "odm-persist")
+               (:file "json"))
   :depends-on (:sb-cover
                :drakma
                :lift

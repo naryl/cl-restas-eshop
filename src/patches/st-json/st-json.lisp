@@ -102,3 +102,10 @@
                          accum))
              accum)
             (t (raise 'json-parse-error "Unrecognized value in JSON data: ~A" accum))))))
+
+(defmethod write-json-element ((element hash-table) stream)
+  (declare #.*optimize*)
+  (write-json-element
+   (make-jso :alist (loop :for key :being :the :hash-keys :of element :using (hash-value val)
+                          :collect (cons (princ-to-string key) val)))
+   stream))
