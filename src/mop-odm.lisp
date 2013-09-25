@@ -120,9 +120,7 @@
 
 (defgeneric serialize-slot (obj)
   (:method ((obj serializable-object))
-    (let ((ht (serialize obj)))
-      (remhash (symbol-fqn 'key) ht)
-      ht))
+    (serialize obj))
   (:method ((string string))
     string)
   (:method ((number number))
