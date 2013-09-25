@@ -20,14 +20,42 @@
           :serializable t
           :accessor order-phone
           :initarg :phone)
+   (email :type string
+          :serializable t
+          :accessor order-email
+          :initarg :email)
    (user :type user
          :serializable t
          :accessor order-user
          :initarg :user)
+   (date :type number
+         :serializable t
+         :reader order-date
+         :initform (get-universal-time))
    (address :type address
             :serializable t
             :accessor order-address
             :initarg :address)
+   (username :type string
+             :serializable t
+             :accessor order-username
+             :initarg :username)
+   (userfamily :type string
+               :serializable t
+               :accessor order-family
+               :initarg :userfamily)
+   (ekk :type string
+        :serializable t
+        :accessor order-ekk
+        :initarg :ekk)
+   (bonuscount :type number
+               :serializable t
+               :accessor order-bonuscount
+               :initarg :bonuscount)
+   (comment :type string
+            :serializable t
+            :accessor order-comment
+            :initarg :comment)
    (items :type list
           :serializable t
           :accessor order-items
@@ -51,11 +79,13 @@
 
 (defclass address (eshop.odm:serializable-object)
   ((city :type string
-         :serializable t)
-   (street :type string
-           :serializable t)
-   (building :type string
-             :serializable t))
+         :serializable t
+         :accessor address-city
+         :initarg :city)
+   (address :type string
+            :serializable t
+            :accessor address-address
+            :initarg :address))
   (:metaclass eshop.odm:serializable-class))
 
 (defclass order-item (eshop.odm:serializable-object)
@@ -71,6 +101,14 @@
           :serializable t
           :accessor order-item-price
           :initarg :price)
+   (site-price :type number
+               :serializable t
+               :accessor order-item-site-price
+               :initarg :site-price)
+   (bonuscount :type number
+               :serializable t
+               :accessor order-item-bonuscount
+               :initarg :bonuscount)
    (count :type number
           :serializable t
           :accessor order-item-count

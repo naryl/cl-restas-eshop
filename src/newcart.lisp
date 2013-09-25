@@ -32,10 +32,11 @@
                                      (setf price (if (zerop (siteprice product))
                                                      (price product)
                                                      (siteprice product)))
-                                     (setf sum (+ sum (* cnt price)))
-                                     (setf bonuscount (+ bonuscount (* cnt (bonuscount product) 10)))
-                                     (setf sum-counter (+ sum-counter cnt))
+                                     (incf sum (* cnt price))
+                                     (incf bonuscount (* cnt (bonuscount product) 10))
+                                     (incf sum-counter cnt)
                                      (list :numpos counter
+                                           :bonuscount (* cnt (bonuscount product) 10)
                                            :count cnt
                                            :name (name-seo product)
                                            :price (if (zerop price)
@@ -284,6 +285,12 @@
             (if  (and (string= delivery-type "pickup")
                       (string= pickup "pickup-3"))
                  (setf deliverysum 100))
+            (let ((real-comment (switch (delivery-type :test #'string=)
+                                  ("express" courier_comment)
+                                  ("pickup" pickup_comment)
+                                  (t ""))))
+              (make-order-obj order-id phone email city addr name family ekk
+                              bonuscount real-comment deliverysum products))
             (setf client-mail
                   (soy.sendmail:clientmail
                    (list :datetime (time.get-date-time)

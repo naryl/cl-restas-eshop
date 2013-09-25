@@ -120,7 +120,9 @@
 
 (defgeneric serialize-slot (obj)
   (:method ((obj serializable-object))
-    (serialize obj))
+    (let ((ht (serialize obj)))
+      (remhash (symbol-fqn 'key) ht)
+      ht))
   (:method ((string string))
     string)
   (:method ((number number))
@@ -175,21 +177,20 @@
 (defmethod shared-initialize :around ((instance serializable-object) slots
                                       &rest initargs
                                       &key ((ht ht)))
-  (if *deserializing*
-      (progn
-        (set-slots-from-ht instance ht)
-        (when (eq slots t)
-          (setf slots (mapcar #'slot-definition-name
-                              (class-slots (class-of instance)))))
-        (apply #'call-next-method
-               instance
-               (remove-if #'(lambda (slot-name)
-                              (slot-boundp instance slot-name))
-                          slots)
-               initargs)
-        (when (typep instance 'persistent-object)
-          (setf (slot-value instance 'modified) nil)))
-      (call-next-method)))
+  (cond (*deserializing*
+         (set-slots-from-ht instance ht)
+         (when (eq slots t)
+           (setf slots (mapcar #'slot-definition-name
+                               (class-slots (class-of instance)))))
+         (apply #'call-next-method
+                instance
+                (remove-if #'(lambda (slot-name)
+                               (slot-boundp instance slot-name))
+                           slots)
+                initargs)
+         (when (typep instance 'persistent-object)
+           (setf (slot-value instance 'modified) nil)))
+        (t (call-next-method))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; PERSISTENT
 
