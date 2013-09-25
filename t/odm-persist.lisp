@@ -5,7 +5,12 @@
 
 (deftestsuite odm-persist (eshop-test)
   ()
-  (:setup (eshop.odm:connect "zifry-test")))
+  (:setup (eshop.odm:connect "zifry-test")
+          (dolist (coll (mapcar #'eshop.odm::symbol-fqn
+                                '(persistent container
+                                  item inline-item
+                                  indexed versioned)))
+            (mongo:drop-collection eshop.odm::*db* coll))))
 
 (defclass persistent (eshop.odm:persistent-object)
   ((slot :serializable t :initarg :slot))
@@ -47,7 +52,9 @@
          (key (eshop.odm:serializable-object-key obj)))
     (eshop.odm:with-transaction
       (let ((store-obj (eshop.odm:getobj 'persistent key)))
-        (eshop.odm::remobj store-obj)))
+        (eshop.odm::remobj store-obj)
+        (ensure-error (setf (slot-value store-obj 'slot) 43))
+        (ensure-error (slot-value store-obj 'slot))))
     (ensure (eq (eshop.odm:getobj 'persistent key) nil))))
 
 (addtest rollback
@@ -124,8 +131,91 @@
 (addtest errors
  (let ((obj (make-instance 'persistent :slot 42)))
    (ensure-error (setf (slot-value obj 'slot) 43))
-    (eshop.odm::remobj obj)
-    (ensure-error (slot-value obj 'slot)))
+   (eshop.odm::remobj obj)
+   (ensure-error (slot-value obj 'slot)))
  (ensure-error (eshop.odm:rollback-transaction))
  (ensure-error (eshop.odm::remobj 42))
  (ensure-error (eshop.odm::remobj 'persistent)))
+
+(defclass container (eshop.odm:persistent-object)
+  ((item :initarg :item
+         :serializable t))
+  (:metaclass eshop.odm:persistent-class))
+
+(defclass item (eshop.odm:persistent-object)
+  ()
+  (:metaclass eshop.odm:persistent-class))
+
+(defclass inline-item (eshop.odm:serializable-object)
+  ()
+  (:metaclass eshop.odm:serializable-class))
+
+(addtest ref
+  (function-cache:clear-cache 'eshop.odm::*getobj-cache-cache*)
+  (let ((container (make-instance 'container
+                                  :item (make-instance 'item))))
+
+    (let ((container
+           (eshop.odm:getobj 'container
+                             (eshop.odm:serializable-object-key container))))
+      (ensure (= 1 (function-cache:cached-results-count
+                    eshop.odm::*getobj-cache-cache*)))
+      (ensure
+       (slot-value (eshop.odm:getobj 'container (eshop.odm:serializable-object-key container))
+                   'item))
+      (ensure (= 2 (function-cache:cached-results-count
+                    eshop.odm::*getobj-cache-cache*))))))
+
+(addtest inline-obj
+  (function-cache:clear-cache 'eshop.odm::*getobj-cache-cache*)
+  (let ((container (make-instance 'container
+                                  :item (make-instance 'inline-item))))
+
+    (let ((container
+           (eshop.odm:getobj 'container
+                             (eshop.odm:serializable-object-key container))))
+      (ensure (= 1 (function-cache:cached-results-count
+                    eshop.odm::*getobj-cache-cache*)))
+      (ensure
+       (slot-value (eshop.odm:getobj 'container (eshop.odm:serializable-object-key container))
+                   'item))
+      (ensure (= 1 (function-cache:cached-results-count
+                    eshop.odm::*getobj-cache-cache*))))))
+
+(defclass indexed (eshop.odm:persistent-object)
+  ((key :initarg :local-key
+        :index t
+        :serializable t)
+   (value :initarg :value
+          :serializable t))
+  (:metaclass eshop.odm:persistent-class))
+
+(addtest index
+  (let ((obj (make-instance 'indexed :local-key 1 :value 2)))
+    (ensure (eql (slot-value (eshop.odm:get-one 'indexed (mongo.sugar:son 'key 1)) 'value)
+                 2))))
+
+(defclass versioned (eshop.odm:persistent-object)
+  ((value :initarg :value
+          :serializable t
+          :versioned t))
+  (:metaclass eshop.odm:persistent-class))
+
+(addtest versions
+  (let* ((obj (make-instance 'versioned :value 1))
+         (key (eshop.odm:serializable-object-key obj)))
+    (sleep 1.1)
+    (eshop.odm:setobj obj 'value 2)
+    (sleep 1.1)
+    (let ((timestamp (get-universal-time)))
+      (sleep 1.1)
+      (eshop.odm:setobj obj 'value 3)
+      (ensure (equalp (mapcar #'cdr (eshop.odm:object-slot-history
+                                     'versioned key 'value))
+                      '(1 2 3)))
+      (ensure (eql (slot-value (eshop.odm:getobj 'versioned key :time timestamp)
+                               'value)
+                   2))
+      (ensure (eql (slot-value (eshop.odm:getobj 'versioned key)
+                               'value)
+                   3)))))

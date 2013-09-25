@@ -37,15 +37,6 @@
 (in-package eshop.odm)
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (defmacro defvar/type (type name value &optional doc)
-    `(progn (declaim (type ,type ,name))
-            (defvar ,name ,value ,doc)))
-  (defmacro defun/ftype (name args (func args-type ret-type) &body body)
-  "Declares a function as with DEFUN with declared type"
-  (declare (ignore func))
-  `(progn (declaim (ftype (function ,args-type (values ,ret-type &optional)) ,name))
-          (defun ,name ,args
-            ,@body)))
   (defmacro db-eval (&body body)
     `(process-exec (*db-proc*)
        ,@body)))
@@ -137,7 +128,9 @@
   (:method ((true (eql t)))
     t)
   (:method ((false (eql nil)))
-    nil))
+    nil)
+  (:method ((list list))
+    (mapcar #'serialize-slot list)))
 
 (defun write-link (class key)
   (plist-hash-table (list "%TYPE%" ":LINK"
@@ -158,7 +151,9 @@
   (:method ((true (eql t)))
     t)
   (:method ((false (eql nil)))
-    nil))
+    nil)
+  (:method ((list list))
+    (mapcar #'deserialize list)))
 
 (defgeneric deserialize-ht (ht class)
   (:method (ht (class (eql :link)))
@@ -169,17 +164,31 @@
            (class (find-class class-name)))
       (make-instance class 'ht ht))))
 
-(defmethod shared-initialize :around ((instance serializable-object) slots &rest initargs &key ((ht ht)) &allow-other-keys)
+(defun set-slots-from-ht (instance ht)
+  (maphash #'(lambda (k v)
+               (unless (string= k +class-key+)
+                 (let ((slot-name (fqn-symbol k)))
+                   (setf (slot-value instance slot-name)
+                         (deserialize v)))))
+           ht))
+
+(defmethod shared-initialize :around ((instance serializable-object) slots
+                                      &rest initargs
+                                      &key ((ht ht)))
   (if *deserializing*
       (progn
-        (apply #'call-next-method instance nil initargs)
-        (maphash #'(lambda (k v)
-                     (unless (string= k +class-key+)
-                       (let ((slot-name (fqn-symbol k)))
-                         (setf (slot-value instance slot-name)
-                               (deserialize v)))))
-                 ht)
-        (setf (slot-value instance 'modified) nil))
+        (set-slots-from-ht instance ht)
+        (when (eq slots t)
+          (setf slots (mapcar #'slot-definition-name
+                              (class-slots (class-of instance)))))
+        (apply #'call-next-method
+               instance
+               (remove-if #'(lambda (slot-name)
+                              (slot-boundp instance slot-name))
+                          slots)
+               initargs)
+        (when (typep instance 'persistent-object)
+          (setf (slot-value instance 'modified) nil)))
       (call-next-method)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; PERSISTENT
@@ -257,11 +266,6 @@
            (desc-index (find :desc direct-slot-definitions :key #'slot-index))
            (both-index (or (find :both direct-slot-definitions :key #'slot-index)
                            (and asc-index desc-index))))
-      (when (and versioned
-                 (not (slot-serializable-p slot)))
-        (error "Versioned but not serializable slot makes no sense.
-  Slot: ~A. Class: ~A"
-               slot-name class))
       (setf (slot-value slot 'versioned) versioned)
       (setf (slot-value slot 'index) (cond (asc-index :asc)
                                            (desc-index :desc)
@@ -310,7 +314,7 @@
 
 (defvar *db-proc* (make-instance 'process :name "DB"))
 
-(defvar/type list *transaction* nil)
+(defvar *transaction* nil)
 
 (defun connect (database &rest server-config &key hostname port)
   "Sets the server parameters and creates a mongo connection. Reconnection is automatic in
@@ -375,22 +379,18 @@
          (setf (slot-value obj 'state) :ro))
         (t ; Actually making a new one
          (if *transaction*
-             (setf (slot-value obj 'modified) :new)
-             (store-instance obj))
+             (setf (slot-value obj 'modified) t)
+             (update-instance obj))
          (new-transaction-object obj))))
 
-(defun store-instance (obj)
-  (let ((collection (obj-collection obj))
-        (ht (serialize obj)))
-      (db-eval
-        (mongo:insert-op collection ht))))
-
 (defun delete-instance (obj)
+  (getobj-remcache obj)
   (db-eval
     (mongo:delete-op (obj-collection obj)
                      (son (symbol-fqn 'key) (serializable-object-key obj)))))
 
 (defun update-instance (obj)
+  (getobj-remcache obj)
   (let ((class (class-of obj)))
     (let ((ht (serialize obj))
           (collection (obj-collection obj))
@@ -401,7 +401,8 @@
         (mongo:update-op collection
                          (son (symbol-fqn 'key)
                               (serializable-object-key obj))
-                         ht)
+                         ht
+                         :upsert t)
         (when slot-changes
           (mongo:insert-op version-collection slot-changes))))))
 
@@ -427,7 +428,7 @@
        (if *transaction*
            (,transaction)
            (catch 'rollback-transaction
-             (let ((*transaction* (list nil)))
+             (let ((*transaction* (make-hash-table :test #'equal)))
                (values
                 (prog1
                     (,transaction)
@@ -448,7 +449,7 @@
         (error "Attempt to access a slot of deleted persistent object"))))
 
 (defun allow-modifying-slot (obj slot)
-  (or (eq (slot-definition-name slot) 'state)
+  (or (find (slot-definition-name slot) '(state modified))
       (not (slot-boundp obj 'state))
       (eq :rw (persistent-object-state obj))))
 
@@ -465,49 +466,51 @@
     (cond ((not (allow-modifying-slot obj slot))
            (error "Attempt to modify a slot of read-only persistent object"))
           ((slot-changed new-value obj slot)
-           (unless (and (slot-boundp obj 'modified)
-                        (eq :new (persistent-object-modified obj)))
-             (setf (persistent-object-modified obj) t))
+           (setf (persistent-object-modified obj) t)
            (setf (slot-modified slot) t))))
   (call-next-method))
 
 (defcached (getobj-cache :timeout 600) (class key)
+  (fetch-object class key))
+
+(defun getobj-remcache (obj)
+  (clear-cache-partial-arguments *getobj-cache-cache*
+                                 (list (type-of obj)
+                                       (serializable-object-key obj))))
+
+(defun fetch-object (class key)
   (let ((ht (let ((collection (obj-collection class)))
-                (db-eval
-                  (mongo:find-one collection
-                                  :query (son (symbol-fqn 'key) key)
-                                  :selector (son "_id" 0))))))
-      (when (and ht
-                 (string= (symbol-fqn class)
-                          (gethash +class-key+ ht)))
-        ht)))
+              (db-eval
+                (mongo:find-one collection
+                                :query (son (symbol-fqn 'key) key)
+                                :selector (son "_id" 0))))))
+    (when (and ht
+               (string= (symbol-fqn class)
+                        (gethash +class-key+ ht)))
+      ht)))
 
 (defun commit-transaction ()
   (unless *transaction*
     (error "Attempt to commit while not inside transaction"))
-  (let ((cnt 0))
-    (dolist (obj *transaction*)
-      (when (and obj
-                 (persistent-object-modified obj))
-        (clear-cache-partial-arguments *getobj-cache-cache* (list (type-of obj) (serializable-object-key obj)))
-        (case (persistent-object-state obj)
-          (:rw
-           (setf (persistent-object-state obj) :ro)
-           (case (persistent-object-modified obj)
-             (:new (store-instance obj))
-             ((t) (update-instance obj)))
-           (incf cnt))
-          (:deleted
-           (delete-instance obj)))))
-    cnt))
+  (maphash #'(lambda (key obj)
+               (when (persistent-object-modified obj)
+                 (case (persistent-object-state obj)
+                   (:rw
+                    (setf (persistent-object-state obj) :ro)
+                    (update-instance obj))
+                   (:deleted
+                    (delete-instance obj)))))
+           *transaction*)
+  (values))
 
 (defun rollback-transaction ()
   "Invalidates all transaction objects. Doesn't modify the DB."
   (cond (*transaction*
-         (dolist (obj *transaction*)
-           (when obj
-             (setf (persistent-object-state obj)
-                   :deleted)))
+         (maphash #'(lambda (key obj)
+                      (declare (ignore key))
+                      (getobj-remcache obj)
+                      (setf (persistent-object-state obj) :deleted))
+                  *transaction*)
          (throw 'rollback-transaction (values nil nil)))
         (t
          (error "Attempt to rollback while not inside transaction"))))
@@ -516,9 +519,10 @@
   (when obj
     (setf (persistent-object-state obj)
           (cond (*transaction*
-                 (pushnew obj *transaction*
-                          :key (lambda (o) (when o (serializable-object-key o)))
-                          :test #'equal)
+                 (setf (gethash (list (type-of obj)
+                                      (serializable-object-key obj))
+                                *transaction*)
+                       obj)
                  :rw)
                 (t
                  :ro)))
@@ -534,9 +538,7 @@
   a transaction."
   (metric:count "getobj")
   (if *transaction*
-      (awhen (find key *transaction* :key #'(lambda (o)
-                                              (when o
-                                                (serializable-object-key o))))
+      (awhen (gethash (list class key) *transaction*)
         (return-from getobj-current it)))
   (when-let* ((db-obj (getobj-cache class key))
               (obj (deserialize db-obj)))
@@ -545,9 +547,9 @@
 (defun remobj (obj)
   "Deletes an object from the database"
   (setf (persistent-object-state obj) :deleted)
-  (setf (persistent-object-modified obj) t)
-  (unless *transaction*
-    (delete-instance obj)))
+  (if *transaction*
+      (setf (persistent-object-modified obj) t)
+      (delete-instance obj)))
 
 (defun setobj (obj-or-class &rest slots-values)
   "Modifies an object in a transaction.
@@ -606,15 +608,20 @@
            ,@body))
        ,result-name)))
 
-(defun get-one (class query)
+(defun get-one (class raw-query)
   "Fetches an object by mongo query and stores it in cache by key"
-  (let ((obj (db-eval
-               (mongo:find-one (obj-collection class)
-                               :query query
-                               :selector (son (symbol-fqn 'key) 1
-                                              "_id" 0)))))
-    (when obj
-      (getobj class (serializable-object-key obj)))))
+  (let ((query (make-hash-table :test #'equal)))
+    (maphash #'(lambda (k v)
+                 (setf (gethash (symbol-fqn k) query)
+                       v))
+             raw-query)
+    (let ((key-ht (db-eval
+                 (mongo:find-one (obj-collection class)
+                                 :query query
+                                 :selector (son (symbol-fqn 'key) 1
+                                                "_id" 0)))))
+      (when key-ht
+        (getobj class (gethash (symbol-fqn 'key) key-ht))))))
 
 ;;;; Version queries
 
@@ -627,19 +634,22 @@
                             :fields (son "_id" 0
                                          "SLOT" 0)))))
     (sort (mapcar #'(lambda (obj)
-                 (cons (gethash "TIMESTAMP" obj)
-                       (gethash "VALUE" obj)))
+                      (cons (unix-to-universal-time (gethash "TIMESTAMP" obj))
+                            (gethash "VALUE" obj)))
                   raw-data)
           #'<
           :key #'car)))
 
 (defun getobj-for-date (class key time)
   ;; Not using GETOBJ because we don't want a writable object here even in transaction
-  (let ((current-object (getobj-cache class key))
+  ;; Not using GETOBJ-CACHE either because we need an uninterned copy so we can modify slots
+  (let ((current-object (fetch-object class key))
         (version-collection (obj-collection class t)))
     (let ((actual-slots
            (mongo:aggregate version-collection
-                            (son "$match" (son "TIMESTAMP" (son "$lte" time)
+                            (son "$match" (son "TIMESTAMP"
+                                               (son "$lte"
+                                                    (universal-to-unix-time time))
                                                (symbol-fqn 'key) key))
                             (son "$sort" (son "TIMESTAMP" -1))
                             (son "$group" (son "_id" "$SLOT"
@@ -689,6 +699,9 @@
 
 (defvar *unix-epoch-difference*
   (encode-universal-time 0 0 0 1 1 1970 0))
+
+(defun unix-to-universal-time (unix-time)
+  (+ unix-time *unix-epoch-difference*))
 
 (defun universal-to-unix-time (universal-time)
   (- universal-time *unix-epoch-difference*))

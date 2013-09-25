@@ -22,16 +22,6 @@
       (ensure (slot-equal a b 'int))
       (ensure (slot-equal a b 'str)))))
 
-(addtest invert-json
- (let* ((a (make-instance 'serializable-invert :int 42 :str "Hi!"))
-         (str (eshop.odm:serialize a :json))
-         (b (eshop.odm:deserialize str :json)))
-    (flet ((slot-equal (obja objb slot)
-             (equal (slot-value obja slot)
-                    (slot-value objb slot))))
-      (ensure (slot-equal a b 'int))
-      (ensure (slot-equal a b 'str)))))
-
 (defclass serializable-special (eshop.odm:serializable-object)
   ((transient :initarg :transient)
    (unbound :serializable t))
