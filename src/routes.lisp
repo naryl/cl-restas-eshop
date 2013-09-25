@@ -8,6 +8,16 @@
 
 (clear)
 
+;;;; no cache (use hunchentoot no-cache instead if restas:@no-cache)
+
+(defclass no-cache-route (routes:proxy-route) ())
+
+(defun @no-cache (route)
+  (make-instance 'timer-route :target route))
+
+(defmethod restas:process-route :before ((route no-cache-route) bindings)
+  (hunchentoot:no-cache))
+
 ;;;; Request tracking decoration
 
 (defclass timer-route (routes:proxy-route) ())
@@ -227,7 +237,7 @@
   (newcart-show))
 
 (restas:define-route thanks-route ("/thanks"
-                                   :decorators '(@timer @session))
+                                   :decorators '(@timer @session @no-cache))
   (thanks-page))
 
 
