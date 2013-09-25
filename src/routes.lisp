@@ -13,7 +13,7 @@
 (defclass no-cache-route (routes:proxy-route) ())
 
 (defun @no-cache (route)
-  (make-instance 'timer-route :target route))
+  (make-instance 'no-cache-route :target route))
 
 (defmethod restas:process-route :before ((route no-cache-route) bindings)
   (hunchentoot:no-cache))
