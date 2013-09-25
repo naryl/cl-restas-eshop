@@ -18,7 +18,7 @@
 (defmethod restas:process-route :around ((route timer-route) bindings)
   "log timing and additional data for current route processing and
    update current thread information"
-  (let ((*current-route-symbol*
+ (let ((*current-route-symbol*
          (restas:route-symbol (routes:proxy-route-target route))))
     (metric:time ((concatenate 'string "process-route." (route-name)))
       (call-next-method))))
@@ -47,13 +47,13 @@
   (let ((full-uri (format nil "~A" (restas:request-full-uri))))
     (hunchentoot:redirect (concatenate 'string "http://320-8080.ru"
                                        (subseq full-uri (search "/img/" full-uri)))
-                          :code 301)))
+                          :code hunchentoot:+http-moved-permanently+)))
 
 (restas:define-route request-static-route-pic ("/pic/*")
   (let* ((full-uri (format nil "~A" (restas:request-full-uri))))
     (hunchentoot:redirect (concatenate 'string "http://320-8080.ru"
                                        (subseq full-uri (search "/pic/" full-uri)))
-                          :code 301)))
+                          :code hunchentoot:+http-moved-permanently+)))
 
 (restas:define-route request-static-route-css ("/css/*")
   (let ((full-uri (format nil "~A" (restas:request-full-uri))))

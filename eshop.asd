@@ -47,13 +47,13 @@
                         :pathname "."
                         :serial t
                         :components ((:file "main-page")
-                                     (:file "static-pages")
                                      (:file "catalog")
                                      (:file "newcart")
                                      (:file "gateway")
                                      (:file "search")
                                      (:file "render")
                                      (:file "articles")
+                                     (:file "static-pages" :depends-on ("articles"))
                                      (:file "cart")
                                      (:file "oneclickcart")
                                      (:file "filters")

@@ -24,6 +24,7 @@
     (log:info "START:RESTOR:static-pages")
     (let ((*storage-articles* (make-hash-table :test #'equal)))
       (static-pages.process-dir (config.get-option :paths :path-to-static-pages) "static")
+      (log:info *storage-articles*)
       (setf t-storage *storage-articles*))
     (setf static-pages.*storage* t-storage)
     (log:info "FINISH:RESTOR:static-pages")))
