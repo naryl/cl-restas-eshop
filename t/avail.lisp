@@ -8,7 +8,8 @@
   (:function
    (request (page)
             (drakma:http-request (concatenate 'string base-url page)
-                                 :basic-authorization (list user pass)))
+                                 :basic-authorization (list user pass))))
+  (:function
    (check-no-cache (page)
                    (trivial-timeout:with-timeout (1)
                      (multiple-value-bind (data result headers) (request page)
@@ -19,7 +20,8 @@
                             (search "no-cache" (assoc :cache-control  headers))
                             (search "must-revalidate" (assoc :cache-control  headers))
                             (search "post-check=0" (assoc :cache-control  headers))
-                            (search "pre-check=0" (assoc :cache-control  headers))))))
+                            (search "pre-check=0" (assoc :cache-control  headers)))))))
+  (:function
    (verify-page (page)
                 (trivial-timeout:with-timeout (1)
                   (ensure (eql 200
