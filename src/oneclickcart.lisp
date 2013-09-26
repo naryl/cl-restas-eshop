@@ -17,7 +17,7 @@
       (setf count cnt)
       (setf pricesum sm))
     (when (zerop pricesum)
-        (setf pricesum ""))
+      (setf pricesum ""))
     (let ((real-comment (format nil "Заказ через форму один клик ~@[!!! Предзаказ !!!~]"
                                 (preorder (getobj articul 'product)))))
       (make-order-obj order-id phone email "" "" name "" ""
