@@ -6,11 +6,24 @@
    (user "")
    (pass ""))
   (:function
+   (request (page)
+            (drakma:http-request (concatenate 'string base-url page)
+                                 :basic-authorization (list user pass)))
+   (check-no-cache (page)
+                   (trivial-timeout:with-timeout (1)
+                     (multiple-value-bind (data result headers) (request page)
+                       (and (eql 200 result)
+                            (equal "no-cache" (assoc :pragma  headers))
+                            (search "no-store" (assoc :cache-control  headers))
+                            (search "no-cache" (assoc :cache-control  headers))
+                            (search "no-cache" (assoc :cache-control  headers))
+                            (search "must-revalidate" (assoc :cache-control  headers))
+                            (search "post-check=0" (assoc :cache-control  headers))
+                            (search "pre-check=0" (assoc :cache-control  headers))))))
    (verify-page (page)
                 (trivial-timeout:with-timeout (1)
                   (ensure (eql 200
-                               (second (multiple-value-list (drakma:http-request (concatenate 'string base-url page)
-                                                                                 :basic-authorization (list user pass)))))))))
+                               (second (multiple-value-list (request page))))))))
   (:tests
    (avail (verify-page ""))
    (cart (verify-page "cart"))
@@ -41,4 +54,7 @@
    ((verify-page "noutbuki?price-f=1&price-t=2&screen-size-f=&screen-size-t=&videoram-f=&videoram-t=&ram-f=&ram-t=&harddrive-f=&harddrive-t=&work-on-battery-f=&work-on-battery-t=&frequency-f=&frequency-t=&webcam-f=&webcam-t=&weight-f=&weight-t=&fullfilter=1")) ; zero-result filter
    ((verify-page "noutbuki?price-f=2000&price-t=40000&fullfilter=1")) ; filter
    ((verify-page "noutbuki?price-f=1&price-t=2&fullfilter=1")) ; zero-result filter
-))
+   )
+  (:tests
+   (thanks-no-cache (check-no-cache "thanks")))
+  )
