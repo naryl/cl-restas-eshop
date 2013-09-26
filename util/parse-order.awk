@@ -82,8 +82,8 @@ function getval (line) {
 function trim (string) {
 	gsub(/[ \t]+$/, "", string)
 	gsub(/^[ \t]+/, "", string)
-	gsub(/"/, "\\\"", string)
 	gsub(/\\/, "\\\\", string)
+	gsub(/"/, "\\\"", string)
 	return string
 }
 
