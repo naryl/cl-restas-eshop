@@ -2,9 +2,8 @@
 
 (in-package #:eshop)
 
-(defclass eshop-render () ())
 
-(setf *default-render-method* (make-instance 'eshop-render))
+(defclass eshop-render () ())
 
 (defun render.breadcrumbs (in &optional out)
   "Processing parents until nil, creating breadcrumbs"

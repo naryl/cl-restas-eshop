@@ -52,10 +52,11 @@
    (noutbuki-i-komputery (verify-page "noutbuki-i-komputery"))
    (noutbuki (verify-page "noutbuki"))
    (product (verify-page "215543")) ; Product page
-   ((verify-page "noutbuki?price-f=2000&price-t=40000&screen-size-f=&screen-size-t=&videoram-f=&videoram-t=&ram-f=&ram-t=&harddrive-f=&harddrive-t=&work-on-battery-f=&work-on-battery-t=&frequency-f=&frequency-t=&webcam-f=&webcam-t=&weight-f=&weight-t=&fullfilter=1")) ; filter
-   ((verify-page "noutbuki?price-f=1&price-t=2&screen-size-f=&screen-size-t=&videoram-f=&videoram-t=&ram-f=&ram-t=&harddrive-f=&harddrive-t=&work-on-battery-f=&work-on-battery-t=&frequency-f=&frequency-t=&webcam-f=&webcam-t=&weight-f=&weight-t=&fullfilter=1")) ; zero-result filter
-   ((verify-page "noutbuki?price-f=2000&price-t=40000&fullfilter=1")) ; filter
-   ((verify-page "noutbuki?price-f=1&price-t=2&fullfilter=1")) ; zero-result filter
+   (filter-full (verify-page "noutbuki?price-f=2000&price-t=40000&screen-size-f=&screen-size-t=&videoram-f=&videoram-t=&ram-f=&ram-t=&harddrive-f=&harddrive-t=&work-on-battery-f=&work-on-battery-t=&frequency-f=&frequency-t=&webcam-f=&webcam-t=&weight-f=&weight-t=&fullfilter=1")) ; filter
+   (filter-full-2(verify-page "noutbuki?price-f=1&price-t=2&screen-size-f=&screen-size-t=&videoram-f=&videoram-t=&ram-f=&ram-t=&harddrive-f=&harddrive-t=&work-on-battery-f=&work-on-battery-t=&frequency-f=&frequency-t=&webcam-f=&webcam-t=&weight-f=&weight-t=&fullfilter=1")) ; zero-result filter
+   (filter-short (verify-page "noutbuki?price-f=2000&price-t=40000&fullfilter=1")) ; filter
+   (filter-short-2 (verify-page "noutbuki?price-f=1&price-t=2&fullfilter=1")) ; zero-result filter
+   (model-filter (verify-page "noutbuki/noutbuki-acer-seria-aspire-one"))
    )
   (:tests
    (thanks-no-cache (check-no-cache "thanks")))

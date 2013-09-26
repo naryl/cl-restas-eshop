@@ -91,8 +91,8 @@
 
 
 ;; login page
-(restas:define-route login-page-route ("administration-super-panel/login"
-                                       :decorators '(@timer @session))
+(restas:define-route login-page-route ("administration-super-panel/login")
+  (:decorators '@timer '@session)
   (flet ((make-error (msg)
            (return-from login-page-route
              (soy.admin:main

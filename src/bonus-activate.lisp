@@ -4,8 +4,8 @@
 
 (defvar *bonus-ekk* (make-hash-table :test #'equal))
 
-(restas:define-route activatebonus-route ("/activatebonus2"
-                                          :decorators '(@timer))
+(restas:define-route activatebonus-route ("/activatebonus2")
+  (:decorators '@timer)
   (bonus-activate.proccess))
 
 (defun bonus-activate.proccess ()

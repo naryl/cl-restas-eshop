@@ -5,11 +5,7 @@
 (defun email.valid-email-p (email)
   "Ensure that there is an @ and a . and email not containing @s before and after each."
   (declare ((or string list) email))
-  (every #'(lambda (addr)
-             (handler-case
-                 (data-sift:sift 'data-sift:email addr)
-               (data-sift:validation-fail () nil)))
-         (ensure-list email)))
+  (apply (data-sift:compile-parse-rule 'data-sift:email)  (ensure-list email)))
 
 (alexandria:define-constant +email-warn-template+
     (make-instance 'sendmail:email

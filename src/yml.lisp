@@ -1,4 +1,4 @@
-;;;; yml.lisp
+ ;;;; yml.lisp
 
 (in-package #:eshop)
 
@@ -156,10 +156,10 @@
   (remove-if-not #'yml.available-for-order-p
                  (storage.get-recursive-products group (complement #'active))))
 
-;;;
-;;; icontext full offers markup
-(restas:define-route yml-icontext-route ("/yml-icontext"
-                                :decorators '(@timer))
+ ;;;
+ ;;; icontext full offers markup
+(restas:define-route yml-icontext-route ("/yml-icontext")
+  (:decorators '@timer)
   (yml-page-icontext))
 
 

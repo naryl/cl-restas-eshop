@@ -2,12 +2,6 @@
 
 (in-package #:eshop)
 
-(defun clear ()
-  (loop :for var :being :the :symbols :in :eshop.impl.routes :do (unintern var))
-  (restas:reconnect-all-routes))
-
-(clear)
-
 ;;;; no cache (use hunchentoot no-cache instead if restas:@no-cache)
 
 (defclass no-cache-route (routes:proxy-route) ())
@@ -104,8 +98,8 @@
 
 (defvar *search-tips* (make-instance 'search-tips:search-tips))
 
-(restas:define-route request-suggestions ("/api/suggestions" :method :get
-                                                             :decorators '(@timer))
+(restas:define-route request-suggestions ("/api/suggestions" :method :get)
+  (:decorators '@timer)
   (let ((prefix (tbnl:get-parameter "prefix"))
         (k (aif (tbnl:get-parameter "k") (parse-integer it) 10)))
     (if (or (null prefix) (null k) (not (typep k 'integer)))
@@ -133,8 +127,10 @@
 (defun route-filter (filter)
   (getobj filter 'filter))
 
-(restas:define-route filter-route ("/:key/:filter" :requirement #'test-route-filter
-                                                   :decorators '(@timer @session))
+(restas:define-route filter-route ("/:key/:filter")
+  (:requirement 'test-route-filter)
+  (:decorators '@timer '@session)
+  (:render-method (make-instance 'eshop-render))
   (declare (ignore key))
   (route-filter filter))
 
@@ -173,8 +169,10 @@
             ;; else: static pages
             (gethash key static-pages.*storage*))))
 
-(restas:define-route storage-object-route  ("/:key" :requirement #'test-route-storage-object
-                                                    :decorators '(@timer @session))
+(restas:define-route storage-object-route  ("/:key")
+  (:requirement 'test-route-storage-object)
+  (:decorators '@timer '@session)
+  (:render-method (make-instance 'eshop-render))
   (route-storage-object key))
 
 (restas:define-route storage-object/-route ("/:key/")
@@ -185,21 +183,22 @@
 (defun test-get-parameters ()
   t) ;;(null (request-get-plist)))
 
-(restas:define-route main-route ("/" :requirement #'test-get-parameters
-                                     :decorators '(@timer @session))
+(restas:define-route main-route ("/")
+  (:requirement 'test-get-parameters)
+  (:decorators '@timer '@session)
   (main-page-show))
 
 ;; CATALOG
 
-(restas:define-route catalog-page-route ("/catalog"
-                                         :decorators '(@timer @session))
+(restas:define-route catalog-page-route ("/catalog")
+  (:decorators '@timer '@session)
   (default-page (catalog.catalog-entity)
       :keywords "Купить компьютер и другую технику вы можете в Цифрах. Цифровая техника в Интернет-магазине 320-8080.ru"
       :description "каталог, компьютеры, купить компьютер, компьютерная техника, Петербург, Спб, Питер, Санкт-Петербург, продажа компьютеров, магазин компьютерной техники, магазин компьютеров, интернет магазин компьютеров, интернет магазин компьютерной техники, продажа компьютерной техники, магазин цифровой техники, цифровая техника, Цифры, 320-8080"
       :title "Каталог интернет-магазина: купить компьютер, цифровую технику, комплектующие в Санкт-Петербурге"))
 
-(restas:define-route sitemap-page-route ("/sitemap"
-                                         :decorators '(@timer @session))
+(restas:define-route sitemap-page-route ("/sitemap")
+  (:decorators '@timer '@session)
   (default-page (catalog.sitemap-page)
       :keywords "Купить компьютер и другую технику вы можете в Цифрах. Цифровая техника в Интернет-магазине 320-8080.ru"
       :description "каталог, компьютеры, купить компьютер, компьютерная техника, Петербург, Спб, Питер, Санкт-Петербург, продажа компьютеров, магазин компьютерной техники, магазин компьютеров, интернет магазин компьютеров, интернет магазин компьютерной техники, продажа компьютерной техники, магазин цифровой техники, цифровая техника, Цифры, 320-8080"
@@ -208,55 +207,55 @@
 
 ;; CART & CHECKOUTS & THANKS
 
-(restas:define-route cart-route ("/cart"
-                                 :decorators '(@timer @session))
+(restas:define-route cart-route ("/cart")
+  (:decorators '@timer '@session)
   (cart-page))
 
-(restas:define-route checkout-route ("/checkout"
-                                     :decorators '(@timer @session))
+(restas:define-route checkout-route ("/checkout")
+  (:decorators '@timer '@session)
   (newcart-show))
 
-(restas:define-route checkout-post-route ("/checkout" :method :post
-                                                      :decorators '(@timer @session))
+(restas:define-route checkout-post-route ("/checkout" :method :post)
+  (:decorators '@timer '@session)
   (newcart-show))
 
-(restas:define-route checkout0-route ("/checkout0"
-                                      :decorators '(@timer @session))
+(restas:define-route checkout0-route ("/checkout0")
+  (:decorators '@timer '@session)
   (newcart-show))
 
-(restas:define-route checkout1-route ("/checkout1"
-                                      :decorators '(@timer @session))
+(restas:define-route checkout1-route ("/checkout1")
+  (:decorators '@timer '@session)
   (newcart-show))
 
-(restas:define-route checkout2-route ("/checkout2"
-                                      :decorators '(@timer @session))
+(restas:define-route checkout2-route ("/checkout2")
+  (:decorators '@timer '@session)
   (newcart-show))
 
-(restas:define-route checkout3-route ("/checkout3"
-                                      :decorators '(@timer @session))
+(restas:define-route checkout3-route ("/checkout3")
+  (:decorators '@timer '@session)
   (newcart-show))
 
-(restas:define-route thanks-route ("/thanks"
-                                   :decorators '(@timer @session @no-cache))
+(restas:define-route thanks-route ("/thanks")
+  (:decorators '@timer '@session '@no-cache)
   (thanks-page))
 
 
 ;; GATEWAY
 
-(restas:define-route gateway/post-route ("/gateway" :method :post
-                                                    :decorators '(@timer))
+(restas:define-route gateway/post-route ("/gateway" :method :post)
+  (:decorators '@timer)
   (gateway-page))
 
 ;; SEARCH
 
-(restas:define-route search-route ("/search"
-                                   :decorators '(@timer @session))
+(restas:define-route search-route ("/search")
+  (:decorators '@timer '@session)
   (search-page))
 
 ;; YML
 
-(restas:define-route yml-route ("/yml"
-                                :decorators '(@timer))
+(restas:define-route yml-route ("/yml")
+  (:decorators '@timer)
   (yml-page))
 
 (restas:define-route yml/-route ("/yml/")
@@ -273,72 +272,77 @@
   (not (null (gethash (caddr (request-list)) *storage-articles*))))
 
 ;;архив матерьялов
-(restas:define-route article-route ("/articles" :requirement #'test-article-get-parameters
-                                                :decorators '(@timer @session))
+(restas:define-route article-route ("/articles")
+  (:requirement 'test-article-get-parameters)
+  (:decorators '@timer '@session)
   (articles-page (request-get-plist)))
 
 ;;список статей
-(restas:define-route article-papers-route ("/articles/papers" :requirement #'test-article-get-parameters
-                                                              :decorators '(@timer @session))
+(restas:define-route article-papers-route ("/articles/papers")
+  (:requirement 'test-article-get-parameters)
+  (:decorators '@timer '@session)
   (let ((request-get-plist (request-get-plist)))
     (if (null (getf request-get-plist :tags))
         (setf (getf request-get-plist :tags) "Статьи"))
     (articles-page request-get-plist)))
+
 ;;список акции
-(restas:define-route article-akcii-route ("/articles/akcii" :requirement #'test-article-get-parameters
-                                                             :decorators '(@timer @session))
+(restas:define-route article-akcii-route ("/articles/akcii")
+  (:requirement 'test-article-get-parameters)
+  (:decorators '@timer '@session)
   (let ((request-get-plist (request-get-plist)))
     (if (null (getf request-get-plist :tags))
         (setf (getf request-get-plist :tags) "текущии акции"))
     (articles-page request-get-plist)))
 
 ;;список новостей
-(restas:define-route article-news-route ("/articles/news" :requirement
-                                                          #'test-article-get-parameters
-                                                          :decorators '(@timer @session))
+(restas:define-route article-news-route ("/articles/news")
+  (:requirement 'test-article-get-parameters)
+  (:decorators '@timer '@session)
   (let ((request-get-plist (request-get-plist)))
     (if (null (getf request-get-plist :tags))
         (setf (getf request-get-plist :tags) "Новости"))
     (articles-page request-get-plist)))
 
 ;;список обзоры
-(restas:define-route article-review-route ("/articles/reviews" :requirement
-                                                               #'test-article-get-parameters
-                                                               :decorators '(@timer @session))
+(restas:define-route article-review-route ("/articles/reviews")
+  (:requirement 'test-article-get-parameters)
+  (:decorators '@timer '@session)
   (let ((request-get-plist (request-get-plist)))
     (if (null (getf request-get-plist :tags))
         (setf (getf request-get-plist :tags) "Обзоры"))
     (articles-page request-get-plist)))
 
 ;;конкретная статья
-(restas:define-route article-key-route ("/articles/:key" :requirement
-                                                         #'test-route-article-object
-                                                         :decorators '(@timer @session))
+(restas:define-route article-key-route ("/articles/:key")
+  (:requirement 'test-route-article-object)
+  (:decorators '@timer '@session)
+  (:render-method (make-instance 'eshop-render))
   (gethash (caddr (request-list)) *storage-articles*))
-
 
 ;; 404
 
 ;;необходимо отдавать 404 ошибку для несуществеющих страниц
-(restas:define-route not-found-route ("*any"
-                                      :decorators '(@timer @session))
+
+(restas:define-route not-found-route ("*any")
+  (:decorators '@timer '@session)
   ;; (log:warn "error 404: ~A" any)
   (restas:abort-route-handler
    (babel:string-to-octets
     (default-page
-      (soy.er404:content
-       (list :menu (render.menu)
-             :dayproducts (main-page-products-show (daily *main-page.storage*) 4)
-             :olist (soy.main-page:olist)
-             :lastreview (soy.main-page:lastreview (main-page-show-lastreview (review *main-page.storage*)))
-             :bestpriceproducts (main-page-products-show (best *main-page.storage*) 4)
-             :hit (soy.main-page:hit (list :items (main-page-products-show (hit *main-page.storage*) 2)))
-             :newproducts (main-page-products-show (new *main-page.storage*) 4)
-             :post (soy.main-page:post
-                    (list :news (articles-view-articles (filters.limit-end (articles.sort (get-articles-by-tags (get-articles-list) "новости")) 3))
-                          :akcii (articles-view-articles(filters.limit-end (articles.sort (get-articles-by-tags (get-articles-list) "акции")) 3))
-                          :reviews (articles-view-articles(filters.limit-end (articles.sort (get-articles-by-tags (get-articles-list) "обзоры")) 3))))
-             :plus (soy.main-page:plus)))
+        (soy.er404:content
+         (list :menu (render.menu)
+               :dayproducts (main-page-products-show (daily *main-page.storage*) 4)
+               :olist (soy.main-page:olist)
+               :lastreview (soy.main-page:lastreview (main-page-show-lastreview (review *main-page.storage*)))
+               :bestpriceproducts (main-page-products-show (best *main-page.storage*) 4)
+               :hit (soy.main-page:hit (list :items (main-page-products-show (hit *main-page.storage*) 2)))
+               :newproducts (main-page-products-show (new *main-page.storage*) 4)
+               :post (soy.main-page:post
+                      (list :news (articles-view-articles (filters.limit-end (articles.sort (get-articles-by-tags (get-articles-list) "новости")) 3))
+                            :akcii (articles-view-articles(filters.limit-end (articles.sort (get-articles-by-tags (get-articles-list) "акции")) 3))
+                            :reviews (articles-view-articles(filters.limit-end (articles.sort (get-articles-by-tags (get-articles-list) "обзоры")) 3))))
+               :plus (soy.main-page:plus)))
         :keywords "Купить компьютер и другую технику вы можете в Цифрах. Цифровая техника в Интернет-магазине 320-8080.ru"
         :description "каталог, компьютеры, купить компьютер, компьютерная техника, Петербург, Спб, Питер, Санкт-Петербург, продажа компьютеров, магазин компьютерной техники, магазин компьютеров, интернет магазин компьютеров, интернет магазин компьютерной техники, продажа компьютерной техники, магазин цифровой техники, цифровая техника, Цифры, 320-8080"
         :title "Каталог интернет-магазина: купить компьютер, цифровую технику, комплектующие в Санкт-Петербурге")
@@ -346,12 +350,12 @@
    :return-code hunchentoot:+http-not-found+
    :content-type "text/html"))
 
-(restas:define-route request-route ("/request"
-                                    :decorators '(@timer @session))
+(restas:define-route request-route ("/request")
+  (:decorators '@timer '@session)
   (oneclickcart.make-common-order (request-get-plist)))
 
-(restas:define-route compare-route ("/compare"
-                                    :decorators '(@timer @session))
+(restas:define-route compare-route ("/compare")
+  (:decorators '@timer '@session)
   (log:debug "IP:~A" (tbnl:real-remote-addr))
      (soy.compare:compare-page
         (list :keywords "" ;;keywords
