@@ -41,3 +41,30 @@
       (with-open-file
           (stream filename :direction :output :if-exists :supersede)
         (format stream "~a" body)))))
+
+(defun make-order-obj (order-id phone email city address username userfamily ekk bonuscount
+                       comment delivery products)
+  (let ((address (make-instance 'address :city city :address address))
+        (products (mapcar #'(lambda (product)
+                              (flet ((@ (field)
+                                         (getf product field)))
+                                (make-instance 'order-item
+                                               :article (@ :articul)
+                                               :count (@ :count)
+                                               :name (@ :name)
+                                               :price (@ :price)
+                                               :site-price (@ :siteprice)
+                                               :bonuscount (@ :bonuscount))))
+                          products)))
+    (make-instance 'order
+                   :key order-id
+                   :phone phone
+                   :email email
+                   :address address
+                   :username username
+                   :userfamily userfamily
+                   :ekk ekk
+                   :bonuscount bonuscount
+                   :comment comment
+                   :delivery delivery
+                   :items products)))

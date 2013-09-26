@@ -18,6 +18,10 @@
       (setf pricesum sm))
     (when (zerop pricesum)
         (setf pricesum ""))
+    (let ((real-comment (format nil "Заказ через форму один клик ~@[!!! Предзаказ !!!~]"
+                                (preorder (getobj articul 'product)))))
+      (make-order-obj order-id phone email "" "" name "" ""
+                      0 real-comment 0 products))
     (setf client-mail
           (soy.sendmail:clientmail
            (list :datetime (time.get-date-time)
