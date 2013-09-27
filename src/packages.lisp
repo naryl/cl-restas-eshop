@@ -74,6 +74,7 @@
            #:persistent-object
            #:getobj
            #:get-one
+           #:get-list
            #:setobj
            #:mapobj
            #:doobj

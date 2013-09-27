@@ -69,25 +69,9 @@
    (order-state :type number
                 :initform 0
                 :initarg :state
+                :accessor order-state
                 :serializable t))
   (:metaclass eshop.odm:persistent-class))
-
-(defmethod initialize-instance :after ((order order) &key &allow-other-keys)
-  (setf (order-state order) (slot-value order 'order-state)))
-
-(defparameter *order-states*
-  '((0 . :processing)
-    (1 . :preparing)
-    (2 . :delivering)
-    (3 . :delivered)))
-
-(defun order-state (order)
-  (cdr (assoc *order-states*
-              (slot-value order 'order-state))))
-
-(defun (setf order-state) (new-state order)
-  (setf (slot-value order 'order-state)
-        (car (find new-state *order-states* :key #'cdr))))
 
 (defun order-total (order)
   (+ (order-delivery order)
