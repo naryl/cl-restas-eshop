@@ -372,8 +372,9 @@
 (defmethod initialize-instance :before ((obj persistent-object) &key &allow-other-keys)
   (setf (slot-value obj 'state) :rw))
 
-(defmethod initialize-instance :after ((obj persistent-object) &key &allow-other-keys)
+(defmethod initialize-instance :around ((obj persistent-object) &key &allow-other-keys)
   "Stores newly created persistent object in the database"
+  (call-next-method)
   (cond (*deserializing* ; Fetching a persistent object
          (setf (slot-value obj 'state) :ro))
         (t ; Actually making a new one
@@ -607,20 +608,40 @@
            ,@body))
        ,result-name)))
 
-(defun get-one (class raw-query)
+(defun get-one (class query)
   "Fetches an object by mongo query and stores it in cache by key"
-  (let ((query (make-hash-table :test #'equal)))
+  (let ((cooked-query (make-hash-table :test #'equal)))
     (maphash #'(lambda (k v)
-                 (setf (gethash (symbol-fqn k) query)
+                 (setf (gethash (symbol-fqn k) cooked-query)
                        v))
-             raw-query)
+             query)
     (let ((key-ht (db-eval
-                 (mongo:find-one (obj-collection class)
-                                 :query query
-                                 :selector (son (symbol-fqn 'key) 1
-                                                "_id" 0)))))
+                    (mongo:find-one (obj-collection class)
+                                    :query cooked-query
+                                    :selector (son (symbol-fqn 'key) 1
+                                                   "_id" 0)))))
       (when key-ht
         (getobj class (gethash (symbol-fqn 'key) key-ht))))))
+
+(defun get-list (class query &key (limit 0) (skip 0))
+  "Fetches all instances of a class missing cache (to avoid wiping it)"
+  (let ((cooked-query (make-hash-table :test #'equal)))
+    (maphash #'(lambda (k v)
+                 (setf (gethash (symbol-fqn k) cooked-query)
+                       v))
+             query)
+    (let ((hts (db-eval
+                 (mongo:find-list (obj-collection class)
+                                  :query cooked-query
+                                  :fields (son "_id" 0)
+                                  :limit limit
+                                  :skip skip))))
+      (mapcar #'(lambda (ht)
+                  (when (and ht
+                             (string= (symbol-fqn class)
+                                      (gethash +class-key+ ht)))
+                    (deserialize ht)))
+              hts))))
 
 ;;;; Version queries
 
@@ -693,8 +714,11 @@
                                    (call-next-method)
                                    versions))))
 
-(metric:defmetric getobj-cache-size ("getobj.cache")
+(defun getobj-cache-size ()
   (cached-results-count *getobj-cache-cache*))
+
+(metric:defmetric getobj-cache-size ("getobj.cache")
+  (getobj-cache-size))
 
 (defvar *unix-epoch-difference*
   (encode-universal-time 0 0 0 1 1 1970 0))
