@@ -291,7 +291,7 @@
     (if (and (slot-boundp obj 'key)
              (slot-boundp obj 'state))
         (case (persistent-object-state obj)
-          ((:rw :ro) (format stream "~A ~A"
+          ((:rw :ro) (format stream "~A ~S"
                              (persistent-object-state obj)
                              (serializable-object-key obj)))
           ((:deleted) (format stream "DELETED")))

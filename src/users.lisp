@@ -31,6 +31,9 @@
               :initform nil))
   (:metaclass eshop.odm:persistent-class))
 
+(defun user-email (user)
+  (eshop.odm:serializable-object-key user))
+
 (defclass password-reset (eshop.odm:persistent-object)
   ((user :type user
          :serializable t
@@ -170,6 +173,7 @@ identified by EMAIL and PASSWORD if one exists. Otherwise throw ACCOUNT-ERROR"
 (defun register (email password)
   "Create a new user with EMAIL and PASSWORD if one doesn't exist.
 Otherwise throw ACCOUNT-ERROR"
+  (clean-accounts)
   (eshop.odm:with-transaction
     (when (eshop.odm:getobj 'user email)
       (error 'account-error))
@@ -186,6 +190,7 @@ Otherwise throw ACCOUNT-ERROR"
 
 (defun make-password-reset (email)
   "Creates a password-rest object and sends its data to user's email"
+  (clean-tokens)
   (if-let ((user (eshop.odm:getobj 'user email)))
     (send-reset-email
      (make-instance 'password-reset
@@ -205,8 +210,14 @@ Otherwise throw ACCOUNT-ERROR"
     (error 'account-error)))
 
 (defun send-reset-email (reset)
-  ;; TODO: send email
-  nil)
+  ;; TODO: send proper email
+  (let* ((user (password-reset-user reset))
+         (mail (user-email user))
+
+         (body (format nil "http://localhost:4246/password-recovery?reset=~A&token=~A"
+                       (eshop.odm:serializable-object-key reset) (password-reset-token reset))))
+    (sendmail:send-email :to mail
+                         :body body)))
 
 (defun clean-tokens ()
   "Remove stale tokens from the database"

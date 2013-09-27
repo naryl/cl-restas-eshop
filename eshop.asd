@@ -57,6 +57,7 @@
                                      (:file "cart")
                                      (:file "oneclickcart")
                                      (:file "filters")
+                                     (:file "cabinet")
                                      (:file "routes")))
                (:module "misc"
                         :pathname "."
