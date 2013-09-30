@@ -158,7 +158,8 @@
 ;;;; API
 
 (define-condition account-error (error)
-  ())
+  ((msg :initarg :msg :reader msg)))
+
 
 (defun login (email password)
   "Create a new session with login data for user
@@ -179,7 +180,7 @@ Otherwise throw ACCOUNT-ERROR"
   (clean-accounts)
   (eshop.odm:with-transaction
     (when (eshop.odm:getobj 'user email)
-      (error 'account-error))
+      (error 'account-error "Такой пользователь уже есть"))
     (let ((session (new-session :persistent t))
           (user (make-instance 'user
                                :key email
@@ -261,3 +262,15 @@ Otherwise throw ACCOUNT-ERROR"
 (defun timeout-p (created timeout)
   (> (+ created timeout)
      (get-universal-time)))
+
+
+(defun get-current-user ()
+  (session-user (start-session)))
+
+(defun try-to-login (&optional )
+  (let ((username (hunchentoot:parameter "username"))
+        (password (hunchentoot:parameter "password")))
+    (cond ((hunchentoot:parameter "log")
+           (login username password))
+          ((hunchentoot:parameter "reg")
+           (register username password)))))

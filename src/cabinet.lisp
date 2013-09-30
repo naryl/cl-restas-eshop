@@ -3,7 +3,7 @@
 (in-package #:eshop)
 
 (restas:define-route request-user-route ("/user")
-  (hunchentoot:redirect (format nil "/user/profile" key filter)
+  (hunchentoot:redirect "/user/profile"
                         :code hunchentoot:+http-moved-permanently+))
 
 
@@ -15,4 +15,4 @@
 
 (restas:define-route request-user-profile-route ("/user/profile")
   (:decorators '@timer '@session '@no-cache)
-  (soy.cabinet:main))
+  (soy.cabinet:personal))
