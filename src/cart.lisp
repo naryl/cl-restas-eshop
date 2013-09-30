@@ -58,6 +58,7 @@
                           products)))
     (make-instance 'order
                    :key order-id
+                   :user (session-user (start-session))
                    :phone phone
                    :email email
                    :address address
@@ -67,4 +68,5 @@
                    :bonuscount bonuscount
                    :comment comment
                    :delivery delivery
-                   :items products)))
+                   :items products
+                   :state 3)))

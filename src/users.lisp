@@ -1,8 +1,16 @@
 
 (in-package eshop)
 
+(defun password-reset-timeout ()
+  (* 24 60 60))
+
+(defun user-validation-timeout ()
+  (* 24 60 60))
+
+;;;; Classes
+
 (defclass user (eshop.odm:persistent-object)
-  ((pass :type string
+  ((pass :type (or null string)
          :serializable t
          :accessor user-pass
          :initarg :pass)
@@ -12,7 +20,30 @@
           :initarg :phone)
    (addresses :type list
               :serializable t
-              :accessor user-addresses))
+              :accessor user-addresses)
+   (created :type number
+            :serializable t
+            :accessor user-created
+            :initform (get-universal-time))
+   (validated :type boolean
+              :serializable t
+              :reader validated-p
+              :initform nil))
+  (:metaclass eshop.odm:persistent-class))
+
+(defclass password-reset (eshop.odm:persistent-object)
+  ((user :type user
+         :serializable t
+         :accessor password-reset-user
+         :initarg :user)
+   (token :type string
+          :serializable t
+          :accessor password-reset-token
+          :initarg :token)
+   (timestamp :type number
+              :serializable t
+              :reader password-reset-timestamp
+              :initform (get-universal-time)))
   (:metaclass eshop.odm:persistent-class))
 
 (defclass order (eshop.odm:persistent-object)
@@ -27,6 +58,7 @@
    (user :type user
          :serializable t
          :accessor order-user
+         :initform nil
          :initarg :user)
    (date :type number
          :serializable t
@@ -65,10 +97,11 @@
              :serializable t
              :accessor order-delivery
              :initarg :delivery)
-   (state :type string
-          :serializable t
-          :accessor order-state
-          :initarg :state))
+   (order-state :type number
+                :initform 0
+                :initarg :state
+                :accessor order-state
+                :serializable t))
   (:metaclass eshop.odm:persistent-class))
 
 (defun order-total (order)
@@ -116,28 +149,82 @@
           :initarg :count))
   (:metaclass eshop.odm:serializable-class))
 
+;;;; API
+
 (define-condition account-error (error)
   ())
 
-(defun login (username password)
-  (let ((user (eshop.odm:getobj 'user username)))
-    (unless (and user
-                 (equal password (user-pass user)))
-      (error 'account-error))
+(defun login (email password)
+  "Create a new session with login data for user
+identified by EMAIL and PASSWORD if one exists. Otherwise throw ACCOUNT-ERROR"
+  (let ((user (eshop.odm:getobj 'user email)))
+    (if user
+        (if-let ((user-pass (user-pass user)))
+          (equal password user-pass)
+          (error 'account-error))
+        (error 'account-error))
     (eshop.odm:with-transaction
       (setf (session-user (new-session :persistent t))
             user))))
 
-(defun register (username password)
+(defun register (email password)
+  "Create a new user with EMAIL and PASSWORD if one doesn't exist.
+Otherwise throw ACCOUNT-ERROR"
   (eshop.odm:with-transaction
-    (when (eshop.odm:getobj 'user username)
+    (when (eshop.odm:getobj 'user email)
       (error 'account-error))
     (let ((session (new-session :persistent t))
           (user (make-instance 'user
-                               :key username
+                               :key email
                                :pass password)))
       (setf (session-user session)
             user))))
 
 (defun logout ()
+  "Create a new session without any login data"
   (new-session))
+
+(defun make-password-reset (email)
+  "Creates a password-rest object and sends its data to user's email"
+  (if-let ((user (eshop.odm:getobj 'user email)))
+    (send-reset-email
+     (make-instance 'password-reset
+                    :user user
+                    :token (create-random-string 36 36)))
+    (error 'account-error)))
+
+(defun apply-password-reset (id token new-password)
+  "Resets a user's password using data created by MAKE-PASSWORD-RESET"
+  (if-let ((reset (eshop.odm:getobj 'password-reset id)))
+    (if (equal token (password-reset-token reset))
+        (eshop.odm:with-transaction
+          (let ((user (password-reset-user reset)))
+            (eshop.odm:remobj reset)
+            (setf (user-pass user) new-password)))
+        (error 'account-error))
+    (error 'account-error)))
+
+(defun send-reset-email (reset)
+  ;; TODO: send email
+  nil)
+
+(defun clean-tokens ()
+  "Remove stale tokens from the database"
+  (eshop.odm:doobj (reset 'password-reset)
+    (when (timeout-p (password-reset-timestamp reset)
+                     (password-reset-timeout))
+      (eshop.odm:remobj reset))))
+
+(defun clean-accounts ()
+  (let ((non-validated-users (eshop.odm:get-list 'user
+                                                 (son 'validated "false"))))
+    (dolist (user non-validated-users)
+      (when (timeout-p (user-created user)
+                       (user-validation-timeout))
+        (eshop.odm:setobj user
+                          'validated t
+                          'password nil)))))
+
+(defun timeout-p (created timeout)
+  (> (+ created timeout)
+     (get-universal-time)))

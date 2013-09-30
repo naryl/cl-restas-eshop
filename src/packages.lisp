@@ -74,13 +74,14 @@
            #:persistent-object
            #:getobj
            #:get-one
+           #:get-list
            #:setobj
            #:mapobj
            #:doobj
            ;; Versions
            #:getobj-for-date
            #:object-slot-history
-           ;; #:remobj ; Don't do it
+           #:remobj
            #:with-transaction
            #:rollback-transaction
            ))
