@@ -248,14 +248,14 @@ Otherwise throw ACCOUNT-ERROR"
 
 (defun clean-accounts ()
   (let ((non-validated-users (eshop.odm:get-list 'user
-                                                 (son 'validated
+                                                 (son 'validation
                                                       (son "$nin"
                                                            '("true" "false"))))))
     (dolist (user non-validated-users)
       (when (timeout-p (user-created user)
                        (user-validation-timeout))
         (eshop.odm:setobj user
-                          'validated nil
+                          'validation nil
                           'password nil)))))
 
 (defun timeout-p (created timeout)

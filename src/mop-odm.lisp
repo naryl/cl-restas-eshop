@@ -168,8 +168,11 @@
   (maphash #'(lambda (k v)
                (unless (string= k +class-key+)
                  (let ((slot-name (fqn-symbol k)))
-                   (setf (slot-value instance slot-name)
-                         (deserialize v)))))
+                   (if (slot-exists-p instance slot-name)
+                       (setf (slot-value instance slot-name)
+                             (deserialize v))
+                       (warn "Slot ~A missing while deserializing ~A"
+                             slot-name instance)))))
            ht))
 
 (defmethod shared-initialize :around ((instance serializable-object) slots
@@ -307,13 +310,12 @@
 (defvar *mongo-client*)
 (defvar *db*)
 
-(defvar *db-cache-timer* (sb-ext:make-timer #'purge-all-caches
-                    :name "Cache cleaner"
-                    :thread t))
-
 (defvar *db-proc* (make-instance 'process :name "DB"))
 
 (defvar *transaction* nil)
+
+(deftimer (cache-cleaner 60 5)
+  (purge-all-caches))
 
 (defun connect (database &rest server-config &key hostname port)
   "Sets the server parameters and creates a mongo connection. Reconnection is automatic in
@@ -321,9 +323,7 @@
   (declare (ignore hostname port))
   (setf *server-config* (apply #'make-instance 'mongo:server-config server-config))
   (setf *db-name* database)
-  (unless (sb-ext:timer-scheduled-p *db-cache-timer*)
-    (sb-ext:schedule-timer *db-cache-timer*
-                           60 :repeat-interval 60))
+  (start-timer cache-cleaner)
   (reconnect)
   (ensure-indexes)
   (values))
@@ -719,15 +719,3 @@
 
 (metric:defmetric getobj-cache-size ("getobj.cache")
   (getobj-cache-size))
-
-(defvar *unix-epoch-difference*
-  (encode-universal-time 0 0 0 1 1 1970 0))
-
-(defun unix-to-universal-time (unix-time)
-  (+ unix-time *unix-epoch-difference*))
-
-(defun universal-to-unix-time (universal-time)
-  (- universal-time *unix-epoch-difference*))
-
-(defun get-unix-time (&optional (universal-time (get-universal-time)))
-  (universal-to-unix-time universal-time))

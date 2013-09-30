@@ -14,7 +14,7 @@
                            (apply 'make-instance 'order-item o))
                          (getf sexp :items)))
            (setf (getf sexp :date)
-                 (eshop.odm::unix-to-universal-time (getf sexp :date)))
+                 (eshop.utils:unix-to-universal-time (getf sexp :date)))
            (let ((order (apply 'make-instance 'order sexp)))
              (fix-order order sexp)
              (values)))))))
