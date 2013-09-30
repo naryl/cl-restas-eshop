@@ -25,11 +25,17 @@
             :serializable t
             :accessor user-created
             :initform (get-universal-time))
-   (validated :type boolean
-              :serializable t
-              :reader validated-p
-              :initform nil))
+   (validation :type (or boolean string)
+               :serializable t
+               :reader user-validation
+               :initform (create-random-string 36 36)))
   (:metaclass eshop.odm:persistent-class))
+
+(defun user-email (user)
+  (eshop.odm:serializable-object-key user))
+
+(defun validated-p (user)
+  (eq (user-validation user) t))
 
 (defclass password-reset (eshop.odm:persistent-object)
   ((user :type user
@@ -170,6 +176,7 @@ identified by EMAIL and PASSWORD if one exists. Otherwise throw ACCOUNT-ERROR"
 (defun register (email password)
   "Create a new user with EMAIL and PASSWORD if one doesn't exist.
 Otherwise throw ACCOUNT-ERROR"
+  (clean-accounts)
   (eshop.odm:with-transaction
     (when (eshop.odm:getobj 'user email)
       (error 'account-error))
@@ -177,6 +184,7 @@ Otherwise throw ACCOUNT-ERROR"
           (user (make-instance 'user
                                :key email
                                :pass password)))
+      (send-validation-email user)
       (setf (session-user session)
             user))))
 
@@ -186,6 +194,7 @@ Otherwise throw ACCOUNT-ERROR"
 
 (defun make-password-reset (email)
   "Creates a password-rest object and sends its data to user's email"
+  (clean-tokens)
   (if-let ((user (eshop.odm:getobj 'user email)))
     (send-reset-email
      (make-instance 'password-reset
@@ -204,9 +213,31 @@ Otherwise throw ACCOUNT-ERROR"
         (error 'account-error))
     (error 'account-error)))
 
+(defun validate-user (id token)
+  (if-let ((user (eshop.odm:getobj 'user id)))
+    (if (equal token (user-validation user))
+        (eshop.odm:setobj user
+                          'validation t)
+        (error 'account-error))
+    (error 'account-error)))
+
 (defun send-reset-email (reset)
-  ;; TODO: send email
-  nil)
+  ;; TODO: send proper email
+  (let* ((user (password-reset-user reset))
+         (mail (user-email user))
+
+         (body (format nil "http://localhost:4246/user-recover?reset=~A&token=~A"
+                       (eshop.odm:serializable-object-key reset) (password-reset-token reset))))
+    (sendmail:send-email :to mail
+                         :body body)))
+
+(defun send-validation-email (user)
+  ;; TODO: send proper email
+  (let* ((mail (user-email user))
+         (body (format nil "http://localhost:4246/user-valiadate?user=~A&token=~A"
+                       (eshop.odm:serializable-object-key user) (user-validation user))))
+    (sendmail:send-email :to mail
+                         :body body)))
 
 (defun clean-tokens ()
   "Remove stale tokens from the database"
@@ -217,12 +248,14 @@ Otherwise throw ACCOUNT-ERROR"
 
 (defun clean-accounts ()
   (let ((non-validated-users (eshop.odm:get-list 'user
-                                                 (son 'validated "false"))))
+                                                 (son 'validation
+                                                      (son "$nin"
+                                                           '("true" "false"))))))
     (dolist (user non-validated-users)
       (when (timeout-p (user-created user)
                        (user-validation-timeout))
         (eshop.odm:setobj user
-                          'validated t
+                          'validation nil
                           'password nil)))))
 
 (defun timeout-p (created timeout)

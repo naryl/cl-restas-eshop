@@ -29,7 +29,9 @@
                                      (:file "time")
                                      (:file "eshop-config")
                                      (:file "errors")
-                                     (:file "servo")))
+                                     (:file "utils")
+                                     (:file "servo")
+                                     (:file "sendmail")))
                (:module "store"
                         :pathname "."
                         :serial t
@@ -70,7 +72,6 @@
                                      (:file "prerender")
                                      (:file "marketing-filters")
                                      (:file "admin")
-                                     (:file "sendmail")
                                      (:file "email")
                                      (:file "groupd")
                                      (:file "cartrige")

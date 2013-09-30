@@ -1,5 +1,15 @@
 ;;;; packages.lisp
 
+(defpackage #:eshop.utils
+  (:use :cl)
+  (:export #:unix-to-universal-time
+           #:universal-to-unix-time
+           #:get-unix-time
+
+           #:deftimer
+           #:start-timer
+           #:stop-timer))
+
 (defpackage :search-tips
   (:use :cl)
   (:export :search-tip
@@ -16,6 +26,7 @@
   (:use
    ;; system and libs' packages
    :c2cl
+   :eshop.utils
    :closure-template
    :anaphora
    :split-sequence
@@ -43,6 +54,7 @@
 
 (defpackage #:eshop.proc
   (:use :cl
+        :eshop.utils
         :anaphora
         :sb-concurrency
         :bordeaux-threads)
@@ -58,6 +70,7 @@
   (:use :c2cl
         :anaphora
         :alexandria
+        :eshop.utils
         :eshop.proc
         :function-cache
         :mongo-cl-driver.sugar)
