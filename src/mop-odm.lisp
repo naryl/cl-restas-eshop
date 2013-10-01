@@ -628,7 +628,7 @@
   (let ((cooked-query (make-hash-table :test #'equal)))
     (maphash #'(lambda (k v)
                  (setf (gethash (symbol-fqn k) cooked-query)
-                       v))
+                       (serialize-slot v)))
              query)
     (let ((hts (db-eval
                  (mongo:find-list (obj-collection class)
