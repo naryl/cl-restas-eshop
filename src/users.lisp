@@ -158,7 +158,8 @@
 ;;;; API
 
 (define-condition account-error (error)
-  ())
+  ((msg :initarg :msg :reader msg)))
+
 
 (defun login (email password)
   "Create a new session with login data for user
@@ -179,7 +180,7 @@ Otherwise throw ACCOUNT-ERROR"
   (clean-accounts)
   (eshop.odm:with-transaction
     (when (eshop.odm:getobj 'user email)
-      (error 'account-error))
+      (error 'account-error "Такой пользователь уже есть"))
     (let ((session (new-session :persistent t))
           (user (make-instance 'user
                                :key email

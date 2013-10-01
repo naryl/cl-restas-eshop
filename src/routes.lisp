@@ -34,9 +34,21 @@
 (defun @session (route)
   (make-instance 'session-route :target route))
 
-(defmethod restas:process-route :before ((route session-route) bindings)
+(defmethod restas:process-route :around ((route session-route) bindings)
   "Ensure session for this route"
-  (start-session))
+  (let (error-msg)
+    (handler-case
+        (try-to-login)
+      (account-error (e)
+        (setf error-msg (msg e))))
+     ;; set closure template injected data with current session data
+    (let ((closure-template:*injected-data* closure-template:*injected-data*))
+      (setf (getf closure-template:*injected-data* :session) (start-session)
+            (getf closure-template:*injected-data* :user) (session-user (start-session))
+            (getf closure-template:*injected-data* :currenturl) (restas:request-full-uri)
+            (getf closure-template:*injected-data* :errormsg) error-msg)
+      (call-next-method))))
+
 
 (defvar *current-route-symbol* nil)
 
@@ -177,6 +189,20 @@
 
 (restas:define-route storage-object/-route ("/:key/")
   (hunchentoot:redirect (concatenate 'string "/" key)
+                        :code hunchentoot:+http-moved-permanently+))
+
+;; LOGIN
+(restas:define-route loging-route ("user/login" :method :post)
+  (:decorators '@timer '@session)
+  (hunchentoot:redirect (aif (hunchentoot:parameter "url")
+                             it
+                             "/")
+                        :code hunchentoot:+http-moved-permanently+))
+
+;; LOGOUT
+(restas:define-route logout-route ("user/logout")
+  (logout)
+  (hunchentoot:redirect "/"
                         :code hunchentoot:+http-moved-permanently+))
 
 ;; MAIN
