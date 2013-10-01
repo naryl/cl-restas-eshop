@@ -241,7 +241,7 @@ Otherwise throw ACCOUNT-ERROR"
                        (user-validation-timeout))
         (eshop.odm:setobj user
                           'validation nil
-                          'password nil)))))
+                          'pass nil)))))
 
 (defun timeout-p (created timeout)
   (> (get-universal-time)
