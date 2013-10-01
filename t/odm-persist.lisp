@@ -1,15 +1,15 @@
 
 (in-package eshop-test)
 
-(declaim (optimize (debug 3) (safety 3)))
-
 (deftestsuite odm-persist (eshop-test)
   ()
+  (:run-setup :once-per-suite)
   (:setup (eshop.odm:connect "zifry-test")
           (dolist (coll (mapcar #'eshop.odm::symbol-fqn
                                 '(persistent container
                                   item inline-item
-                                  indexed versioned)))
+                                  indexed versioned
+                                  updates)))
             (mongo:drop-collection eshop.odm::*db* coll))))
 
 (defclass persistent (eshop.odm:persistent-object)
@@ -219,3 +219,28 @@
       (ensure (eql (slot-value (eshop.odm:getobj 'versioned key)
                                'value)
                    3)))))
+
+(addtest update-class
+  (defclass updates (eshop.odm:persistent-object)
+    ((slot1 :initarg :slot1 :serializable t))
+    (:metaclass eshop.odm:persistent-class))
+  (let ((obj (make-instance 'updates :slot1 42)))
+    (defclass updates (eshop.odm:persistent-object)
+      ((slot2 :initform 43 :initarg :slot2 :serializable t))
+      (:metaclass eshop.odm:persistent-class))
+    (let ((obj2 (eshop.odm:getobj 'updates (eshop.odm:serializable-object-key obj))))
+      (ensure (eql 43 (slot-value obj2 'slot2))))
+    (eshop.odm:remobj obj)))
+
+(addtest update-class-from-db
+  (defclass updates (eshop.odm:persistent-object)
+    ((slot1 :initarg :slot1 :serializable t))
+    (:metaclass eshop.odm:persistent-class))
+  (let ((obj (make-instance 'updates :slot1 42)))
+    (function-cache:clear-cache-all-function-caches)
+    (defclass updates (eshop.odm:persistent-object)
+      ((slot2 :initform 43 :initarg :slot2 :serializable t))
+      (:metaclass eshop.odm:persistent-class))
+    (let ((obj2 (eshop.odm:getobj 'updates (eshop.odm:serializable-object-key obj))))
+      (ensure (eql 43 (slot-value obj2 'slot2))))
+    (eshop.odm:remobj obj)))
