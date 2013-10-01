@@ -219,3 +219,14 @@
       (ensure (eql (slot-value (eshop.odm:getobj 'versioned key)
                                'value)
                    3)))))
+
+(addtest update-class
+  (defclass updates (eshop.odm:persistent-object)
+    ((slot1 :initarg :slot1 :serializable t))
+    (:metaclass eshop.odm:persistent-class))
+  (let ((obj (make-instance 'updates :slot1 42)))
+    (defclass updates (eshop.odm:persistent-object)
+      ((slot2 :initform 43 :initarg :slot2 :serializable t))
+      (:metaclass eshop.odm:persistent-class))
+    (let ((obj2 (eshop.odm:getobj 'updates (eshop.odm:serializable-object-key obj))))
+      (ensure (eql 43 (slot-value obj2 'slot2))))))

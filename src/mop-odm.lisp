@@ -179,7 +179,8 @@
                                       &rest initargs
                                       &key ((ht ht)))
   (cond (*deserializing*
-         (set-slots-from-ht instance ht)
+         (when ht
+           (set-slots-from-ht instance ht))
          (when (eq slots t)
            (setf slots (mapcar #'slot-definition-name
                                (class-slots (class-of instance)))))
@@ -192,6 +193,13 @@
          (when (typep instance 'persistent-object)
            (setf (slot-value instance 'modified) nil)))
         (t (call-next-method))))
+
+(defmethod update-instance-for-redefined-class :around ((instance persistent-object)
+                                                        added-slots discarded-slots
+                                                        property-list &rest initargs)
+  (declare (ignore instance added-slots discarded-slots property-list initargs))
+  (let ((*deserializing* t))
+    (call-next-method)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; PERSISTENT
 
