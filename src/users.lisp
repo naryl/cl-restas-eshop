@@ -259,5 +259,5 @@ Otherwise throw ACCOUNT-ERROR"
                           'password nil)))))
 
 (defun timeout-p (created timeout)
-  (> (+ created timeout)
-     (get-universal-time)))
+  (> (get-universal-time)
+     (+ created timeout)))

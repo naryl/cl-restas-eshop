@@ -1,15 +1,15 @@
 
 (in-package eshop-test)
 
-(declaim (optimize (debug 3) (safety 3)))
-
 (deftestsuite odm-persist (eshop-test)
   ()
+  (:run-setup :once-per-suite)
   (:setup (eshop.odm:connect "zifry-test")
           (dolist (coll (mapcar #'eshop.odm::symbol-fqn
                                 '(persistent container
                                   item inline-item
-                                  indexed versioned)))
+                                  indexed versioned
+                                  updates)))
             (mongo:drop-collection eshop.odm::*db* coll))))
 
 (defclass persistent (eshop.odm:persistent-object)
