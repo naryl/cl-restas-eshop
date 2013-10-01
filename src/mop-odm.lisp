@@ -175,32 +175,6 @@
                              slot-name instance)))))
            ht))
 
-(defmethod shared-initialize :around ((instance serializable-object) slots
-                                      &rest initargs
-                                      &key ((ht ht)))
-  (cond (*deserializing*
-         (when ht
-           (set-slots-from-ht instance ht))
-         (when (eq slots t)
-           (setf slots (mapcar #'slot-definition-name
-                               (class-slots (class-of instance)))))
-         (apply #'call-next-method
-                instance
-                (remove-if #'(lambda (slot-name)
-                               (slot-boundp instance slot-name))
-                           slots)
-                initargs)
-         (when (typep instance 'persistent-object)
-           (setf (slot-value instance 'modified) nil)))
-        (t (call-next-method))))
-
-(defmethod update-instance-for-redefined-class :around ((instance persistent-object)
-                                                        added-slots discarded-slots
-                                                        property-list &rest initargs)
-  (declare (ignore instance added-slots discarded-slots property-list initargs))
-  (let ((*deserializing* t))
-    (call-next-method)))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; PERSISTENT
 
 ;;;; Metaclasses
@@ -310,6 +284,32 @@
 
 (defmethod serialize-slot ((obj persistent-object))
   (write-link (type-of obj) (serializable-object-key obj)))
+
+(defmethod shared-initialize :around ((instance serializable-object) slots
+                                      &rest initargs
+                                      &key ((ht ht)))
+  (cond (*deserializing*
+         (when ht
+           (set-slots-from-ht instance ht))
+         (when (eq slots t)
+           (setf slots (mapcar #'slot-definition-name
+                               (class-slots (class-of instance)))))
+         (apply #'call-next-method
+                instance
+                (remove-if #'(lambda (slot-name)
+                               (slot-boundp instance slot-name))
+                           slots)
+                initargs)
+         (when (typep instance 'persistent-object)
+           (setf (slot-value instance 'modified) nil)))
+        (t (call-next-method))))
+
+(defmethod update-instance-for-redefined-class :around ((instance persistent-object)
+                                                        added-slots discarded-slots
+                                                        property-list &rest initargs)
+  (declare (ignore instance added-slots discarded-slots property-list initargs))
+  (let ((*deserializing* t))
+    (call-next-method)))
 
 ;;;; Persistence
 
@@ -501,6 +501,7 @@
   (unless *transaction*
     (error "Attempt to commit while not inside transaction"))
   (maphash #'(lambda (key obj)
+               (declare (ignore key))
                (when (persistent-object-modified obj)
                  (case (persistent-object-state obj)
                    (:rw

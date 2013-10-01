@@ -38,8 +38,7 @@
   (eq (user-validation user) t))
 
 (defclass password-reset (eshop.odm:persistent-object)
-  ((user :type user
-         :serializable t
+  ((user :serializable t
          :accessor password-reset-user
          :initarg :user)
    (token :type string
@@ -158,50 +157,38 @@
 ;;;; API
 
 (define-condition account-error (error)
-  ((msg :initarg :msg :reader msg)))
-
+  ((msg :type string
+        :initarg :msg
+        :reader msg)))
 
 (defun login (email password)
-  "Create a new session with login data for user
-identified by EMAIL and PASSWORD if one exists. Otherwise throw ACCOUNT-ERROR"
-  (let ((user (eshop.odm:getobj 'user email)))
-    (if user
-        (if-let ((user-pass (user-pass user)))
-          (equal password user-pass)
-          (error 'account-error))
-        (error 'account-error))
-    (eshop.odm:with-transaction
-      (setf (session-user (new-session :persistent t))
-            user))))
+  "Check if the login data is correct and throw ACCOUNT-ERROR if not"
+  (if-let ((user (eshop.odm:getobj 'user email)))
+    (if-let ((user-pass (user-pass user)))
+      (if (equal password user-pass)
+          t
+          (error 'account-error :msg "Неправильный логин или пароль"))
+      (error 'account-error :msg "Учётная запись не была подтверждена вовремя. Попробуйте восстановить пароль."))
+    (error 'account-error :msg "Неправильный логин или пароль")))
 
 (defun register (email password)
   "Create a new user with EMAIL and PASSWORD if one doesn't exist.
 Otherwise throw ACCOUNT-ERROR"
   (clean-accounts)
-  (eshop.odm:with-transaction
-    (when (eshop.odm:getobj 'user email)
-      (error 'account-error "Такой пользователь уже есть"))
-    (let ((session (new-session :persistent t))
-          (user (make-instance 'user
-                               :key email
-                               :pass password)))
-      (send-validation-email user)
-      (setf (session-user session)
-            user))))
-
-(defun logout ()
-  "Create a new session without any login data"
-  (new-session))
+  (when (eshop.odm:getobj 'user email)
+    (error 'account-error "Такой пользователь уже есть"))
+  (make-instance 'user
+                 :key email
+                 :pass password))
 
 (defun make-password-reset (email)
-  "Creates a password-rest object and sends its data to user's email"
+  "Creates a password-reset object and sends its data to user's email"
   (clean-tokens)
   (if-let ((user (eshop.odm:getobj 'user email)))
-    (send-reset-email
-     (make-instance 'password-reset
-                    :user user
-                    :token (create-random-string 36 36)))
-    (error 'account-error)))
+    (make-instance 'password-reset
+                   :user user
+                   :token (create-random-string 36 36))
+    (error 'account-error :msg "На эту почту не зарегистрирован аккаунт")))
 
 (defun apply-password-reset (id token new-password)
   "Resets a user's password using data created by MAKE-PASSWORD-RESET"
@@ -211,16 +198,16 @@ Otherwise throw ACCOUNT-ERROR"
           (let ((user (password-reset-user reset)))
             (eshop.odm:remobj reset)
             (setf (user-pass user) new-password)))
-        (error 'account-error))
-    (error 'account-error)))
+        (error 'account-error :msg  "Неправильные данные для сброса пароля"))
+    (error 'account-error :msg "Неправильные данные для сброса пароля")))
 
 (defun validate-user (id token)
   (if-let ((user (eshop.odm:getobj 'user id)))
     (if (equal token (user-validation user))
         (eshop.odm:setobj user
                           'validation t)
-        (error 'account-error))
-    (error 'account-error)))
+        (error 'account-error :msg "Неправильные данные для валидации учётной записи"))
+    (error 'account-error :msg "Неправильные данные для валидации учётной записи")))
 
 (defun send-reset-email (reset)
   ;; TODO: send proper email
@@ -248,10 +235,7 @@ Otherwise throw ACCOUNT-ERROR"
       (eshop.odm:remobj reset))))
 
 (defun clean-accounts ()
-  (let ((non-validated-users (eshop.odm:get-list 'user
-                                                 (son 'validation
-                                                      (son "$nin"
-                                                           '("true" "false"))))))
+  (let ((non-validated-users ()))
     (dolist (user non-validated-users)
       (when (timeout-p (user-created user)
                        (user-validation-timeout))

@@ -10,7 +10,8 @@
                                   item inline-item
                                   indexed versioned
                                   updates)))
-            (mongo:drop-collection eshop.odm::*db* coll))))
+            (mongo:drop-collection eshop.odm::*db* coll)
+            (function-cache:clear-cache-all-function-caches))))
 
 (defclass persistent (eshop.odm:persistent-object)
   ((slot :serializable t :initarg :slot))
@@ -190,10 +191,14 @@
           :serializable t))
   (:metaclass eshop.odm:persistent-class))
 
-(addtest index
+(addtest get-one
   (let ((obj (make-instance 'indexed :local-key 1 :value 2)))
     (ensure (eql (slot-value (eshop.odm:get-one 'indexed (mongo.sugar:son 'key 1)) 'value)
                  2))))
+
+(addtest get-list)
+
+(addtest get-list-by-link)
 
 (defclass versioned (eshop.odm:persistent-object)
   ((value :initarg :value
