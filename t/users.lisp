@@ -51,7 +51,7 @@
         (eshop::apply-password-reset (eshop.odm:serializable-object-key reset)
                                      (eshop::password-reset-token reset)
                                      "newpass"))
-      (mapc #'eshop.odm:remobj (list user reset)))))
+      (eshop.odm:remobj user reset))))
 
 (addtest validation
   (let ((user (eshop::register "login" "password")))
@@ -74,7 +74,7 @@
          (reset (eshop::make-password-reset "login")))
     (eshop::send-validation-email user)
     (eshop::send-reset-email reset)
-    (mapc #'eshop.odm:remobj (list user reset))))
+    (eshop.odm:remobj user reset)))
 
 (addtest recovery
   (ensure-error (eshop::make-password-reset "ololo"))

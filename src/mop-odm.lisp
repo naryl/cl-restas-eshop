@@ -17,7 +17,6 @@
 ;; references and only fetch the referenced object once it's accessed. Objects are
 ;; read-only when outside transaction.
 ;;
-;; REMOBJ class key
 ;; REMOBJ object
 ;; Removes object from database. The second form makes it read-only
 ;;
@@ -553,12 +552,14 @@
               (obj (deserialize db-obj)))
     (new-transaction-object obj)))
 
-(defun remobj (obj)
+(defun remobj (&rest objs)
   "Deletes an object from the database"
-  (setf (persistent-object-state obj) :deleted)
-  (if *transaction*
-      (setf (persistent-object-modified obj) t)
-      (delete-instance obj)))
+  (setf objs (ensure-list objs))
+  (dolist (obj objs)
+    (setf (persistent-object-state obj) :deleted)
+    (if *transaction*
+        (setf (persistent-object-modified obj) t)
+        (delete-instance obj))))
 
 (defun setobj (obj-or-class &rest slots-values)
   "Modifies an object in a transaction.
