@@ -25,17 +25,18 @@
             :serializable t
             :accessor user-created
             :initform (get-universal-time))
-   (validation :type (or boolean string)
+   (validation :type string
                :serializable t
-               :reader user-validation
-               :initform (create-random-string 36 36)))
+               :accessor user-validation
+               :initform "PENDING")
+   (validation-token :type string
+                     :serializable t
+                     :reader user-validation-token
+                     :initform (create-random-string 36 36)))
   (:metaclass eshop.odm:persistent-class))
 
 (defun user-email (user)
   (eshop.odm:serializable-object-key user))
-
-(defun validated-p (user)
-  (eq (user-validation user) t))
 
 (defclass password-reset (eshop.odm:persistent-object)
   ((user :serializable t
@@ -166,7 +167,7 @@
   (if-let ((user (eshop.odm:getobj 'user email)))
     (if-let ((user-pass (user-pass user)))
       (if (equal password user-pass)
-          t
+          user
           (error 'account-error :msg "Неправильный логин или пароль"))
       (error 'account-error :msg "Учётная запись не была подтверждена вовремя. Попробуйте восстановить пароль."))
     (error 'account-error :msg "Неправильный логин или пароль")))
@@ -203,9 +204,12 @@ Otherwise throw ACCOUNT-ERROR"
 
 (defun validate-user (id token)
   (if-let ((user (eshop.odm:getobj 'user id)))
-    (if (equal token (user-validation user))
+    (if (and (equal (user-validation user)
+                    "PENDING")
+             (equal token (user-validation-token user)))
         (eshop.odm:setobj user
-                          'validation t)
+                          'validation "DONE"
+                          'validation-token "")
         (error 'account-error :msg "Неправильные данные для валидации учётной записи"))
     (error 'account-error :msg "Неправильные данные для валидации учётной записи")))
 
@@ -235,14 +239,25 @@ Otherwise throw ACCOUNT-ERROR"
       (eshop.odm:remobj reset))))
 
 (defun clean-accounts ()
-  (let ((non-validated-users ()))
+  (let ((non-validated-users (eshop.odm::get-list 'user
+                                                  (son 'validation "PENDING"))))
     (dolist (user non-validated-users)
       (when (timeout-p (user-created user)
                        (user-validation-timeout))
         (eshop.odm:setobj user
-                          'validation nil
+                          'validation "EXPIRED"
+                          'validation-token ""
                           'pass nil)))))
 
 (defun timeout-p (created timeout)
   (> (get-universal-time)
      (+ created timeout)))
+
+;;;; Require hunchentoot context
+
+(defun current-user ()
+  (session-user (start-session)))
+
+(defun (setf current-user) (user)
+  (setf (session-user (start-session))
+        user))

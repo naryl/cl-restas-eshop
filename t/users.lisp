@@ -26,13 +26,55 @@
     (ensure-error (eshop::login "login" "passwrd"))
     (eshop.odm:remobj obj)))
 
-(addtest expired-account)
+(addtest expired-account
+  (eshop.odm:with-transaction
+    (let ((user (eshop::register "login" "password")))
+      (setf (slot-value user 'eshop::created)
+            (- (slot-value user 'eshop::created)
+               (eshop::user-validation-timeout)
+               10))))
+  (eshop::clean-accounts)
+  (ensure-error (eshop::login "login" "password"))
+  (eshop.odm:remobj (eshop.odm:getobj 'eshop::user "login")))
 
-(addtest expired-reset)
+(addtest expired-recovery
+  (ensure-error (eshop::make-password-reset "invalid"))
+  (let ((user (eshop::register "login" "password")))
+    (let ((reset (eshop::make-password-reset "login")))
+      (eshop.odm:setobj reset
+                        'eshop::timestamp
+                        (- (eshop::password-reset-timestamp reset)
+                           (eshop::password-reset-timeout)
+                           10))
+      (eshop::clean-tokens)
+      (ensure-error
+        (eshop::apply-password-reset (eshop.odm:serializable-object-key reset)
+                                     (eshop::password-reset-token reset)
+                                     "newpass"))
+      (mapc #'eshop.odm:remobj (list user reset)))))
 
-(addtest validation)
+(addtest validation
+  (let ((user (eshop::register "login" "password")))
+    (ensure-error (eshop::validate-user "logn"
+                                        (eshop::user-validation-token user)))
+    (ensure-error (eshop::validate-user "login"
+                                        "invalid"))
+    (eshop::validate-user "login"
+                          (eshop::user-validation-token user))
+    (eshop.odm::setobj user 'eshop::created
+                       (- (slot-value user 'eshop::created)
+                          (eshop::user-validation-timeout)
+                          10))
+    (eshop::clean-accounts)
+    (ensure (eshop::login "login" "password"))
+    (eshop.odm:remobj user)))
 
-(addtest emails)
+(addtest emails
+  (let* ((user (eshop::register "login" "password"))
+         (reset (eshop::make-password-reset "login")))
+    (eshop::send-validation-email user)
+    (eshop::send-reset-email reset)
+    (mapc #'eshop.odm:remobj (list user reset))))
 
 (addtest recovery
   (ensure-error (eshop::make-password-reset "ololo"))
