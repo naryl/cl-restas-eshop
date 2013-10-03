@@ -14,6 +14,11 @@
                 (closure-template:compile-template :common-lisp-backend template))
           (get-all-template-paths)))
 
+(defun init-closure-user-functions ()
+  (closure-template::add-user-function "date" #'(lambda (timestamp) (render-time +date+ timestamp)))
+  )
+
 (log:info "Compiling all templates")
 (compile-templates)
+(init-closure-user-functions)
 (log:info "Compiling all templates finish")
