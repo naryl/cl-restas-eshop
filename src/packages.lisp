@@ -95,6 +95,8 @@
            #:setobj
            #:mapobj
            #:doobj
+           #:instance-count
+           #:list-persistent-classes
            ;; Versions
            #:getobj-for-date
            #:object-slot-history

@@ -351,30 +351,26 @@
 
 (defun ensure-indexes ()
   (let ((cnt 0))
-    (labels ((ensure-indexes (class)
-               "Walks class hierarchy creating indexes for each indexed slot"
-               (mapc #'ensure-indexes (class-direct-subclasses class))
-               (c2mop:finalize-inheritance class)
-               (db-eval
-                 (let ((collection (obj-collection (class-name class))))
-                   (dolist (slot (class-slots class))
-                     (flet ((make-index (dir)
-                              (let ((index-name (symbol-fqn (slot-definition-name slot))))
-                                (log:info "Ensuring index over class ~A; slot: ~A"
-                                          (symbol-fqn (class-name class))
-                                          index-name)
-                                (incf cnt)
-                                (mongo:ensure-index collection
-                                                    (son index-name dir)))))
-                       (case (slot-index slot)
-                         (nil nil)
-                         (:asc (make-index 1))
-                         (:desc (make-index -1))
-                         (:both (make-index 1)
-                                (make-index -1)))))))))
-      (mapc #'ensure-indexes
-            (class-direct-subclasses (find-class 'persistent-object)))
-      (log:info "~A indexes ensured" cnt))))
+    (dolist (class (list-persistent-classes))
+      (c2mop:finalize-inheritance class)
+      (db-eval
+        (let ((collection (obj-collection (class-name class))))
+          (dolist (slot (class-slots class))
+            (flet ((make-index (dir)
+                     (let ((index-name (symbol-fqn (slot-definition-name slot))))
+                       (log:info "Ensuring index over class ~A; slot: ~A"
+                                 (symbol-fqn (class-name class))
+                                 index-name)
+                       (incf cnt)
+                       (mongo:ensure-index collection
+                                           (son index-name dir)))))
+              (case (slot-index slot)
+                (nil nil)
+                (:asc (make-index 1))
+                (:desc (make-index -1))
+                (:both (make-index 1)
+                       (make-index -1))))))))
+    (log:info "~A indexes ensured" cnt)))
 
 (defmethod initialize-instance :before ((obj persistent-object) &key &allow-other-keys)
   (setf (slot-value obj 'state) :rw))
@@ -582,6 +578,19 @@
           (doplist (slot value slots-values)
             (setf (slot-value obj slot) value))
           obj)))))
+
+(defun instance-count (class)
+  (db-eval
+    (truncate (mongo:$count (obj-collection class)))))
+
+(defun list-persistent-classes ()
+  "Finds all subclasses including indirect"
+  (let ((classes ()))
+    (labels ((walk-classes (class)
+               (push class classes)
+               (mapc #'walk-classes (class-direct-subclasses class))))
+      (mapc #'walk-classes
+            (class-direct-subclasses (find-class 'persistent-object))))))
 
 (defun all-keys (class)
   (db-eval

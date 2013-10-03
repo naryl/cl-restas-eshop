@@ -58,7 +58,7 @@
                           products)))
     (make-instance 'order
                    :key order-id
-                   :user (session-user (start-session))
+                   :user (current-user)
                    :phone phone
                    :email email
                    :address address

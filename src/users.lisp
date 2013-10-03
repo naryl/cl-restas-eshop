@@ -259,5 +259,6 @@ Otherwise throw ACCOUNT-ERROR"
   (session-user (start-session)))
 
 (defun (setf current-user) (user)
-  (setf (session-user (start-session))
-        user))
+  (eshop.odm:with-transaction
+    (setf (session-user (start-session))
+          user)))
