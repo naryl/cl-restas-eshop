@@ -23,4 +23,4 @@
             )
 
 (defun log-to-this-console ()
-  (log:config (log:category '(eshop)) :tricky))
+  (log:config (log:category '(eshop)) :this))
