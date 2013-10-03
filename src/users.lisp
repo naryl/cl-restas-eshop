@@ -177,7 +177,7 @@
 Otherwise throw ACCOUNT-ERROR"
   (clean-accounts)
   (when (eshop.odm:getobj 'user email)
-    (error 'account-error "Такой пользователь уже есть"))
+    (error 'account-error :msg "Такой пользователь уже есть"))
   (make-instance 'user
                  :key email
                  :pass password))
@@ -259,5 +259,5 @@ Otherwise throw ACCOUNT-ERROR"
   (session-user (start-session)))
 
 (defun (setf current-user) (user)
-  (setf (session-user (start-session))
-        user))
+  (eshop.odm:setobj (start-session)
+                    'user user))

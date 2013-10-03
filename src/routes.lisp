@@ -213,7 +213,7 @@
 
 ;; LOGOUT
 (restas:define-route logout-route ("user/logout")
-  (logout)
+  (new-session)
   (hunchentoot:redirect "/"
                         :code hunchentoot:+http-moved-permanently+))
 
