@@ -1,10 +1,14 @@
 ;;;; packages.lisp
 
 (defpackage #:eshop.utils
-  (:use :cl)
+  (:use :cl
+        :alexandria
+        :local-time)
   (:export #:unix-to-universal-time
            #:universal-to-unix-time
            #:get-unix-time
+           #:render-time
+           #:+date+
 
            #:deftimer
            #:start-timer

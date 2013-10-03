@@ -39,3 +39,12 @@ execute it each INTERVAL seconds. Use START-TIMER and STOP-TIMER to start and st
 
 (defun get-unix-time (&optional (universal-time (get-universal-time)))
   (universal-to-unix-time universal-time))
+
+(define-constant
+    +date+ '(:day "." :month "." :year)
+  :test #'equal)
+
+(defun render-time (format &optional (time (get-universal-time)))
+  (let ((ts (universal-to-timestamp time)))
+    (format-timestring nil ts :format
+                       format)))
