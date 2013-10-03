@@ -48,12 +48,6 @@
                                           (st-json:camel-dash (string key))
                                           :keyword)))
 
-;; alternative order numbering for developers server
-(if (and (not (eshop:config.get-option :start-options :release))
-         (eshop:config.get-option :start-options :dbg-on))
-    ;; нумерация заказов
-    (setf eshop::*order-id* 1))
-
 (if (eshop:config.get-option :start-options :dbg-on)
     (restas:debug-mode-on)
     (restas:debug-mode-off))
