@@ -142,7 +142,7 @@
 
 (defun admin.get-info ()
   ;; (setf (bt:thread-name (bt:current-thread)) "test")
-  (list (format nil "~A<br>~{~{~@[~A~]~^: ~}<br>~}"
+  (list (format nil "~A<br>~A~{~{~@[~A~]~^: ~}<br>~}~A~{~A~^<br>~}"
                 (concatenate 'string "<b>Последняя выгрузка: "
                                      (time.encode.backup (date *gateway.loaded-dump*))
                                      " || продуктов: "
@@ -152,9 +152,17 @@
                                      " || выключенных: "
                                      (write-to-string (hash-table-count black-list.*storage*))
                                      "</b>")
-                (mapcar #'(lambda (v) (let ((thread-name (bt:thread-name v)))
-                                        (list thread-name)))
-                                  (sb-thread:list-all-threads)))
+                "<br><b>Потоки</b>:<br>"
+                (mapcar #'(lambda (v)
+                            (let ((thread-name (bt:thread-name v)))
+                              (list thread-name)))
+                        (sb-thread:list-all-threads))
+                "<br><b>Количество объектов в базе</b>:<br>"
+                (mapcar #'(lambda (class)
+                            (format nil "    ~A: ~A"
+                                    class (eshop.odm:instance-count class)))
+                        (mapcar #'class-name (eshop.odm:list-persistent-classes))))
+        "<br><b>Память</b>:"
         (regex-replace-all "\\n" (with-output-to-string (*standard-output*) (room)) "<br>")))
 
 
