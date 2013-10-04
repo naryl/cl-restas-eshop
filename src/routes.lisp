@@ -1,6 +1,19 @@
+
 ;;;; routes.lisp
 
 (in-package #:eshop)
+
+;;;; no cache (use hunchentoot no-cache instead if restas:@no-cache)
+
+;; (defclass protected-route (routes:proxy-route)
+;;   ((roles :initform nil)))
+
+;; (defun @no-cache (route)
+;;   (make-instance 'no-cache-route :target route))
+
+;; (defmethod restas:process-route :before ((route protected-route) bindings)
+;;   (unless (find (user-access-level (current-user))
+;;                 (slot-value route 'roles))))
 
 ;;;; no cache (use hunchentoot no-cache instead if restas:@no-cache)
 
@@ -159,7 +172,7 @@
   (route-filter filter))
 
 (restas:define-route filter/-route ("/:key/:filter/")
-  (hunchentoot:redirect (format nil "/~{~A~^/~}" key filter)
+  (hunchentoot:redirect (format nil "/~{~A~^/~}" (list key filter))
                         :code hunchentoot:+http-moved-permanently+))
 
 ;; STORAGE OBJECT
@@ -201,20 +214,6 @@
 
 (restas:define-route storage-object/-route ("/:key/")
   (hunchentoot:redirect (concatenate 'string "/" key)
-                        :code hunchentoot:+http-moved-permanently+))
-
-;; LOGIN
-(restas:define-route loging-route ("user/login" :method :post)
-  (:decorators '@timer '@session)
-  (hunchentoot:redirect (aif (hunchentoot:parameter "url")
-                             it
-                             "/")
-                        :code hunchentoot:+http-moved-permanently+))
-
-;; LOGOUT
-(restas:define-route logout-route ("user/logout")
-  (new-session)
-  (hunchentoot:redirect "/"
                         :code hunchentoot:+http-moved-permanently+))
 
 ;; MAIN
