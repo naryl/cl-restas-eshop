@@ -425,9 +425,9 @@
 
 
 (defun admin.black-list (post-data)
-  (let* ((key (getf post-data :key))
-         (output nil)
-         (errortext nil))
+  (let ((key (getf post-data :key))
+        (output nil)
+        (errortext nil))
     (when key
       (aif (getobj key)
            (progn
@@ -437,6 +437,13 @@
                                   (key it) (key it) (name-seo it))))
            (setf errortext "Нет такого товара")))
     (soy.admin:black-list (list :output output :errortext errortext))))
+
+(defun admin.list-obj (post-data)
+  (let ((class (get post-data :class))
+        (sort-field (get post-data :sort-field))
+        (sort-dir (get post-data :sort-dir))
+        (offset (get post-data :offset)))
+    nil))
 
 (defun show-admin-page (&optional (key ""))
   (let ((post-data (alist-plist (hunchentoot:post-parameters hunchentoot:*request*))))

@@ -14,7 +14,7 @@
             (function-cache:clear-cache-all-function-caches))))
 
 (defclass persistent (eshop.odm:persistent-object)
-  ((slot :serializable t :initarg :slot))
+  ((slot :serializable t :initarg :slot :reader persistent-slot))
   (:metaclass eshop.odm:persistent-class))
 
 (addtest create-delete
@@ -196,9 +196,38 @@
     (ensure (eql (slot-value (eshop.odm:get-one 'indexed (mongo.sugar:son 'key 1)) 'value)
                  2))))
 
-(addtest get-list)
+(addtest get-list
+  (let ((objs (mapcar #'(lambda (slot)
+                          (make-instance 'persistent :slot slot))
+                      '(1 2 3 4 5))))
+    (ensure-error (eshop.odm:get-list 'persistent))
+    (ensure (equal '(3)
+                   (mapcar #'persistent-slot
+                           (eshop.odm:get-list 'persistent
+                                               :query (son 'slot 3)))))
+    (ensure (equal '(1 2 3 4 5)
+                   (mapcar #'persistent-slot
+                           (eshop.odm:get-list 'persistent
+                                               :limit 100))))
+    (ensure (equal '(1 2 3)
+                   (mapcar #'persistent-slot
+                           (eshop.odm:get-list 'persistent
+                                               :limit 3
+                                               :sort (son 'slot 1)))))
+    (ensure (equal '(2 3 4)
+                   (mapcar #'persistent-slot
+                           (eshop.odm:get-list 'persistent
+                                               :limit 3
+                                               :skip 1
+                                               :sort (son 'slot 1)))))
+    (eshop.odm:remobj objs)))
 
-(addtest get-list-by-link)
+(addtest get-list-by-link
+  (let* ((item (make-instance 'item))
+         (containers (loop :repeat 5 collect (make-instance 'container :item item)))
+         (store-objs (eshop.odm:get-list 'container :query (son 'item item)))
+         (count (length store-objs)))
+    (ensure (eql 5 count))))
 
 (defclass versioned (eshop.odm:persistent-object)
   ((value :initarg :value

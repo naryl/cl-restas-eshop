@@ -10,7 +10,8 @@
 
 (restas:define-route request-user-orders-route ("/user/orders")
   (:decorators '@timer '@session '@no-cache)
-  (soy.cabinet:main (list :orders (eshop.odm:get-list 'order (son 'user (current-user))))))
+  (soy.cabinet:main (list :orders (eshop.odm:get-list 'order
+                                                      :query (son 'user (current-user))))))
 
 
 (restas:define-route request-user-profile-route ("/user/profile")

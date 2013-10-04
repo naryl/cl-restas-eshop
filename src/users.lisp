@@ -240,7 +240,7 @@ Otherwise throw ACCOUNT-ERROR"
 
 (defun clean-accounts ()
   (let ((non-validated-users (eshop.odm::get-list 'user
-                                                  (son 'validation "PENDING"))))
+                                                  :query (son 'validation "PENDING"))))
     (dolist (user non-validated-users)
       (when (timeout-p (user-created user)
                        (user-validation-timeout))

@@ -550,7 +550,7 @@
 
 (defun remobj (&rest objs)
   "Deletes an object from the database"
-  (setf objs (ensure-list objs))
+  (setf objs (flatten (ensure-list objs))) ; Ensure OBJS is a flat list of objects
   (dolist (obj objs)
     (setf (persistent-object-state obj) :deleted)
     (if *transaction*
@@ -642,25 +642,38 @@
       (when key-ht
         (getobj class (gethash (symbol-fqn 'key) key-ht))))))
 
-(defun get-list (class query &key (limit 0) (skip 0))
+(defun get-list (class &key query sort skip limit)
   "Fetches all instances of a class missing cache (to avoid wiping it)"
-  (let ((cooked-query (make-hash-table :test #'equal)))
-    (maphash #'(lambda (k v)
-                 (setf (gethash (symbol-fqn k) cooked-query)
-                       (serialize-slot v)))
-             query)
-    (let ((hts (db-eval
-                 (mongo:find-list (obj-collection class)
-                                  :query cooked-query
-                                  :fields (son "_id" 0)
-                                  :limit limit
-                                  :skip skip))))
-      (mapcar #'(lambda (ht)
-                  (when (and ht
-                             (string= (symbol-fqn class)
-                                      (gethash +class-key+ ht)))
-                    (deserialize ht)))
-              hts))))
+  (unless (or query limit)
+    (error "Require either QUERY or LIMIT in call to GET-LIST to avoid feetching the whole
+collection"))
+  (let ((cooked-query (when query (son)))
+        (cooked-sort (when sort (son))))
+    (when query
+      (maphash #'(lambda (k v)
+                   (setf (gethash (symbol-fqn k) cooked-query)
+                         (serialize-slot v)))
+               query))
+    (when sort
+      (maphash #'(lambda (k v)
+                   (setf (gethash (symbol-fqn k) cooked-sort)
+                         v))
+               sort))
+    (let ((pipeline (remove nil (list (when query (son "$match" cooked-query))
+                                      (when sort (son "$sort" cooked-sort))
+                                      (when skip (son "$skip" skip))
+                                      (when limit (son "$limit" limit))))))
+      (let ((hts (db-eval
+                   (apply #'mongo:aggregate
+                          (obj-collection class)
+                          pipeline))))
+        (mapcar #'(lambda (ht)
+                    (when (and ht
+                               (string= (symbol-fqn class)
+                                        (gethash +class-key+ ht)))
+                      (remhash "_id" ht)
+                      (deserialize ht)))
+                hts)))))
 
 ;;;; Version queries
 
@@ -738,3 +751,8 @@
 
 (metric:defmetric getobj-cache-size ("getobj.cache")
   (getobj-cache-size))
+
+;;;; Stuff
+
+;; (defmethod print-object ((instance hash-table) stream)
+;;   (format stream "#HT(~{~S~^ ~})" (hash-table-plist instance)))

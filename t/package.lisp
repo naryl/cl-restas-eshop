@@ -1,5 +1,6 @@
 (defpackage eshop-test
   (:use :cl
+        :mongo.sugar
         :lift)
   (:export #:cover
            #:run!))
