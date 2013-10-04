@@ -455,4 +455,5 @@
              ("backup" (admin.make-backup post-data))
              ("black-list" (admin.black-list post-data))
              ("vendor-seo" (admin.vendor-seo-upload post-data))
+             ("tbmonitor" (soy.admin:table-monitoring))
              (t "Админка в разработке"))))))
