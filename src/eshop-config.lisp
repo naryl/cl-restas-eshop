@@ -19,6 +19,6 @@
   )
 
 (log:info "Compiling all templates")
-(compile-templates)
 (init-closure-user-functions)
+(compile-templates)
 (log:info "Compiling all templates finish")
