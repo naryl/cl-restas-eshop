@@ -416,12 +416,76 @@
            (setf errortext "Нет такого товара")))
     (soy.admin:black-list (list :output output :errortext errortext))))
 
-(defun admin.list-obj (post-data)
-  (let ((class (get post-data :class))
-        (sort-field (get post-data :sort-field))
-        (sort-dir (get post-data :sort-dir))
-        (offset (get post-data :offset)))
+(defun admin.list-obj (&key (limit 100))
+  (let ((class (hunchentoot:parameter "class"))
+        (sort-field (hunchentoot:parameter "sort-field"))
+        (sort-dir (hunchentoot:parameter "sort-dir"))
+        (page (or (hunchentoot:parameter "page") "0")))
+    (let* ((class-name (intern class :eshop))
+           (class (find-class class-name))
+           (skip (* (parse-integer page) limit))
+           (slots (append (remove-if #'(lambda (slot)
+                                         (not (slot-visible (class-prototype class)
+                                                            slot
+                                                            :default)))
+                                     (mapcar #'slot-definition-name
+                                             (class-slots class)))
+                          (extra-slots (class-prototype class) :default)))
+           (data (eshop.odm:get-list class-name
+                                     :sort (when (and sort-field sort-dir)
+                                             (son (intern sort-field)
+                                                  (parse-integer sort-dir)))
+                                     :limit limit
+                                     :skip skip)))
+      (soy.admin:list-obj
+       (list :page page
+             :pages (ceiling (eshop.odm:instance-count class-name) limit)
+             :sort-field sort-field
+             :sort-dir sort-dir
+             :class class-name
+             :slots (mapcar #'string slots)
+             :data (mapcar #'(lambda (obj)
+                               (loop
+                                  :for slot :in slots
+                                  :collect (render-slot obj slot :default)))
+                           data))))))
+
+(defgeneric slot-visible (instance slot-name access)
+  (:method (instance slot-name access)
+    t))
+
+(defmethod slot-visible ((instance user) (slot-name (eql 'validation-token)) access)
+  nil)
+(defmethod slot-visible (instance (slot-name (eql 'eshop.odm::state)) access)
+  nil)
+(defmethod slot-visible (instance (slot-name (eql 'eshop.odm::modified)) access)
+  nil)
+
+(defgeneric render-slot (instance slot-name access)
+  (:method (instance slot-name access)
+    (princ-to-string (or (slot-value instance slot-name)
+                         "")))
+  (:method :around (instance slot-name access)
+    (if (slot-exists-p instance slot-name)
+        (if (slot-boundp instance slot-name)
+            (call-next-method)
+            "")
+        (if (member slot-name (extra-slots instance access))
+            (call-next-method)
+            (error "Trying to render unexisting slot ~S in object ~S" slot-name instance)))))
+
+(defmethod render-slot ((instance order) (slot-name (eql 'items)) access)
+  (length (slot-value instance slot-name)))
+
+(defmethod render-slot ((instance user) (slot-name (eql ':order-count)) access)
+  (length (eshop.odm:get-list 'order :query (son 'user instance))))
+
+(defgeneric extra-slots (class access)
+  (:method (class access)
     nil))
+
+(defmethod extra-slots ((class user) access)
+  '(:order-count))
 
 (defun show-admin-page (&optional (key ""))
   (let ((post-data (alist-plist (hunchentoot:post-parameters hunchentoot:*request*))))
@@ -431,6 +495,7 @@
       :content
            (switch ((ensure-string key) :test #'string=)
              ("info" (soy.admin:info (list :info (admin.get-info))))
+             ("objects" (admin.list-obj))
              ("actions" (soy.admin:action-buttons (list :post post-data
                                                         :info (admin.do-action
                                                                (getf post-data :action)))))
