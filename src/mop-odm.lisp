@@ -645,7 +645,7 @@
 (defun get-list (class &key query sort skip limit)
   "Fetches all instances of a class missing cache (to avoid wiping it)"
   (unless (or query limit)
-    (error "Require either QUERY or LIMIT in call to GET-LIST to avoid feetching the whole
+    (error "Require either QUERY or LIMIT in call to GET-LIST to avoid fetching the whole
 collection"))
   (let ((cooked-query (when query (son)))
         (cooked-sort (when sort (son))))
