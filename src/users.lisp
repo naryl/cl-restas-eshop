@@ -25,6 +25,10 @@
             :serializable t
             :accessor user-created
             :initform (get-universal-time))
+   (roles   :type list
+            :serializable t
+            :accessor user-roles
+            :initform (list "anon"))
    (validation :type string
                :serializable t
                :accessor user-validation
@@ -259,6 +263,5 @@ Otherwise throw ACCOUNT-ERROR"
   (session-user (start-session)))
 
 (defun (setf current-user) (user)
-  (eshop.odm:with-transaction
-    (setf (session-user (start-session))
-          user)))
+  (eshop.odm:setobj (start-session)
+                    'user user))

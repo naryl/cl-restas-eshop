@@ -3,42 +3,54 @@
 (in-package #:eshop)
 
 (restas:define-route admin-route ("/administration-super-panel")
+  (:decorators '@protected-admin)
   (restas:redirect 'admin/-route))
 
 (restas:define-route admin/-route ("/administration-super-panel/")
+  (:decorators '@protected-admin)
   (show-admin-page "info"))
 
 (restas:define-route admin-actions-key-route ("/administration-super-panel/actions" :method :post)
+  (:decorators '@protected-admin)
   (show-admin-page "actions"))
 
 (restas:define-route admin-pics-route ("/administration-super-panel/pics" :method :post)
+  (:decorators '@protected-admin)
   (show-admin-page "pics"))
 
 (restas:define-route admin-templates-route ("/administration-super-panel/templates" :method :post)
+  (:decorators '@protected-admin)
   (show-admin-page "templates"))
 
 (restas:define-route admin-backup1-route ("/administration-super-panel/makebackup")
+  (:decorators '@protected-admin)
   (show-admin-page "backup"))
 
 (restas:define-route admin-backup-route ("/administration-super-panel/makebackup" :method :post)
+  (:decorators '@protected-admin)
   (show-admin-page "backup"))
 
 ;; (restas:define-route admin-black-list-route ("/administration-super-panel/black-list")
 ;;   (show-admin-page "black-list"))
 
 (restas:define-route admin-black-list-post-route ("/administration-super-panel/black-list" :method :post)
+  (:decorators '@protected-admin)
   (show-admin-page "black-list"))
 
 (restas:define-route admin-cron-route ("/administration-super-panel/cron-jobs" :method :post)
+  (:decorators '@protected-admin)
   (show-admin-page "cron-jobs"))
 
 (restas:define-route admin-parenting-key-route ("/administration-super-panel/parenting" :method :post)
+  (:decorators '@protected-admin)
   (show-admin-page "parenting"))
 
 (restas:define-route admin-vendor-seo-route ("/administration-super-panel/vendor-seo" :method :post)
+  (:decorators '@protected-admin)
   (show-admin-page "vendor-seo"))
 
 (restas:define-route admin-key-route ("/administration-super-panel/:key")
+  (:decorators '@protected-admin)
   (show-admin-page key))
 
 (defun admin.standard-ajax-response (success &optional msg)
@@ -52,6 +64,7 @@
 
 
 (restas:define-route admin-filter-create ("administration-super-panel/filter-create" :method :get)
+  (:decorators '@protected-admin)
   (switch ((hunchentoot:get-parameter "get") :test #'string=)
     ("filter-types"
      ;; FIXME: use json encode, not format
@@ -62,6 +75,7 @@
                                        (filters.get-basic-fields (hunchentoot:get-parameter "filter-type")))))))
 
 (restas:define-route admin-edit-slot-route ("administration-super-panel/edit-slot" :method :post)
+  (:decorators '@protected-admin)
   (let ((object (getobj (hunchentoot:post-parameter "key")))
         (slot (anything-to-symbol (hunchentoot:post-parameter "slot")))
         (value (hunchentoot:post-parameter "value")))
@@ -87,48 +101,6 @@
           (error (e) (admin.standard-ajax-response nil (format nil "Error: ~A" e))))
         ;; else
         (admin.standard-ajax-response nil "Error: Object doesn't exist"))))
-
-
-
-;; login page
-(restas:define-route login-page-route ("administration-super-panel/login")
-  (:decorators '@timer '@session)
-  (flet ((make-error (msg)
-           (return-from login-page-route
-             (soy.admin:main
-              (list :content (soy.admin:login
-                              (list :alerterror msg
-                                    :name (hunchentoot:parameter "username")
-                                    :pass (hunchentoot:parameter "password")
-                                    :rem (hunchentoot:parameter "remember"))))))))
-    (cond ((hunchentoot:get-parameter "log")
-           (handler-case
-               (login (hunchentoot:get-parameter "username")
-                      (hunchentoot:get-parameter "password"))
-             (account-error (e)
-               (declare (ignore e))
-               (make-error "Wrong login or password"))))
-          ((hunchentoot:get-parameter "reg")
-           (handler-case
-               (register (hunchentoot:get-parameter "username")
-                         (hunchentoot:get-parameter "password"))
-             (account-error (e)
-               (declare (ignore e))
-               (make-error "Account for this email already exists"))))))
-  (soy.admin:main
-     (list
-       :user (session-user (start-session))
-       :content (soy.admin:login
-                     (list :alerterror "Login successful"
-                           :name (hunchentoot:parameter "username")
-                           :pass (hunchentoot:parameter "password")
-                           :rem (hunchentoot:parameter "remember"))))))
-
-;; logout page
-(restas:define-route logout-page-route ("administration-super-panel/logout")
-  (logout)
-  (hunchentoot:redirect "/administration-super-panel/login"
-                        :code hunchentoot:+http-moved-permanently+))
 
 
 
@@ -167,6 +139,7 @@
 
 
 (restas:define-route admin-make-get-route ("/administration-super-panel/make" :method :get)
+  (:decorators '@protected-admin)
   (admin.page-wrapper
    (let ((key (hunchentoot:get-parameter "key"))
          (type (hunchentoot:get-parameter "type")))
@@ -184,10 +157,12 @@
              "Incorrect type or no type specified")))))
 
 (restas:define-route admin-make-choose-key-route ("/administration-super-panel/make-key" :method :get)
+  (:decorators '@protected-admin)
   (admin.page-wrapper
    (soy.class_forms:make-choose-key)))
 
 (restas:define-route admin-new-make-post-route ("/administration-super-panel/new-make" :method :post)
+  (:decorators '@protected-admin)
   (log:debug (hunchentoot:post-parameters*))
   (let ((type (string-downcase (tbnl:post-parameter "type")))
         (key (tbnl:post-parameter "key")))
@@ -235,6 +210,7 @@
           (parents item)))
 
 (restas:define-route admin-make-post-route ("/administration-super-panel/make" :method :post)
+  (:decorators '@protected-admin)
   (let* ((key (hunchentoot:post-parameter "key"))
          (type (anything-to-symbol (hunchentoot:post-parameter "type")))
          (item (getobj key)))
@@ -253,6 +229,7 @@
           (admin.standard-ajax-response t)))))
 
 (restas:define-route admin-edit-get-route ("/administration-super-panel/edit" :method :get)
+  (:decorators '@protected-admin)
   ;; TODO: use type parameter
   (admin.page-wrapper
    (let* ((key (hunchentoot:get-parameter "key"))
@@ -278,6 +255,7 @@
     (setf (fullfilter item) (decode-fullfilter (raw-fullfilter item)))))
 
 (restas:define-route admin-edit-post-route ("/administration-super-panel/edit" :method :post)
+  (:decorators '@protected-admin)
   (let* ((key (hunchentoot:post-parameter "key"))
          (item (getobj key)))
     (if item

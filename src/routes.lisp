@@ -3,17 +3,26 @@
 
 (in-package #:eshop)
 
-;;;; no cache (use hunchentoot no-cache instead if restas:@no-cache)
+;;;; check access level by user role
 
-;; (defclass protected-route (routes:proxy-route)
-;;   ((roles :initform nil)))
+(defclass protected-route (routes:proxy-route)
+  ((roles :initform nil
+          :initarg :roles)))
 
-;; (defun @no-cache (route)
-;;   (make-instance 'no-cache-route :target route))
+(defun @protected-admin (route)
+  (make-instance 'protected-route :target route :roles '("admin")))
 
-;; (defmethod restas:process-route :before ((route protected-route) bindings)
-;;   (unless (find (user-access-level (current-user))
-;;                 (slot-value route 'roles))))
+(defun @protected-anon (route)
+  (make-instance 'protected-route :target route :roles '("anon")))
+
+(defmethod restas:process-route :before ((route protected-route) bindings)
+  (let ((current-user (current-user)))
+    (unless (and current-user
+                 (some #'(lambda (role)
+                           (find role (user-roles current-user) :test 'equal))
+                       (slot-value route 'roles)))
+      (hunchentoot:redirect "/"
+                            :code hunchentoot:+http-moved-permanently+))))
 
 ;;;; no cache (use hunchentoot no-cache instead if restas:@no-cache)
 
@@ -49,18 +58,12 @@
 
 (defmethod restas:process-route :around ((route session-route) bindings)
   "Ensure session for this route"
-  (let (error-msg)
-    (handler-case
-        (try-to-login)
-      (account-error (e)
-        (setf error-msg (msg e))))
-     ;; set closure template injected data with current session data
-    (let ((closure-template:*injected-data* closure-template:*injected-data*))
-      (setf (getf closure-template:*injected-data* :session) (start-session)
-            (getf closure-template:*injected-data* :user) (session-user (start-session))
-            (getf closure-template:*injected-data* :currenturl) (restas:request-full-uri)
-            (getf closure-template:*injected-data* :errormsg) error-msg)
-      (call-next-method))))
+  ;; set closure template injected data with current session data
+  (let ((closure-template:*injected-data* closure-template:*injected-data*))
+    (setf (getf closure-template:*injected-data* :session) (start-session)
+          (getf closure-template:*injected-data* :user) (current-user)
+          (getf closure-template:*injected-data* :currenturl) (restas:request-full-uri))
+    (call-next-method)))
 
 (defun try-to-login (&optional )
   (let ((username (hunchentoot:parameter "username"))
