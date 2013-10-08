@@ -438,6 +438,13 @@
            (setf errortext "Нет такого товара")))
     (soy.admin:black-list (list :output output :errortext errortext))))
 
+(defun limited-range (min max start num)
+  (let ((range (iota num :start start)))
+    (remove-if #'(lambda (n)
+                   (or (<= n min)
+                       (>= n max)))
+               range)))
+
 (defun admin.list-obj (&key (limit 100))
   (let ((class (hunchentoot:parameter "class"))
         (sort-field (hunchentoot:parameter "sort-field"))
@@ -445,6 +452,7 @@
         (page (or (hunchentoot:parameter "page") "0")))
     (let* ((class-name (intern class :eshop))
            (class (find-class class-name))
+           (last-page (truncate (eshop.odm:instance-count class-name) limit))
            (skip (* (parse-integer page) limit))
            (slots (append (remove-if #'(lambda (slot)
                                          (not (slot-visible (class-prototype class)
@@ -460,10 +468,11 @@
                                      :limit limit
                                      :skip skip)))
       (soy.admin:list-obj
-       (list :page page
-             :pages (ceiling (eshop.odm:instance-count class-name) limit)
-             :sort-field sort-field
-             :sort-dir sort-dir
+       (list :currentpage (parse-integer page)
+             :lastpage last-page
+             :pages (limited-range 0 last-page (- (parse-integer page) 5) 11)
+             :sortfield sort-field
+             :sortdir sort-dir
              :class class-name
              :slots (mapcar #'string slots)
              :data (mapcar #'(lambda (obj)
