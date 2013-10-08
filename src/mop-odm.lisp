@@ -57,13 +57,20 @@
   ((serializable :initarg :serializable
                  :type boolean
                  :initform nil
-                 :reader slot-serializable-p)))
+                 :reader slot-serializable-p)
+   (validation :initarg :validation
+               :type function
+               :initform nil
+               :reader slot-validation)))
 
 (defclass serializable-effective-slot-definition (standard-effective-slot-definition)
   ((serializable :initarg :serializable
                  :type boolean
                  :initform nil
-                 :reader slot-serializable-p)))
+                 :reader slot-serializable-p)
+   (validation :initarg :validation
+               :type list
+               :reader slot-validation)))
 
 (defmethod direct-slot-definition-class ((class serializable-class) &rest initargs)
   (declare (ignore initargs))
@@ -80,8 +87,43 @@
 (defmethod compute-effective-slot-definition :around ((class serializable-class) slot-name direct-slot-definitions)
   (let ((slot (call-next-method)))
     (setf (slot-value slot 'serializable)
-          (some #'slot-serializable-p direct-slot-definitions))
+          (some #'slot-serializable-p direct-slot-definitions)
+          (slot-value slot 'validation)
+          (remove nil (mapcar (compose #'eval #'slot-validation)
+                              direct-slot-definitions)))
     slot))
+
+(define-condition validation-error (error)
+  ((obj :initarg :obj)
+   (slot :initarg :slot)
+   (value :initarg :value)
+   (cause :initarg :cause))
+  (:report (lambda (condition stream)
+             (with-slots (obj slot value cause) condition
+               (format stream "Validation error in class ~A's slot ~A~%  Value: ~S~%  Cause: ~S"
+                       (class-of obj)
+                       (slot-definition-name slot)
+                       value
+                       cause)))))
+
+(defun validate-serializable-slot-change (slot new-value)
+  (every #'(lambda (func)
+             (funcall func new-value))
+         (slot-validation slot)))
+
+(defmethod (setf slot-value-using-class) :around
+    (new-value (class serializable-class) obj (slot serializable-effective-slot-definition))
+  (unless *deserializing*
+    (flet ((validation-error (e)
+             (error 'validation-error
+                    :obj obj
+                    :slot slot
+                    :value new-value
+                    :cause e)))
+      (handler-bind ((error #'validation-error))
+        (unless (validate-serializable-slot-change slot new-value)
+          (validation-error nil)))))
+  (call-next-method))
 
 (defclass serializable-object ()
   ((key :initarg :key

@@ -23,7 +23,7 @@
                   (mailbox-count mailbox)
                   "_")))))
 
-(define-condition noproc ()
+(define-condition noproc (error)
   ((process :initarg :process))
   (:report (lambda (condition stream)
              (format stream "Process not running: ~S"

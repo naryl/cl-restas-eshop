@@ -38,3 +38,20 @@
       (ensure (not (slot-boundp b 'transient)))
       (ensure (not (slot-boundp a 'unbound)))
       (ensure (not (slot-boundp b 'unbound))))))
+
+(defclass validation (eshop.odm:serializable-object)
+  ((slot :initarg :slot
+         :serializable t
+         :validation #'(lambda (v)
+                         (when (zerop v)
+                           (error "V IS 0!!!1"))
+                         (evenp v))))
+  (:metaclass eshop.odm:serializable-class))
+
+(addtest validation
+  (ensure-error (make-instance 'validation :slot 1))
+  (let ((obj (make-instance 'validation :slot 4)))
+    (ensure-error (setf (slot-value obj 'slot) 0))
+    (ensure-error (setf (slot-value obj 'slot) 1))
+    (setf (slot-value obj 'slot) 2)
+    (ensure (eql (slot-value obj 'slot) 2))))
