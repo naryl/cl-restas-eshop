@@ -561,6 +561,8 @@
   "Modifies an object in a transaction.
   Call either as (setobj (getobj 'class 1234) 'a 1 'b 2)
   or (setobj 'class 1234 'a 1 'b 2)"
+  (unless obj-or-class
+    (error "Can't do SETOBJ for NIL"))
   (flet ((invalid-arguments ()
            (error "SETOBJ requires either persistent-object or both class and key")))
     (let (class key)

@@ -487,6 +487,8 @@
 
 (defmethod slot-visible ((instance user) (slot-name (eql 'validation-token)) access)
   nil)
+(defmethod slot-visible ((instance order) (slot-name (eql 'userfamily)) access)
+  nil)
 (defmethod slot-visible (instance (slot-name (eql 'eshop.odm::state)) access)
   nil)
 (defmethod slot-visible (instance (slot-name (eql 'eshop.odm::modified)) access)
@@ -510,6 +512,10 @@
 
 (defmethod render-slot ((instance user) (slot-name (eql ':order-count)) access)
   (length (eshop.odm:get-list 'order :query (son 'user instance))))
+
+(defmethod render-slot ((instance order) (slot-name (eql 'address)) access)
+  (let ((address (slot-value instance 'address)))
+    (subseq address 0 (min 100 (length address)))))
 
 (defgeneric extra-slots (class access)
   (:method (class access)
