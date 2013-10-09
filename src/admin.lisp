@@ -476,7 +476,7 @@
                :lastpage last-page
                :pages (limited-range 0 last-page (- (parse-integer page) 5) 11)
                :sortfield sort-field
-               :sortdir sort-dir
+               :sortdir (when sort-dir (parse-integer sort-dir))
                :class class-name
                :slots (mapcar #'string slots)
                :data (mapcar #'(lambda (obj)
