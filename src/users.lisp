@@ -238,7 +238,8 @@ Otherwise throw ACCOUNT-ERROR"
   ;; TODO: send proper email
   (let* ((mail (user-email user))
          (body (format nil "http://localhost:4246/user-valiadate?user=~A&token=~A"
-                       (eshop.odm:serializable-object-key user) (user-validation user))))
+                       (eshop.odm:serializable-object-key user)
+                       (user-validation-token user))))
     (sendmail:send-email :to mail
                          :body body)))
 

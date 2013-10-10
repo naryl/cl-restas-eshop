@@ -112,3 +112,20 @@
       (soy.cabinet:login
        (list :menu (render.menu)
              :msg (hunchentoot:get-parameter "msg")))))
+
+(restas:define-route user-validation-route ("/u/validate")
+  (:decorators '@timer '@session)
+  (let ((id (hunchentoot:parameter "id"))
+        (token (hunchentoot:parameter "token")))
+    (flet ((validation-error (&optional e)
+             (default-page
+                 (soy.cabinet:error
+                  (list :msg (if e (msg e) "Ошибка валидации"))))))
+      (handler-case
+          (if (and id
+                   token
+                   (validate-user id token))
+              (default-page
+                  (soy.cabinet:validation))
+              (validation-error))
+        (account-error (e) (validation-error e))))))
