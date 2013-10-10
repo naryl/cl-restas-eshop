@@ -7,20 +7,44 @@
 (defun user-validation-timeout ()
   (* 24 60 60))
 
+(defun %compile-nullable-validation-rule (parse-rule)
+  #'(lambda (value)
+      (or (null value)
+          (funcall parse-rule value))))
+
 ;;;; Classes
 
 (defclass user (eshop.odm:persistent-object)
   ((pass :type (or null string)
          :serializable t
          :accessor user-pass
+         :validation (%compile-nullable-validation-rule
+                      (data-sift:compile-parse-rule 'string
+                                                    :min-length 6 :max-length 30
+                                                    :message "Ошибка при вводе пароля"))
          :initarg :pass)
+   (name :type string
+         :serializable t
+         :accessor user-name
+         :validation (data-sift:compile-parse-rule 'string
+                                                   :min-length 3 :max-length 30
+                                                   :message "Ошибка при вводе имени")
+         :initarg :name)
    (phone :type (or null string)
           :serializable t
           :accessor user-phone
+          :validation (%compile-nullable-validation-rule
+                       (data-sift:compile-parse-rule 'data-sift:regexp
+                                                     :regex "^8+([0-9]{9})$"
+                                                     :message "Ошибка при вводе номера телефона"))
           :initarg :phone)
    (bonuscard :type (or null string)
           :serializable t
           :accessor user-bonuscard
+          :validation (%compile-nullable-validation-rule
+                       (data-sift:compile-parse-rule 'string
+                                                     :min-length 3 :max-length 30
+                                                     :message "Ошибка при вводе номера бонусной карты"))
           :initarg :bonuscard)
    (addresses :type list
               :serializable t

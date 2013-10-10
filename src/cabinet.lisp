@@ -18,29 +18,17 @@
         (new-session :persistent t)
         (setf (current-user) user)))))
 
-(defmacro validation-username (value)
-  `(funcall (data-sift:compile-parse-rule 'data-sift:email :message "Ошибка при вводе email") ,value))
-
-(defmacro validation-password (value)
-  `(funcall (data-sift:compile-parse-rule 'string :min-length 6 :max-length 30 :message "Ошибка при вводе пароля") ,value))
-
-(defmacro validation-name (value)
-  `(funcall (data-sift:compile-parse-rule 'string :min-length 3 :max-length 30 :message "Ошибка при вводе имени") ,value))
-
-(defmacro validation-bonuscard (value)
-  `(funcall (data-sift:compile-parse-rule 'string :min-length 3 :max-length 30 :message "Ошибка при вводе номера бонусной карты") ,value))
-
-(defmacro validation-phone (value)
-  `(funcall (data-sift:compile-parse-rule 'data-sift:regexp
-                                          :regex "^8+([0-9]{9})$"
-                                          :message "Ошибка при вводе номера телефона") ,value))
 
 (defun try-to-registration ()
-  (let ((username (validation-username (hunchentoot:parameter "username")))
-        (password (validation-password (hunchentoot:parameter "password")))
-        (name (validation-name (hunchentoot:parameter "name")))
-        (bonuscard (validation-bonuscard (hunchentoot:parameter "bonuscard")))
-        (phone (validation-phone (hunchentoot:parameter "phone"))))
+  (let ((username (hunchentoot:parameter "username"))
+        (password (hunchentoot:parameter "password"))
+        (name (hunchentoot:parameter "name"))
+        (bonuscard nil)
+        (phone nil))
+    (unless (equal "" (hunchentoot:parameter "bonuscard"))
+      (setf bonuscard (hunchentoot:parameter "bonuscard")))
+    (unless (equal "" (hunchentoot:parameter "phone"))
+      (setf phone (hunchentoot:parameter "phone")))
     (when (hunchentoot:parameter "reg")
       (when-let ((user (register username password :name name :phone phone :bonuscard bonuscard)))
         (send-validation-email user)
@@ -52,7 +40,6 @@
     (:decorators '@protected-anon)
     (hunchentoot:redirect "/u/profile"
                           :code hunchentoot:+http-moved-permanently+))
-
 
 
 (restas:define-route request-user-orders-route ("/u/orders")
@@ -67,12 +54,34 @@
 
 
 ;; REGISTARTION
-(restas:define-route loging-page-route ("/u/registration" :method :get)
+(restas:define-route registration-page-route ("/u/registration" :method :get)
   (:decorators '@timer '@session)
   (default-page
       (soy.cabinet:registration
        (list :menu (render.menu)
              :msg (hunchentoot:get-parameter "msg")))))
+
+
+(restas:define-route registration-route ("/u/registration" :method :post)
+  (:decorators '@timer '@session)
+  (flet ((redirect-page (msg)
+            (hunchentoot:redirect (concatenate 'string "/u/registration"
+                                               (prepare-get-parameters (list (cons "msg" msg))))
+                                  :code hunchentoot:+http-moved-permanently+)))
+    (handler-case
+        (try-to-registration)
+      (account-error (e)
+        (redirect-page (msg e)))
+      (eshop.odm::validation-error (e)
+        (let ((cause (slot-value e 'eshop.odm::cause))
+              (msg nil))
+          (when (eq (type-of cause) 'data-sift:validation-fail)
+            (setf msg (data-sift:validation-fail-message cause)))
+          (redirect-page msg))))
+    (hunchentoot:redirect (aif (hunchentoot:parameter "url")
+                               it
+                               "/")
+                          :code hunchentoot:+http-moved-permanently+)))
 
 
 ;; LOGIN
@@ -89,16 +98,15 @@
                              "/")
                         :code hunchentoot:+http-moved-permanently+))
 
-;; LOGOUT
-(restas:define-route logout-route ("/u/logout")
-  (new-session)
-  (hunchentoot:redirect "/"
-                        :code hunchentoot:+http-moved-permanently+))
-
-
 (restas:define-route loging-page-route ("/u/login" :method :get)
   (:decorators '@timer '@session)
   (default-page
       (soy.cabinet:login
        (list :menu (render.menu)
              :msg (hunchentoot:get-parameter "msg")))))
+
+;; LOGOUT
+(restas:define-route logout-route ("/u/logout")
+  (new-session)
+  (hunchentoot:redirect "/"
+                        :code hunchentoot:+http-moved-permanently+))
