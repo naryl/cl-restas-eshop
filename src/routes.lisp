@@ -65,19 +65,6 @@
           (getf closure-template:*injected-data* :currenturl) (restas:request-full-uri))
     (call-next-method)))
 
-(defun try-to-login (&optional )
-  (let ((username (hunchentoot:parameter "username"))
-        (password (hunchentoot:parameter "password")))
-    (cond ((hunchentoot:parameter "log")
-           (when-let ((user (login username password)))
-             (new-session :persistent t)
-             (setf (current-user) user)))
-          ((hunchentoot:parameter "reg")
-           (when-let ((user (register username password)))
-             (send-validation-email user)
-             (new-session :persistent t)
-             (setf (current-user) user))))))
-
 (defvar *current-route-symbol* nil)
 
 (defcached route-name (&optional (route *current-route-symbol*))

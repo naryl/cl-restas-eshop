@@ -18,6 +18,10 @@
           :serializable t
           :accessor user-phone
           :initarg :phone)
+   (bonuscard :type (or null string)
+          :serializable t
+          :accessor user-bonuscard
+          :initarg :bonuscard)
    (addresses :type list
               :serializable t
               :accessor user-addresses)
@@ -176,7 +180,7 @@
       (error 'account-error :msg "Учётная запись не была подтверждена вовремя. Попробуйте восстановить пароль."))
     (error 'account-error :msg "Неправильный логин или пароль")))
 
-(defun register (email password)
+(defun register (email password &key name phone bonuscard &allow-other-keys)
   "Create a new user with EMAIL and PASSWORD if one doesn't exist.
 Otherwise throw ACCOUNT-ERROR"
   (clean-accounts)
@@ -184,7 +188,10 @@ Otherwise throw ACCOUNT-ERROR"
     (error 'account-error :msg "Такой пользователь уже есть"))
   (make-instance 'user
                  :key email
-                 :pass password))
+                 :pass password
+                 :name name
+                 :phone phone
+                 :bonuscard bonuscard))
 
 (defun make-password-reset (email)
   "Creates a password-reset object and sends its data to user's email"
