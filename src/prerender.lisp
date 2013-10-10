@@ -116,9 +116,17 @@
            (soy.product:marth8
             (list :pic (car (get-pics articul))
                   :articul articul
-                  :name (name-seo product)
+                  :nameseo (name-seo product)
                   :keyoptions (subseq (render.get-keyoptions product) 0 4)
                   :price (get-format-price (siteprice product)))))))
+      ((string= type "lihoradka")
+       (let* ((articul (nth 1 args)))
+         (awhen (getobj articul 'product)
+           (soy.lihoradka:item
+            (list :siteprice (siteprice it)
+                  :articul articul
+                  :nameseo (name-seo it)
+                  :picname (car (get-pics articul)))))))
       ((string= type "patric")
        (let* ((type (nth 1 args))
               (articul (nth 2 args))
