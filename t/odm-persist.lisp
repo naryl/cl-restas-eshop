@@ -220,6 +220,12 @@
                                                :limit 3
                                                :skip 1
                                                :sort (son 'slot 1)))))
+    (ensure (equal '(4 3 2)
+                   (mapcar #'persistent-slot
+                           (eshop.odm:get-list 'persistent
+                                               :limit 3
+                                               :skip 1
+                                               :sort (son 'slot -1)))))
     (eshop.odm:remobj objs)))
 
 (addtest get-list-by-link

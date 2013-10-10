@@ -416,45 +416,60 @@
            (setf errortext "Нет такого товара")))
     (soy.admin:black-list (list :output output :errortext errortext))))
 
+(defun limited-range (min max start num)
+  (let ((range (iota num :start start)))
+    (remove-if #'(lambda (n)
+                   (or (<= n min)
+                       (>= n max)))
+               range)))
+
 (defun admin.list-obj (&key (limit 100))
-  (let ((class (hunchentoot:parameter "class"))
-        (sort-field (hunchentoot:parameter "sort-field"))
-        (sort-dir (hunchentoot:parameter "sort-dir"))
-        (page (or (hunchentoot:parameter "page") "0")))
-    (let* ((class-name (intern class :eshop))
-           (class (find-class class-name))
-           (skip (* (parse-integer page) limit))
-           (slots (append (remove-if #'(lambda (slot)
-                                         (not (slot-visible (class-prototype class)
-                                                            slot
-                                                            :default)))
-                                     (mapcar #'slot-definition-name
-                                             (class-slots class)))
-                          (extra-slots (class-prototype class) :default)))
-           (data (eshop.odm:get-list class-name
-                                     :sort (when (and sort-field sort-dir)
-                                             (son (intern sort-field)
-                                                  (parse-integer sort-dir)))
-                                     :limit limit
-                                     :skip skip)))
-      (soy.admin:list-obj
-       (list :page page
-             :pages (ceiling (eshop.odm:instance-count class-name) limit)
-             :sort-field sort-field
-             :sort-dir sort-dir
-             :class class-name
-             :slots (mapcar #'string slots)
-             :data (mapcar #'(lambda (obj)
-                               (loop
-                                  :for slot :in slots
-                                  :collect (render-slot obj slot :default)))
-                           data))))))
+  (flet ((non-empty (string)
+           (when (and string
+                      (string/= string ""))
+             string)))
+    (let ((class (hunchentoot:parameter "class"))
+          (sort-field (non-empty (hunchentoot:parameter "sortfield")))
+          (sort-dir (non-empty (hunchentoot:parameter "sortdir")))
+          (page (or (hunchentoot:parameter "page") "0")))
+      (let* ((class-name (intern class :eshop))
+             (class (find-class class-name))
+             (last-page (truncate (eshop.odm:instance-count class-name) limit))
+             (skip (* (parse-integer page) limit))
+             (slots (append (remove-if #'(lambda (slot)
+                                           (not (slot-visible (class-prototype class)
+                                                              slot
+                                                              :default)))
+                                       (mapcar #'slot-definition-name
+                                               (class-slots class)))
+                            (extra-slots (class-prototype class) :default)))
+             (data (eshop.odm:get-list class-name
+                                       :sort (when (and sort-field sort-dir)
+                                               (son (intern sort-field :eshop)
+                                                    (parse-integer sort-dir)))
+                                       :limit limit
+                                       :skip skip)))
+        (soy.admin:list-obj
+         (list :currentpage (parse-integer page)
+               :lastpage last-page
+               :pages (limited-range 0 last-page (- (parse-integer page) 5) 11)
+               :sortfield sort-field
+               :sortdir (when sort-dir (parse-integer sort-dir))
+               :class class-name
+               :slots (mapcar #'string slots)
+               :data (mapcar #'(lambda (obj)
+                                 (loop
+                                    :for slot :in slots
+                                    :collect (render-slot obj slot :default)))
+                             data)))))))
 
 (defgeneric slot-visible (instance slot-name access)
   (:method (instance slot-name access)
     t))
 
 (defmethod slot-visible ((instance user) (slot-name (eql 'validation-token)) access)
+  nil)
+(defmethod slot-visible ((instance order) (slot-name (eql 'userfamily)) access)
   nil)
 (defmethod slot-visible (instance (slot-name (eql 'eshop.odm::state)) access)
   nil)
@@ -479,6 +494,14 @@
 
 (defmethod render-slot ((instance user) (slot-name (eql ':order-count)) access)
   (length (eshop.odm:get-list 'order :query (son 'user instance))))
+
+(defmethod render-slot ((instance order) (slot-name (eql 'address)) access)
+  (let ((address (slot-value instance 'address)))
+    (subseq address 0 (min 100 (length address)))))
+
+(defmethod render-slot ((instance order) (slot-name (eql 'date)) access)
+  (render-time '(:hour ":" :min " " :day "." :month "." :year)
+               (slot-value instance 'date)))
 
 (defgeneric extra-slots (class access)
   (:method (class access)
