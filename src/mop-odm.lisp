@@ -623,9 +623,10 @@
             (setf (slot-value obj slot) value))
           obj)))))
 
-(defun instance-count (class)
+(defun instance-count (class &key query)
   (db-eval
-    (truncate (mongo:$count (obj-collection class)))))
+    (truncate (mongo:$count (obj-collection class)
+                            (when query (cook-query query))))))
 
 (defun list-persistent-classes ()
   "Finds all subclasses including indirect"
@@ -673,51 +674,37 @@
 
 (defun get-one (class query)
   "Fetches an object by mongo query and stores it in cache by key"
-  (let ((cooked-query (make-hash-table :test #'equal)))
-    (maphash #'(lambda (k v)
-                 (setf (gethash (symbol-fqn k) cooked-query)
-                       v))
-             query)
-    (let ((key-ht (db-eval
-                    (mongo:find-one (obj-collection class)
-                                    :query cooked-query
-                                    :selector (son (symbol-fqn 'key) 1
-                                                   "_id" 0)))))
-      (when key-ht
-        (getobj class (gethash (symbol-fqn 'key) key-ht))))))
+  (let* ((cooked-query (cook-query query))
+         (key-ht (db-eval
+                   (mongo:find-one (obj-collection class)
+                                   :query cooked-query
+                                   :selector (son (symbol-fqn 'key) 1
+                                                  "_id" 0)))))
+    (when key-ht
+      (getobj class (gethash (symbol-fqn 'key) key-ht)))))
 
 (defun get-list (class &key query sort skip limit)
   "Fetches all instances of a class missing cache (to avoid wiping it)"
   (unless (or query limit)
     (error "Require either QUERY or LIMIT in call to GET-LIST to avoid fetching the whole
 collection"))
-  (let ((cooked-query (when query (son)))
-        (cooked-sort (when sort (son))))
-    (when query
-      (maphash #'(lambda (k v)
-                   (setf (gethash (symbol-fqn k) cooked-query)
-                         (serialize-slot v)))
-               query))
-    (when sort
-      (maphash #'(lambda (k v)
-                   (setf (gethash (symbol-fqn k) cooked-sort)
-                         v))
-               sort))
-    (let ((pipeline (remove nil (list (when query (son "$match" cooked-query))
-                                      (when sort (son "$sort" cooked-sort))
-                                      (when skip (son "$skip" skip))
-                                      (when limit (son "$limit" limit))))))
-      (let ((hts (db-eval
-                   (apply #'mongo:aggregate
-                          (obj-collection class)
-                          pipeline))))
-        (mapcar #'(lambda (ht)
-                    (when (and ht
-                               (string= (symbol-fqn class)
-                                        (gethash +class-key+ ht)))
-                      (remhash "_id" ht)
-                      (deserialize ht)))
-                hts)))))
+  (let* ((cooked-query (when query (cook-query query)))
+         (cooked-sort (when sort (cook-query sort)))
+         (pipeline (remove nil (list (when query (son "$match" cooked-query))
+                                     (when sort (son "$sort" cooked-sort))
+                                     (when skip (son "$skip" skip))
+                                     (when limit (son "$limit" limit)))))
+         (hts (db-eval
+                (apply #'mongo:aggregate
+                       (obj-collection class)
+                       pipeline))))
+    (mapcar #'(lambda (ht)
+                (when (and ht
+                           (string= (symbol-fqn class)
+                                    (gethash +class-key+ ht)))
+                  (remhash "_id" ht)
+                  (deserialize ht)))
+            hts)))
 
 ;;;; Version queries
 
@@ -795,6 +782,14 @@ collection"))
 
 (metric:defmetric getobj-cache-size ("getobj.cache")
   (getobj-cache-size))
+
+(defun cook-query (raw-query)
+  (let ((cooked-query (son)))
+    (maphash #'(lambda (k v)
+                 (setf (gethash (symbol-fqn k) cooked-query)
+                       (serialize-slot v)))
+             raw-query)
+    cooked-query))
 
 ;;;; Stuff
 

@@ -57,8 +57,18 @@
 
 (restas:define-route request-user-orders-route ("/u/orders")
   (:decorators '@timer '@session '@no-cache '@protected-anon)
-  (soy.cabinet:main (list :orders (eshop.odm:get-list 'order
-                                                      :query (son 'user (current-user))))))
+  (let ((page-size 3))
+    (let* ((query (son 'user (current-user)))
+           (page (parse-integer (or (hunchentoot:get-parameter "page") "1")))
+           (order-count (eshop.odm:instance-count 'order
+                                                  :query query)))
+      (soy.cabinet:main (list :orders (eshop.odm:get-list 'order
+                                                          :query query
+                                                          :sort (son 'date 1)
+                                                          :skip (* (1- page) page-size)
+                                                          :limit page-size)
+                              :pages (iota (ceiling order-count page-size) :start 1)
+                              :curpage page)))))
 
 
 (restas:define-route request-user-profile-route ("/u/profile")
@@ -67,7 +77,7 @@
 
 
 ;; REGISTARTION
-(restas:define-route loging-page-route ("/u/registration" :method :get)
+(restas:define-route registration-page-route ("/u/registration" :method :get)
   (:decorators '@timer '@session)
   (default-page
       (soy.cabinet:registration
@@ -96,7 +106,7 @@
                         :code hunchentoot:+http-moved-permanently+))
 
 
-(restas:define-route loging-page-route ("/u/login" :method :get)
+(restas:define-route login-page-route ("/u/login" :method :get)
   (:decorators '@timer '@session)
   (default-page
       (soy.cabinet:login
