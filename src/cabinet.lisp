@@ -67,7 +67,7 @@
   (flet ((redirect-page (msg)
             (hunchentoot:redirect (concatenate 'string "/u/registration"
                                                (prepare-get-parameters (list (cons "msg" msg))))
-                                  :code hunchentoot:+http-moved-permanently+)))
+                                  :code hunchentoot:+http-moved-temporarily+)))
     (handler-case
         (try-to-registration)
       (account-error (e)
@@ -81,7 +81,7 @@
     (hunchentoot:redirect (aif (hunchentoot:parameter "url")
                                it
                                "/")
-                          :code hunchentoot:+http-moved-permanently+)))
+                          :code hunchentoot:+http-moved-temporarily+)))
 
 
 ;; LOGIN
@@ -96,7 +96,7 @@
   (hunchentoot:redirect (aif (hunchentoot:parameter "url")
                              it
                              "/")
-                        :code hunchentoot:+http-moved-permanently+))
+                        :code hunchentoot:+http-moved-temporarily+))
 
 (restas:define-route loging-page-route ("/u/login" :method :get)
   (:decorators '@timer '@session)
@@ -109,4 +109,4 @@
 (restas:define-route logout-route ("/u/logout")
   (new-session)
   (hunchentoot:redirect "/"
-                        :code hunchentoot:+http-moved-permanently+))
+                        :code hunchentoot:+http-moved-temporarily+))
