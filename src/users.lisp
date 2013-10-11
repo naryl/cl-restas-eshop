@@ -35,7 +35,7 @@
           :accessor user-phone
           :validation (%compile-nullable-validation-rule
                        (data-sift:compile-parse-rule 'data-sift:regexp
-                                                     :regex "^8+([0-9]{9})$"
+                                                     :regex "^8+([0-9]{10})$"
                                                      :message "Ошибка при вводе номера телефона"))
           :initarg :phone)
    (bonuscard :type (or null string)
@@ -66,6 +66,19 @@
                      :reader user-validation-token
                      :initform (create-random-string 36 36)))
   (:metaclass eshop.odm:persistent-class))
+
+(defmethod print-object ((obj user) stream)
+  (print-unreadable-object (obj stream :type t :identity t)
+    (if (and (slot-boundp obj 'eshop.odm::key)
+             (slot-boundp obj 'eshop.odm::state)
+             (slot-boundp obj 'roles))
+        (case (eshop.odm::persistent-object-state obj)
+          ((:rw :ro) (format stream "~A ~S ~A"
+                             (eshop.odm::persistent-object-state obj)
+                             (eshop.odm::serializable-object-key obj)
+                             (user-roles obj)))
+          ((:deleted) (format stream "DELETED")))
+        (format stream "DUMMY"))))
 
 (defun user-email (user)
   (eshop.odm:serializable-object-key user))
