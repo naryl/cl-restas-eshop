@@ -68,17 +68,7 @@
   (:metaclass eshop.odm:persistent-class))
 
 (defmethod print-object ((obj user) stream)
-  (print-unreadable-object (obj stream :type t :identity t)
-    (if (and (slot-boundp obj 'eshop.odm::key)
-             (slot-boundp obj 'eshop.odm::state)
-             (slot-boundp obj 'roles))
-        (case (eshop.odm::persistent-object-state obj)
-          ((:rw :ro) (format stream "~A ~S ~A"
-                             (eshop.odm::persistent-object-state obj)
-                             (eshop.odm::serializable-object-key obj)
-                             (user-roles obj)))
-          ((:deleted) (format stream "DELETED")))
-        (format stream "DUMMY"))))
+  (format stream "~A" (user-roles obj)))
 
 (defun user-email (user)
   (eshop.odm:serializable-object-key user))

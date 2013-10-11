@@ -312,14 +312,16 @@
   (:documentation "Root of persistent objects.")
   (:metaclass persistent-class))
 
-(defmethod print-object ((obj persistent-object) stream)
+(defmethod print-object :around ((obj persistent-object) stream)
   (print-unreadable-object (obj stream :type t :identity t)
     (if (and (slot-boundp obj 'key)
              (slot-boundp obj 'state))
         (case (persistent-object-state obj)
-          ((:rw :ro) (format stream "~A ~S"
-                             (persistent-object-state obj)
-                             (serializable-object-key obj)))
+          ((:rw :ro)
+           (format stream "~A ~S"
+                   (persistent-object-state obj)
+                   (serializable-object-key obj))
+           (call-next-method))
           ((:deleted) (format stream "DELETED")))
         (format stream "DUMMY"))))
 
