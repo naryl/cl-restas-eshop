@@ -170,13 +170,16 @@
     t)
   (:method ((false (eql nil)))
     nil)
+  (:method ((symbol symbol))
+    (son "%TYPE%" ":SYMBOL"
+         "%VALUE%" (symbol-fqn symbol)))
   (:method ((list list))
     (mapcar #'serialize-slot list)))
 
 (defun write-link (class key)
-  (plist-hash-table (list "%TYPE%" ":LINK"
-                          "%CLASS%" (symbol-fqn class)
-                          "%KEY%" (serialize-slot key))))
+  (son "%TYPE%" ":LINK"
+       "%CLASS%" (symbol-fqn class)
+       "%KEY%" (serialize-slot key)))
 
 (defgeneric deserialize (data)
   (:documentation "Deserializes object from DATA using SOURCE data structure.
@@ -200,6 +203,8 @@
   (:method (ht (class (eql :link)))
     (make-obj-link :class (fqn-symbol (gethash "%CLASS%" ht))
                    :key (gethash "%KEY%" ht)))
+  (:method (fqn (class (eql :symbol)))
+    (fqn-symbol fqn))
   (:method (ht (class (eql :obj)))
     (let* ((class-name (fqn-symbol (gethash +class-key+ ht)))
            (class (find-class class-name)))
@@ -594,10 +599,14 @@
   "Deletes an object from the database"
   (setf objs (flatten (ensure-list objs))) ; Ensure OBJS is a flat list of objects
   (dolist (obj objs)
-    (setf (persistent-object-state obj) :deleted)
-    (if *transaction*
-        (setf (persistent-object-modified obj) t)
-        (delete-instance obj))))
+    (let ((class (type-of obj))
+          (key (serializable-object-key obj)))
+      (setf (persistent-object-state obj) :deleted)
+      (if *transaction*
+          (if (gethash (list class key) *transaction*)
+              (setf (persistent-object-modified obj) t)
+              (remobj (getobj class key)))
+          (delete-instance obj)))))
 
 (defun setobj (obj-or-class &rest slots-values)
   "Modifies an object in a transaction.

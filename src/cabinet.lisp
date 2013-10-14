@@ -43,7 +43,7 @@
         (phone (validation-phone (hunchentoot:parameter "phone"))))
     (when (hunchentoot:parameter "reg")
       (when-let ((user (register username password :name name :phone phone :bonuscard bonuscard)))
-        (send-validation-email user)
+        (send-validation (make-validation user 'email))
         (new-session :persistent t)
         (setf (current-user) user)))))
 
@@ -102,8 +102,7 @@
 ;; LOGOUT
 (restas:define-route logout-route ("/u/logout")
   (new-session)
-  (hunchentoot:redirect "/"
-                        :code hunchentoot:+http-moved-permanently+))
+  (hunchentoot:redirect "/"))
 
 
 (restas:define-route login-page-route ("/u/login" :method :get)
@@ -113,19 +112,78 @@
        (list :menu (render.menu)
              :msg (hunchentoot:get-parameter "msg")))))
 
-(restas:define-route user-validation-route ("/u/validate")
+(restas:define-route user-request-reset-route ("/u/reset")
   (:decorators '@timer '@session)
-  (let ((id (hunchentoot:parameter "id"))
-        (token (hunchentoot:parameter "token")))
-    (flet ((validation-error (&optional e)
-             (default-page
-                 (soy.cabinet:error
-                  (list :msg (if e (msg e) "Ошибка валидации"))))))
-      (handler-case
-          (if (and id
-                   token
-                   (validate-user id token))
-              (default-page
-                  (soy.cabinet:validation))
-              (validation-error))
-        (account-error (e) (validation-error e))))))
+  (default-page
+      (soy.cabinet:recovery
+       (list :menu (render.menu)))))
+
+(restas:define-route user-request-reset-route/post ("/u/reset" :method :post)
+  (:decorators '@timer)
+  (let ((email (hunchentoot:parameter "username")))
+    (handler-case
+        (let ((reset (make-password-reset email)))
+          (send-reset-email reset)
+          (ajax-response "error" 0 "message" "Ссылка для сброса пароля выслана вам на почту"))
+      (account-error (e)
+        (ajax-response "error" 1 "message" (msg e))))))
+
+(restas:define-route user-apply-reset-route ("/u/reset/:id")
+  (:decorators '@timer '@session)
+  (let ((token (hunchentoot:parameter "token")))
+    (handler-case
+        (default-page
+            (if (and (string/= id "")
+                     (find-password-reset (parse-integer id) token))
+                (soy.cabinet:newpass
+                 (list :id id :token token
+                       :menu (render.menu)))
+                (soy.cabinet:recovery
+                 (list :msg "Неправильные данные для восстановления пароля. Попробуйте ещё раз"
+                       :menu (render.menu)))))
+      (account-error (e)
+        (break)
+        (default-page
+            (soy.cabinet:recovery
+             (list :msg (msg e)
+                   :menu (render.menu))))))))
+
+(restas:define-route user-apply-reset-route/post ("/u/reset/:id" :method :post)
+  (:decorators '@timer)
+  (handler-case
+      (let* ((token (hunchentoot:parameter "token"))
+             (reset (find-password-reset (parse-integer id) token)))
+        (unless reset
+          (error 'account-error :msg "Неправильные данные для восстановления
+  пароля. Попробуйте ещё раз"))
+        (let ((user (password-reset-user reset)))
+          (apply-password-reset reset (hunchentoot:parameter "newpass"))
+          (new-session :persistent t)
+          (setf (current-user) user))
+        (ajax-response "error" 0 "message" "Пароль успешно сменён. Теперь вы можете авторизоваться на сайте"))
+    (account-error (e)
+      (ajax-response "error" 1 "message" (msg e)))))
+
+(restas:define-route validation-route ("/u/validate")
+  (:decorators '@timer '@session)
+  (flet ((validation-error (&optional e)
+           (default-page
+               (soy.cabinet:simply-message
+                (list :msg (if e (msg e) "Ошибка валидации"))))))
+    (handler-case
+        (if-let ((id (hunchentoot:parameter "id"))
+                 (token (hunchentoot:parameter "token")))
+          (if-let ((user (validate-slot id token)))
+            (progn
+              (new-session :persistent t)
+              (setf (current-user) user)
+              (hunchentoot:redirect "/u/profile"
+                                    :code hunchentoot:+http-moved-permanently+))
+            (validation-error))
+          (validation-error))
+      (account-error (e) (validation-error e)))))
+
+;;;; Utils
+
+(defun ajax-response (&rest kv)
+  (st-json:write-json-to-string (apply #'son kv)))

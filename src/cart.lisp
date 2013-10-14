@@ -64,7 +64,7 @@
                    :address address
                    :username username
                    :userfamily userfamily
-                   :ekk ekk
+                   :bonuscard ekk
                    :bonuscount bonuscount
                    :comment comment
                    :delivery delivery
