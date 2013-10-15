@@ -14,26 +14,14 @@
          :serializable t
          :accessor user-pass
          :initarg :pass)
-   (user-email-validated :type boolean
-                         :serializable t
-                         :accessor user-email-validated
-                         :initform nil)
    (phone :type (or null string)
           :serializable t
           :accessor user-phone
           :initarg :phone)
-   (phone-validated :type boolean
-                    :serializable t
-                    :accessor user-phone-validated
-                    :initform nil)
    (bonuscard :type (or null string)
               :serializable t
               :accessor user-bonuscard
               :initarg :bonuscard)
-   (bonuscard-validated :type boolean
-                        :serializable t
-                        :accessor user-bonuscard-validated
-                        :initform nil)
    (addresses :type list
               :serializable t
               :accessor user-addresses)
@@ -44,11 +32,18 @@
    (roles   :type list
             :serializable t
             :accessor user-roles
-            :initform (list "anon")))
+            :initform (list "anon"))
+   (validations :type list
+                :serializable t
+                :initform nil))
   (:metaclass eshop.odm:persistent-class))
 
 (defun user-email (user)
   (eshop.odm:serializable-object-key user))
+
+(declaim (ftype (function (user symbol) boolean) validated-p))
+(defun validated-p (user slot)
+  (not (null (member slot (slot-value user 'validations)))))
 
 (defclass password-reset (eshop.odm:persistent-object)
   ((user :serializable t
@@ -202,7 +197,6 @@
 (defun register (email password &key name phone bonuscard &allow-other-keys)
   "Create a new user with EMAIL and PASSWORD if one doesn't exist.
 Otherwise throw ACCOUNT-ERROR"
-  (clean-accounts)
   (when (eshop.odm:getobj 'user email)
     (error 'account-error :msg "Такой пользователь уже есть"))
   (let ((user (make-instance 'user
@@ -235,11 +229,12 @@ Otherwise throw ACCOUNT-ERROR"
       (eshop.odm:remobj reset))
     t))
 
-(defun send-reset-email (reset)
+(defun send-reset-email (reset &key (domain (hunchentoot:header-in* "HOST")))
   ;; TODO: send proper email
   (let* ((user (password-reset-user reset))
          (mail (user-email user))
-         (body (format nil "http://localhost:4246/u/reset/~A?token=~A"
+         (body (format nil "http://~A/u/reset/~A?token=~A"
+                       domain
                        (eshop.odm:serializable-object-key reset)
                        (password-reset-token reset))))
     (sendmail:send-email :to mail
@@ -258,25 +253,25 @@ Otherwise throw ACCOUNT-ERROR"
 
 ;;;; Validation
 
-(defgeneric make-validation (user slot)
-  (:method ((user user) (slot (eql 'email)))
-    (make-instance 'validation
-                   :object user
-                   :slot 'email-validated
-                   :token (create-random-string 36 36)))
-  (:method ((user user) (slot (eql 'phone)))
-    (make-instance 'validation
-                   :object user
-                   :slot 'phone-validated
-                   :token (create-random-string 8 10))))
+(defun make-validation (user slot)
+  (make-instance 'validation
+                 :object user
+                 :slot slot
+                 :token (make-token slot)))
 
-(defun send-validation (validation)
+(defun make-token (slot)
+  (case slot
+    (email (create-random-string 36 36))
+    (phone (create-random-string 8 10))))
+
+(defun send-validation (validation &key (domain (hunchentoot:header-in* "HOST")))
   (case (validation-slot validation)
     ;; TODO: send proper email
-    (email-validated
+    (email
      (let* ((user (validation-object validation))
             (mail (user-email user))
-            (body (format nil "http://localhost:4246/u/valiadate?user=~A&token=~A"
+            (body (format nil "http://~A/u/valiadate?user=~A&token=~A"
+                          domain
                           (eshop.odm:serializable-object-key validation)
                           (validation-token validation))))
        (sendmail:send-email :to mail
@@ -288,12 +283,13 @@ Otherwise throw ACCOUNT-ERROR"
 
 (defun validate-slot (id token)
   (when-let ((validation (eshop.odm:getobj 'validation id)))
-    (let ((object (validation-object validation)))
-      (when (equal token (validation-token validation))
-        (eshop.odm:setobj (validation-object validation)
-                          (validation-slot validation) t)
-        (eshop.odm:remobj validation)
-        object))))
+    (when (equal token (validation-token validation))
+      (eshop.odm:with-transaction
+        (let ((object (validation-object validation)))
+          (push (validation-slot validation)
+                (slot-value object 'validations))
+          (eshop.odm:remobj validation)
+          object)))))
 
 
 ;;;; Require hunchentoot context

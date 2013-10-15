@@ -142,7 +142,6 @@
                  (list :msg "Неправильные данные для восстановления пароля. Попробуйте ещё раз"
                        :menu (render.menu)))))
       (account-error (e)
-        (break)
         (default-page
             (soy.cabinet:recovery
              (list :msg (msg e)
