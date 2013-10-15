@@ -53,8 +53,6 @@
     (hunchentoot:redirect "/u/profile"
                           :code hunchentoot:+http-moved-permanently+))
 
-
-
 (restas:define-route request-user-orders-route ("/u/orders")
   (:decorators '@timer '@session '@no-cache '@protected-anon)
   (let ((page-size 3))
@@ -85,6 +83,28 @@
              :msg (hunchentoot:get-parameter "msg")))))
 
 
+(restas:define-route registration-route ("/u/registration" :method :post)
+  (:decorators '@timer '@session)
+  (flet ((redirect-page (msg)
+            (hunchentoot:redirect (concatenate 'string "/u/registration"
+                                               (prepare-get-parameters (list (cons "msg" msg))))
+                                  :code hunchentoot:+http-moved-temporarily+)))
+    (handler-case
+        (try-to-registration)
+      (account-error (e)
+        (redirect-page (msg e)))
+      (eshop.odm::validation-error (e)
+        (let ((cause (slot-value e 'eshop.odm::cause))
+              (msg nil))
+          (when (eq (type-of cause) 'data-sift:validation-fail)
+            (setf msg (data-sift:validation-fail-message cause)))
+          (redirect-page msg))))
+    (hunchentoot:redirect (aif (hunchentoot:parameter "url")
+                               it
+                               "/")
+                          :code hunchentoot:+http-moved-temporarily+)))
+
+
 ;; LOGIN
 (restas:define-route loging-route ("/u/login" :method :post)
   (:decorators '@timer '@session)
@@ -97,7 +117,7 @@
   (hunchentoot:redirect (aif (hunchentoot:parameter "url")
                              it
                              "/")
-                        :code hunchentoot:+http-moved-permanently+))
+                        :code hunchentoot:+http-moved-temporarily+))
 
 ;; LOGOUT
 (restas:define-route logout-route ("/u/logout")
