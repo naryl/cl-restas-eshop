@@ -361,7 +361,8 @@ Type: ~A" type))
   (slots.%get-data 'undefined string))
 
 (defmethod slots.%encode-to-string ((type (eql 'textedit-hashtable)) hashtable)
-  (st-json:write-json-to-string hashtable))
+  ;;
+  (st-json:write-json-to-string (hash-table-plist hashtable)))
 
 (defmethod slots.%decode-from-string ((type (eql 'textedit-hashtable)) string)
   (declare (string string))
