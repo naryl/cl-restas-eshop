@@ -2,8 +2,9 @@
 
 (in-package #:eshop)
 
-(log:config :remove 1)
-(log:config (log:category '(eshop)) :remove 1)
+(ignore-errors
+  (log:config :remove 1)
+  (log:config (log:category '(eshop)) :remove 1))
 
 (log:config (log:category '(eshop)) ; Configure appenders for CURRENT PACKAGE
             :sane                   ; Configure default appenders
