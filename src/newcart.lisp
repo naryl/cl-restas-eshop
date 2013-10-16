@@ -369,8 +369,10 @@
                                                       :city city
                                                       :agent (tbnl:user-agent)))
                                       filename tks-mail)
-            (when (email.valid-email-p email)
-              (email.send-client-mail email order-id client-mail))
+            (unless (or (null email)
+                        (equal "" email))
+              (when (email.valid-email-p email)
+                (email.send-client-mail email order-id client-mail)))
             (soy.newcart:fullpage
              (list :head (soy.newcart:newcart-head
                           (list :thanks

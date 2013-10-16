@@ -330,6 +330,9 @@
           ((:deleted) (format stream "DELETED")))
         (format stream "DUMMY"))))
 
+(defmethod print-object ((obj persistent-object) stream)
+  nil)
+
 (defmethod serialize-slot ((obj persistent-object))
   (write-link (type-of obj) (serializable-object-key obj)))
 
