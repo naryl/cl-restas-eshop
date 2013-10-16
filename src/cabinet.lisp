@@ -2,6 +2,10 @@
 
 (in-package #:eshop)
 
+(defun optional-parameter (name)
+  (let ((string (hunchentoot:parameter name)))
+    (when (string/= string "")
+      string)))
 
 (defun prepare-get-parameters (alist)
   (format nil "?~{~A~^&~}"
@@ -18,29 +22,12 @@
         (new-session :persistent t)
         (setf (current-user) user)))))
 
-(defmacro validation-username (value)
-  `(funcall (data-sift:compile-parse-rule 'data-sift:email :message "Ошибка при вводе email") ,value))
-
-(defmacro validation-password (value)
-  `(funcall (data-sift:compile-parse-rule 'string :min-length 6 :max-length 30 :message "Ошибка при вводе пароля") ,value))
-
-(defmacro validation-name (value)
-  `(funcall (data-sift:compile-parse-rule 'string :min-length 3 :max-length 30 :message "Ошибка при вводе имени") ,value))
-
-(defmacro validation-bonuscard (value)
-  `(funcall (data-sift:compile-parse-rule 'string :min-length 3 :max-length 30 :message "Ошибка при вводе номера бонусной карты") ,value))
-
-(defmacro validation-phone (value)
-  `(funcall (data-sift:compile-parse-rule 'data-sift:regexp
-                                          :regex "^8+([0-9]{9})$"
-                                          :message "Ошибка при вводе номера телефона") ,value))
-
 (defun try-to-registration ()
-  (let ((username (validation-username (hunchentoot:parameter "username")))
-        (password (validation-password (hunchentoot:parameter "password")))
-        (name (validation-name (hunchentoot:parameter "name")))
-        (bonuscard (validation-bonuscard (hunchentoot:parameter "bonuscard")))
-        (phone (validation-phone (hunchentoot:parameter "phone"))))
+  (let ((username (hunchentoot:parameter "username"))
+        (password (hunchentoot:parameter "password"))
+        (name (hunchentoot:parameter "name"))
+        (bonuscard (optional-parameter "bonuscard"))
+        (phone (optional-parameter "phone")))
     (when (hunchentoot:parameter "reg")
       (when-let ((user (register username password :name name :phone phone :bonuscard bonuscard)))
         (send-validation (make-validation user 'email))

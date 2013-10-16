@@ -81,6 +81,7 @@
   (:export #:serializable-class
            #:serializable-object
            #:serializable-object-key
+           #:key
            #:serialize
            #:deserialize
            ;; ^^^^ Serialization

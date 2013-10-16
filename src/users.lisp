@@ -15,13 +15,15 @@
 ;;;; Classes
 
 (defclass user (eshop.odm:persistent-object)
-  ((pass :type (or null string)
+  ((eshop.odm:key :validation (data-sift:compile-parse-rule 'data-sift:email
+                                                             :message "Ошибка при вводе email"))
+   (pass :type (or null string)
          :serializable t
          :accessor user-pass
          :validation (%compile-nullable-validation-rule
                       (data-sift:compile-parse-rule 'string
-                                                    :min-length 6 :max-length 30
-                                                    :message "Ошибка при вводе пароля"))
+                                                    :min-length 6 :max-length 100
+                                                    :message "Пароль должен быть не короче шести символов"))
          :initarg :pass)
    (name :type string
          :serializable t
@@ -35,8 +37,8 @@
           :accessor user-phone
           :validation (%compile-nullable-validation-rule
                        (data-sift:compile-parse-rule 'data-sift:regexp
-                                                     :regex "^8+([0-9]{10})$"
-                                                     :message "Ошибка при вводе номера телефона"))
+                                                     :regex "^8([0-9]{10})$"
+                                                     :message "Введите телефон в формате 8123456789"))
           :initarg :phone)
    (bonuscard :type (or null bonuscard)
               :serializable t
@@ -59,28 +61,30 @@
   (:metaclass eshop.odm:persistent-class))
 
 (defmethod print-object ((obj user) stream)
-  (format stream "~A" (user-roles obj)))
+  (when (slot-boundp obj 'roles)
+    (format stream "~A" (user-roles obj))))
 
 (defun user-email (user)
   (eshop.odm:serializable-object-key user))
 
 (defparameter +bonuscard-validator+
-  (%compile-nullable-validation-rule
-   (data-sift:compile-parse-rule 'string
-                                 :min-length 3 :max-length 30
-                                 :message "Ошибка при вводе номера бонусной карты")))
+  (data-sift:compile-parse-rule 'string
+                                :min-length 3 :max-length 30
+                                :message "Ошибка при вводе номера бонусной карты"))
 
 (defmethod initialize-instance ((user user) &rest args &key bonuscard)
   (remf args :bonuscard)
   (apply #'call-next-method user args)
-  (funcall +bonuscard-validator+ bonuscard)
+  (when bonuscard
+    (funcall +bonuscard-validator+ bonuscard))
   (setf (slot-value user 'bonuscard)
         (or (eshop.odm:getobj 'bonuscard bonuscard)
             (make-instance 'bonuscard
                            :key bonuscard))))
 
 (defclass bonuscard (eshop.odm:persistent-object)
-  ((count :type fixnum
+  ((eshop.odm:key :validation +bonuscard-validator+)
+   (count :type fixnum
           :initform 0
           :initarg :count
           :serializable t
