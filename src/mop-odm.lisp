@@ -326,7 +326,10 @@
            (format stream "~A ~S"
                    (persistent-object-state obj)
                    (serializable-object-key obj))
-           (call-next-method))
+           (let ((inner (with-output-to-string (out)
+                          (call-next-method obj out))))
+             (unless (equal inner "")
+               (format stream " ~A" inner))))
           ((:deleted) (format stream "DELETED")))
         (format stream "DUMMY"))))
 

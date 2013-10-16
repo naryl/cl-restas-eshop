@@ -38,25 +38,21 @@
                                                      :regex "^8+([0-9]{10})$"
                                                      :message "Ошибка при вводе номера телефона"))
           :initarg :phone)
-   (bonuscard :type (or null string)
-          :serializable t
-          :accessor user-bonuscard
-          :validation (%compile-nullable-validation-rule
-                       (data-sift:compile-parse-rule 'string
-                                                     :min-length 3 :max-length 30
-                                                     :message "Ошибка при вводе номера бонусной карты"))
-          :initarg :bonuscard)
+   (bonuscard :type (or null bonuscard)
+              :serializable t
+              :accessor user-bonuscard
+              :initarg :bonuscard)
    (addresses :type list
               :serializable t
               :accessor user-addresses)
    (created :type number
             :serializable t
-            :accessor user-created
+            :reader user-created
             :initform (get-universal-time))
-   (roles   :type list
-            :serializable t
-            :accessor user-roles
-            :initform (list "anon"))
+   (roles :type list
+          :serializable t
+          :accessor user-roles
+          :initform (list "anon"))
    (validations :type list
                 :serializable t
                 :initform nil))
@@ -68,9 +64,28 @@
 (defun user-email (user)
   (eshop.odm:serializable-object-key user))
 
-(declaim (ftype (function (user symbol) boolean) validated-p))
-(defun validated-p (user slot)
-  (not (null (member slot (slot-value user 'validations)))))
+(defparameter +bonuscard-validator+
+  (%compile-nullable-validation-rule
+   (data-sift:compile-parse-rule 'string
+                                 :min-length 3 :max-length 30
+                                 :message "Ошибка при вводе номера бонусной карты")))
+
+(defmethod initialize-instance ((user user) &rest args &key bonuscard)
+  (remf args :bonuscard)
+  (apply #'call-next-method user args)
+  (funcall +bonuscard-validator+ bonuscard)
+  (setf (slot-value user 'bonuscard)
+        (or (eshop.odm:getobj 'bonuscard bonuscard)
+            (make-instance 'bonuscard
+                           :key bonuscard))))
+
+(defclass bonuscard (eshop.odm:persistent-object)
+  ((count :type fixnum
+          :initform 0
+          :initarg :count
+          :serializable t
+          :accessor bonuscard-count))
+  (:metaclass eshop.odm:persistent-class))
 
 (defclass password-reset (eshop.odm:persistent-object)
   ((user :serializable t
@@ -118,9 +133,9 @@
                :accessor order-family
                :initarg :userfamily)
    (bonuscard :type string
-        :serializable t
-        :accessor order-bonuscard
-        :initarg :bonuscard)
+              :serializable t
+              :accessor order-bonuscard
+              :initarg :bonuscard)
    (bonuscount :type number
                :serializable t
                :accessor order-bonuscount
@@ -224,7 +239,6 @@
 (defun register (email password &key name phone bonuscard &allow-other-keys)
   "Create a new user with EMAIL and PASSWORD if one doesn't exist.
 Otherwise throw ACCOUNT-ERROR"
-  (clean-accounts)
   (when (eshop.odm:getobj 'user email)
     (error 'account-error :msg "Такой пользователь уже есть"))
   (make-instance 'user
@@ -318,6 +332,9 @@ Otherwise throw ACCOUNT-ERROR"
           (eshop.odm:remobj validation)
           object)))))
 
+(declaim (ftype (function (user symbol) boolean) validated-p))
+(defun validated-p (user slot)
+  (not (null (member slot (slot-value user 'validations)))))
 
 ;;;; Require hunchentoot context
 
