@@ -57,14 +57,9 @@
             :serializable t
             :accessor user-roles
             :initform (list "anon"))
-   (validation :type string
-               :serializable t
-               :accessor user-validation
-               :initform "PENDING")
-   (validation-token :type string
-                     :serializable t
-                     :reader user-validation-token
-                     :initform (create-random-string 36 36)))
+   (validations :type list
+                :serializable t
+                :initform nil))
   (:metaclass eshop.odm:persistent-class))
 
 (defmethod print-object ((obj user) stream)
@@ -72,6 +67,10 @@
 
 (defun user-email (user)
   (eshop.odm:serializable-object-key user))
+
+(declaim (ftype (function (user symbol) boolean) validated-p))
+(defun validated-p (user slot)
+  (not (null (member slot (slot-value user 'validations)))))
 
 (defclass password-reset (eshop.odm:persistent-object)
   ((user :serializable t
@@ -118,10 +117,10 @@
                :serializable t
                :accessor order-family
                :initarg :userfamily)
-   (ekk :type string
+   (bonuscard :type string
         :serializable t
-        :accessor order-ekk
-        :initarg :ekk)
+        :accessor order-bonuscard
+        :initarg :bonuscard)
    (bonuscount :type number
                :serializable t
                :accessor order-bonuscount
@@ -190,6 +189,21 @@
           :initarg :count))
   (:metaclass eshop.odm:serializable-class))
 
+(defclass validation (eshop.odm:persistent-object)
+  ((object :type eshop.odm:persistent-object
+           :serializable t
+           :reader validation-object
+           :initarg :object)
+   (slot :type symbol
+         :serializable t
+         :reader validation-slot
+         :initarg :slot)
+   (token :type string
+          :serializable t
+          :reader validation-token
+          :initarg :token))
+  (:metaclass eshop.odm:persistent-class))
+
 ;;;; API
 
 (define-condition account-error (error)
@@ -229,67 +243,81 @@ Otherwise throw ACCOUNT-ERROR"
                    :token (create-random-string 36 36))
     (error 'account-error :msg "На эту почту не зарегистрирован аккаунт")))
 
-(defun apply-password-reset (id token new-password)
+(defun find-password-reset (id token)
+  (when-let ((reset (eshop.odm:getobj 'password-reset id)))
+    (when (equal token (password-reset-token reset))
+        reset)))
+
+(defun apply-password-reset (reset new-password)
   "Resets a user's password using data created by MAKE-PASSWORD-RESET"
-  (if-let ((reset (eshop.odm:getobj 'password-reset id)))
-    (if (equal token (password-reset-token reset))
-        (eshop.odm:with-transaction
-          (let ((user (password-reset-user reset)))
-            (eshop.odm:remobj reset)
-            (setf (user-pass user) new-password)))
-        (error 'account-error :msg  "Неправильные данные для сброса пароля"))
-    (error 'account-error :msg "Неправильные данные для сброса пароля")))
+  (eshop.odm:with-transaction
+    (let ((user (password-reset-user reset)))
+      (setf (user-pass user) new-password)
+      (eshop.odm:remobj reset))
+    t))
 
-(defun validate-user (id token)
-  (if-let ((user (eshop.odm:getobj 'user id)))
-    (if (and (equal (user-validation user)
-                    "PENDING")
-             (equal token (user-validation-token user)))
-        (eshop.odm:setobj user
-                          'validation "DONE"
-                          'validation-token "")
-        (error 'account-error :msg "Неправильные данные для валидации учётной записи"))
-    (error 'account-error :msg "Неправильные данные для валидации учётной записи")))
-
-(defun send-reset-email (reset)
+(defun send-reset-email (reset &key (domain (hunchentoot:header-in* "HOST")))
   ;; TODO: send proper email
   (let* ((user (password-reset-user reset))
          (mail (user-email user))
-
-         (body (format nil "http://localhost:4246/user-recover?reset=~A&token=~A"
-                       (eshop.odm:serializable-object-key reset) (password-reset-token reset))))
-    (sendmail:send-email :to mail
-                         :body body)))
-
-(defun send-validation-email (user)
-  ;; TODO: send proper email
-  (let* ((mail (user-email user))
-         (body (format nil "http://localhost:4246/user-valiadate?user=~A&token=~A"
-                       (eshop.odm:serializable-object-key user) (user-validation user))))
+         (body (format nil "http://~A/u/reset/~A?token=~A"
+                       domain
+                       (eshop.odm:serializable-object-key reset)
+                       (password-reset-token reset))))
     (sendmail:send-email :to mail
                          :body body)))
 
 (defun clean-tokens ()
-  "Remove stale tokens from the database"
+  "Remove stale password reset tokens from the database"
   (eshop.odm:doobj (reset 'password-reset)
     (when (timeout-p (password-reset-timestamp reset)
                      (password-reset-timeout))
       (eshop.odm:remobj reset))))
 
-(defun clean-accounts ()
-  (let ((non-validated-users (eshop.odm::get-list 'user
-                                                  :query (son 'validation "PENDING"))))
-    (dolist (user non-validated-users)
-      (when (timeout-p (user-created user)
-                       (user-validation-timeout))
-        (eshop.odm:setobj user
-                          'validation "EXPIRED"
-                          'validation-token ""
-                          'pass nil)))))
-
 (defun timeout-p (created timeout)
   (> (get-universal-time)
      (+ created timeout)))
+
+;;;; Validation
+
+(defun make-validation (user slot)
+  (make-instance 'validation
+                 :object user
+                 :slot slot
+                 :token (make-token slot)))
+
+(defun make-token (slot)
+  (case slot
+    (email (create-random-string 36 36))
+    (phone (create-random-string 8 10))))
+
+(defun send-validation (validation &key (domain (hunchentoot:header-in* "HOST")))
+  (case (validation-slot validation)
+    ;; TODO: send proper email
+    (email
+     (let* ((user (validation-object validation))
+            (mail (user-email user))
+            (body (format nil "http://~A/u/valiadate?user=~A&token=~A"
+                          domain
+                          (eshop.odm:serializable-object-key validation)
+                          (validation-token validation))))
+       (sendmail:send-email :to mail
+                            :body body)))
+    (phone
+     (cerror "Ignore" "Can't send SMS yet."))
+    (t
+     (cerror "Ignore" "Unknown slot to validate"))))
+
+(defun validate-slot (id token)
+  (when-let ((validation (eshop.odm:getobj 'validation id)))
+    (when (equal token (validation-token validation))
+      (eshop.odm:with-transaction
+        (let ((object (validation-object validation)))
+          (push (validation-slot validation)
+                (slot-value object 'validations))
+          (eshop.odm:remobj validation)
+          object)))))
+
 
 ;;;; Require hunchentoot context
 

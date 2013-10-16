@@ -391,3 +391,9 @@
                     :header (soy.header:header (append (list :cart (soy.index:cart))
                                                        (main-page-show-banner "line" (banner *main-page.storage*))))
                     :footer (soy.footer:footer))))
+
+;;;; Stuff
+
+(defmethod print-object ((route restas::route) stream)
+  (print-unreadable-object (route stream :type t :identity t)
+    (format stream "~A" (restas::route-symbol route))))
