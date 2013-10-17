@@ -48,3 +48,19 @@ execute it each INTERVAL seconds. Use START-TIMER and STOP-TIMER to start and st
   (let ((ts (universal-to-timestamp time)))
     (format-timestring nil ts :format
                        format)))
+
+(defun optional-parameter (name)
+  (let ((string (hunchentoot:parameter name)))
+    (when (string/= string "")
+      string)))
+
+(defmacro with-hunchentoot-parameters ((&rest parameters) &body body)
+  "Fetches hunchentoot parameters. Prepend symbol with @ to replace it with NIL if it's empty."
+  `(let ,(loop
+            :for param :in parameters
+            :collect (let ((raw-name (string-downcase (string param))))
+                       `(,param
+                         ,(if (char= #\@ (elt raw-name 0))
+                              `(optional-parameter ,raw-name)
+                              `(hunchentoot:parameter ,(subseq raw-name 1))))))
+     ,@body))

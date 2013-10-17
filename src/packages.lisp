@@ -10,6 +10,8 @@
            #:render-time
            #:+date+
 
+           #:with-hunchentoot-parameters
+
            #:deftimer
            #:start-timer
            #:stop-timer))

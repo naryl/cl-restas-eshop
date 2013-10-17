@@ -2,49 +2,30 @@
 
 (in-package #:eshop)
 
-(defun optional-parameter (name)
-  (let ((string (hunchentoot:parameter name)))
-    (when (string/= string "")
-      string)))
-
-(defmacro with-hunchentoot-parameters ((&rest parameters) &body body)
-  `(let ,(loop
-            :for param :in parameters
-            :collect `(,param (optional-parameter (string-downcase (string ',param)))))
-     ,@body))
-
 (defun prepare-get-parameters (alist)
   (format nil "?~{~A~^&~}"
           (mapcar #'(lambda (pair)
                       (concatenate 'string (car pair) "=" (hunchentoot:url-encode (cdr pair))))
                   alist)))
 
-
 (defun try-to-login ()
-  (let ((username (hunchentoot:parameter "username"))
-        (password (hunchentoot:parameter "password")))
+  (with-hunchentoot-parameters (username password)
     (when (hunchentoot:parameter "log")
       (when-let ((user (login username password)))
         (new-session :persistent t)
         (setf (current-user) user)))))
 
 (defun try-to-registration ()
-  (let ((username (hunchentoot:parameter "username"))
-        (password (hunchentoot:parameter "password"))
-        (name (hunchentoot:parameter "name"))
-        (bonuscard (optional-parameter "bonuscard"))
-        (phone (optional-parameter "phone")))
+  (with-hunchentoot-parameters (username password name @bonuscard @phone)
     (when (hunchentoot:parameter "reg")
-      (when-let ((user (register username password :name name :phone phone :bonuscard bonuscard)))
-        (send-validation (make-validation user 'email))
+      (when-let ((user (register username password :name name :phone @phone :bonuscard @bonuscard)))
         (new-session :persistent t)
         (setf (current-user) user)))))
 
-;;
 (restas:define-route request-user-route ("/u")
-    (:decorators '@protected-anon)
-    (hunchentoot:redirect "/u/profile"
-                          :code hunchentoot:+http-moved-permanently+))
+  (:decorators '@protected-anon)
+  (hunchentoot:redirect "/u/orders"
+                        :code hunchentoot:+http-moved-permanently+))
 
 (restas:define-route request-user-orders-route ("/u/orders")
   (:decorators '@timer '@session '@no-cache '@protected-anon)
@@ -66,7 +47,10 @@
         ;:birthdate (awhen (user-birthdate user) (render-time +date+ it))
         :city (user-city user)
         :address (first (user-addresses user))
-        :email (user-email user)))
+        :phone (user-phone user)
+        :phone_valid (validated-p user 'phone)
+        :email (user-email user)
+        :email_valid (validated-p user 'email)))
 
 (restas:define-route request-user-profile-route ("/u/profile")
   (:decorators '@timer '@session '@no-cache '@protected-anon)
@@ -75,20 +59,21 @@
 (restas:define-route request-user-profile-route/post ("/u/profile"
                                                       :method :post)
   (:decorators '@timer '@session '@no-cache '@protected-anon)
-  (with-hunchentoot-parameters (name birthdate city address pass1 pass2)
+  (with-hunchentoot-parameters (name @birthdate city address @phone @pass1 @pass2)
     (handler-case
         (eshop.odm:with-transaction
-          (when (or pass1 pass2)
-            (if (string= pass1 pass2)
+          (when (or @pass1 @pass2)
+            (if (string= @pass1 @pass2)
                 (eshop.odm:setobj (current-user)
-                                  'pass pass1)
+                                  'pass @pass1)
                 (return-from request-user-profile-route/post
                   (soy.cabinet:personal
                    (list* :error "Новые пароли не совпадают"
                           (user-plist (current-user)))))))
           (eshop.odm:setobj (current-user)
+                            'phone @phone
                             'name name
-                            'birthdate birthdate
+                            'birthdate @birthdate
                             'city city
                             'addresses (list address)))
       (eshop.odm:validation-error (e)
@@ -152,12 +137,13 @@
 
 ;; LOGOUT
 (restas:define-route logout-route ("/u/logout")
+  (:decorators '@timer '@session '@no-cache '@protected-anon)
   (new-session)
   (hunchentoot:redirect "/"))
 
 
 (restas:define-route login-page-route ("/u/login" :method :get)
-  (:decorators '@timer '@session)
+  (:decorators '@timer '@session '@no-cache)
   (default-page
       (soy.cabinet:login
        (list :menu (render.menu)
@@ -214,6 +200,14 @@
     (account-error (e)
       (ajax-response "error" 1 "message" (msg e)))))
 
+(restas:define-route send-validation-route ("/u/send-validation" :method :post)
+  (:decorators '@timer '@session '@no-cache '@protected-anon)
+  "AJAX"
+  (let ((slot (intern (string-upcase (hunchentoot:parameter "slot"))
+                      :eshop)))
+    (send-validation (make-validation (current-user) slot))
+    ""))
+
 (restas:define-route validation-route ("/u/validate")
   (:decorators '@timer '@session)
   (flet ((validation-error (&optional e)
@@ -223,12 +217,12 @@
     (handler-case
         (if-let ((id (hunchentoot:parameter "id"))
                  (token (hunchentoot:parameter "token")))
-          (if-let ((user (validate-slot id token)))
+          (if-let ((user (validate-slot (parse-integer id) token)))
             (progn
               (new-session :persistent t)
               (setf (current-user) user)
               (hunchentoot:redirect "/u/profile"
-                                    :code hunchentoot:+http-moved-permanently+))
+                                    :code hunchentoot:+http-moved-temporarily+))
             (validation-error))
           (validation-error))
       (account-error (e) (validation-error e)))))

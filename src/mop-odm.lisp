@@ -204,7 +204,7 @@
     (make-obj-link :class (fqn-symbol (gethash "%CLASS%" ht))
                    :key (gethash "%KEY%" ht)))
   (:method (fqn (class (eql :symbol)))
-    (fqn-symbol fqn))
+    (fqn-symbol (gethash "%VALUE%" fqn)))
   (:method (ht (class (eql :obj)))
     (let* ((class-name (fqn-symbol (gethash +class-key+ ht)))
            (class (find-class class-name)))

@@ -40,6 +40,7 @@
                        (data-sift:compile-parse-rule 'data-sift:regexp
                                                      :regex "^8([0-9]{10})$"
                                                      :message "Введите телефон в формате 8123456789"))
+          :initform nil
           :initarg :phone)
    (bonuscard :type (or null bonuscard)
               :serializable t
@@ -337,14 +338,16 @@ Otherwise throw ACCOUNT-ERROR"
      (cerror "Ignore" "Unknown slot to validate"))))
 
 (defun validate-slot (id token)
-  (when-let ((validation (eshop.odm:getobj 'validation id)))
-    (when (equal token (validation-token validation))
+  (if-let ((validation (eshop.odm:getobj 'validation id)))
+    (if (equal token (validation-token validation))
       (eshop.odm:with-transaction
         (let ((object (validation-object validation)))
           (push (validation-slot validation)
                 (slot-value object 'validations))
           (eshop.odm:remobj validation)
-          object)))))
+          object))
+      (error 'account-error :msg "неправильный validation token"))
+    (error 'account-error :msg "Неизвестный validation id")))
 
 (declaim (ftype (function (user symbol) boolean) validated-p))
 (defun validated-p (user slot)
