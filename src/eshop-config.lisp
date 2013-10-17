@@ -16,6 +16,7 @@
 
 (defun init-closure-user-functions ()
   (closure-template::add-user-function "date" #'(lambda (timestamp) (render-time +date+ timestamp)))
+  (closure-template::add-user-function "productpics" #'(lambda (product) (get-pics product)))
   )
 
 (log:info "Compiling all templates")

@@ -71,6 +71,9 @@ Returns pics"
 (defmethod get-pics ((product product))
   (get-pics (key product)))
 
+(defmethod get-pics ((articul number))
+  (get-pics (write-to-string articul)))
+
 (defmethod get-pics ((key string))
   "By given product key gets list of names of its pics in following format: pic-name.jpg;
 Firstly tries to get value from cache (checking for fresh)"
@@ -83,7 +86,6 @@ Firstly tries to get value from cache (checking for fresh)"
             (update-pics-cache key))
         ;; else, create cache
         (update-pics-cache key))))
-
 
 (defun get-dimensions (path-to-image)
   (let* ((string
