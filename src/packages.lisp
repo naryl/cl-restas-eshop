@@ -104,6 +104,8 @@
            #:remobj
            #:with-transaction
            #:rollback-transaction
+           ;; Validation
+           #:validation-error
            ))
 
 (in-package #:eshop)

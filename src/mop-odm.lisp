@@ -478,20 +478,28 @@
                           "VALUE" (serialize-slot (slot-value obj slot-name)))))))
             (class-slots (class-of obj)))))
 
+(defvar *finished* nil)
+
 (defmacro with-transaction (&body body)
   "All modified objects will be sent back to mongo when the transaction exits normally"
   (with-gensyms (transaction)
     `(flet ((,transaction ()
               ,@body))
-       (if *transaction*
-           (,transaction)
-           (catch 'rollback-transaction
-             (let ((*transaction* (make-hash-table :test #'equal)))
-               (values
-                (prog1
-                    (,transaction)
-                  (commit-transaction))
-                t)))))))
+       (let ((*finished* nil))
+         (if *transaction*
+             (,transaction)
+             (catch 'rollback-transaction
+               (let ((*transaction* (make-hash-table :test #'equal)))
+                 (values
+                  (unwind-protect
+                       (prog1
+                           (,transaction)
+                         (commit-transaction)
+                         (setf *finished* t))
+                    (unless *finished*
+                      (setf *finished* t) ; non-local exit
+                      (rollback-transaction)))
+                  t))))))))
 
 (defmethod slot-value-using-class :around
     ((class persistent-class) obj (slot persistent-effective-slot-definition))
@@ -570,7 +578,9 @@
                       (getobj-remcache obj)
                       (setf (persistent-object-state obj) :deleted))
                   *transaction*)
-         (throw 'rollback-transaction (values nil nil)))
+         (unless *finished*
+           (setf *finished* t)
+           (throw 'rollback-transaction (values nil nil))))
         (t
          (error "Attempt to rollback while not inside transaction"))))
 

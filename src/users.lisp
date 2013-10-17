@@ -31,6 +31,7 @@
          :validation (data-sift:compile-parse-rule 'string
                                                    :min-length 3 :max-length 30
                                                    :message "Ошибка при вводе имени")
+         :initform ""
          :initarg :name)
    (phone :type (or null string)
           :serializable t
@@ -46,11 +47,20 @@
               :initarg :bonuscard)
    (addresses :type list
               :serializable t
+              :initform nil
               :accessor user-addresses)
    (created :type number
             :serializable t
             :reader user-created
             :initform (get-universal-time))
+   (birthdate :type (or null number)
+              :serializable t
+              :accessor user-birthdate
+              :initform nil)
+   (city :type (or null string)
+         :serializable t
+         :accessor user-city
+         :initform nil)
    (roles :type list
           :serializable t
           :accessor user-roles

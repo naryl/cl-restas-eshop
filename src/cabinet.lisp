@@ -7,6 +7,12 @@
     (when (string/= string "")
       string)))
 
+(defmacro with-hunchentoot-parameters ((&rest parameters) &body body)
+  `(let ,(loop
+            :for param :in parameters
+            :collect `(,param (optional-parameter (string-downcase (string ',param)))))
+     ,@body))
+
 (defun prepare-get-parameters (alist)
   (format nil "?~{~A~^&~}"
           (mapcar #'(lambda (pair)
@@ -55,11 +61,49 @@
                               :pages (iota (ceiling order-count page-size) :start 1)
                               :curpage page)))))
 
+(defun user-plist (user)
+  (list :name (user-name user)
+        ;:birthdate (awhen (user-birthdate user) (render-time +date+ it))
+        :city (user-city user)
+        :address (first (user-addresses user))
+        :email (user-email user)))
 
 (restas:define-route request-user-profile-route ("/u/profile")
   (:decorators '@timer '@session '@no-cache '@protected-anon)
-  (soy.cabinet:personal))
+  (soy.cabinet:personal (user-plist (current-user))))
 
+(restas:define-route request-user-profile-route/post ("/u/profile"
+                                                      :method :post)
+  (:decorators '@timer '@session '@no-cache '@protected-anon)
+  (with-hunchentoot-parameters (name birthdate city address pass1 pass2)
+    (handler-case
+        (eshop.odm:with-transaction
+          (when (or pass1 pass2)
+            (if (string= pass1 pass2)
+                (eshop.odm:setobj (current-user)
+                                  'pass pass1)
+                (return-from request-user-profile-route/post
+                  (soy.cabinet:personal
+                   (list* :error "Новые пароли не совпадают"
+                          (user-plist (current-user)))))))
+          (eshop.odm:setobj (current-user)
+                            'name name
+                            'birthdate birthdate
+                            'city city
+                            'addresses (list address)))
+      (eshop.odm:validation-error (e)
+        (let ((cause (slot-value e 'eshop.odm::cause))
+              (msg nil))
+          (if (eq (type-of cause) 'data-sift:validation-fail)
+              (setf msg (data-sift:validation-fail-message cause))
+              (setf msg "Какая-то ошибка в заполнении каких-то полей. "))
+          (return-from request-user-profile-route/post
+            (soy.cabinet:personal
+             (list* :error msg
+                    (user-plist (current-user))))))))
+    (soy.cabinet:personal
+     (list* :msg "Данные успешно обновлены"
+            (user-plist (current-user))))))
 
 ;; REGISTARTION
 (restas:define-route registration-page-route ("/u/registration" :method :get)
@@ -80,7 +124,7 @@
         (try-to-registration)
       (account-error (e)
         (redirect-page (msg e)))
-      (eshop.odm::validation-error (e)
+      (eshop.odm:validation-error (e)
         (let ((cause (slot-value e 'eshop.odm::cause))
               (msg nil))
           (when (eq (type-of cause) 'data-sift:validation-fail)
