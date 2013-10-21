@@ -377,6 +377,8 @@
                                   (and (active item)
                                        (null (parent item))
                                        (not (special-p item)))))))
+    (when (< 1000 (length unparented-products))
+      (setf unparented-products (subseq unparented-products 0 1000)))
     (soy.class_forms:parenting-page
      (list :products (mapcar #'(lambda (product)
                                  (soy.class_forms:unparented-product-checkbox
