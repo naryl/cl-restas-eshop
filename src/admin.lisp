@@ -62,6 +62,9 @@
   (soy.admin:main
    (list :content content)))
 
+(restas:define-route admin-black-list-route ("/administration-super-panel/black-list")
+  (:decorators '@protected-tks)
+  (show-admin-page "black-list"))
 
 (restas:define-route admin-filter-create ("administration-super-panel/filter-create" :method :get)
   (:decorators '@protected-admin)
@@ -377,6 +380,8 @@
                                   (and (active item)
                                        (null (parent item))
                                        (not (special-p item)))))))
+    (when (< 1000 (length unparented-products))
+      (setf unparented-products (subseq unparented-products 0 1000)))
     (soy.class_forms:parenting-page
      (list :products (mapcar #'(lambda (product)
                                  (soy.class_forms:unparented-product-checkbox
