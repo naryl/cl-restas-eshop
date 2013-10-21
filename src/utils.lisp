@@ -61,6 +61,15 @@ execute it each INTERVAL seconds. Use START-TIMER and STOP-TIMER to start and st
             :collect (let ((raw-name (string-downcase (string param))))
                        `(,param
                          ,(if (char= #\@ (elt raw-name 0))
-                              `(optional-parameter ,raw-name)
-                              `(hunchentoot:parameter ,(subseq raw-name 1))))))
+                              `(optional-parameter ,(subseq raw-name 1))
+                              `(hunchentoot:parameter ,raw-name)))))
      ,@body))
+
+;;;; AJAX
+
+(defmacro define-ajax-route (name (template) &body body)
+  `(restas:define-route ,name (,template :method :post)
+     ,@(remove-if-not #'(lambda (item) (keywordp (car item))) body)
+     (st-json:write-json-to-string
+      (progn
+        ,@(remove-if #'(lambda (item) (keywordp (car item))) body)))))

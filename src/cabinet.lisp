@@ -56,40 +56,6 @@
   (:decorators '@timer '@session '@no-cache '@protected-anon)
   (soy.cabinet:personal (user-plist (current-user))))
 
-(restas:define-route request-user-profile-route/post ("/u/profile"
-                                                      :method :post)
-  (:decorators '@timer '@session '@no-cache '@protected-anon)
-  (with-hunchentoot-parameters (name @birthdate city address @phone @pass1 @pass2)
-    (handler-case
-        (eshop.odm:with-transaction
-          (when (or @pass1 @pass2)
-            (if (string= @pass1 @pass2)
-                (eshop.odm:setobj (current-user)
-                                  'pass @pass1)
-                (return-from request-user-profile-route/post
-                  (soy.cabinet:personal
-                   (list* :error "Новые пароли не совпадают"
-                          (user-plist (current-user)))))))
-          (eshop.odm:setobj (current-user)
-                            'phone @phone
-                            'name name
-                            'birthdate @birthdate
-                            'city city
-                            'addresses (list address)))
-      (eshop.odm:validation-error (e)
-        (let ((cause (slot-value e 'eshop.odm::cause))
-              (msg nil))
-          (if (eq (type-of cause) 'data-sift:validation-fail)
-              (setf msg (data-sift:validation-fail-message cause))
-              (setf msg "Какая-то ошибка в заполнении каких-то полей. "))
-          (return-from request-user-profile-route/post
-            (soy.cabinet:personal
-             (list* :error msg
-                    (user-plist (current-user))))))))
-    (soy.cabinet:personal
-     (list* :msg "Данные успешно обновлены"
-            (user-plist (current-user))))))
-
 ;; REGISTARTION
 (restas:define-route registration-page-route ("/u/registration" :method :get)
   (:decorators '@timer '@session)
@@ -97,29 +63,6 @@
       (soy.cabinet:registration
        (list :menu (render.menu)
              :msg (hunchentoot:get-parameter "msg")))))
-
-
-(restas:define-route registration-route ("/u/registration" :method :post)
-  (:decorators '@timer '@session)
-  (flet ((redirect-page (msg)
-            (hunchentoot:redirect (concatenate 'string "/u/registration"
-                                               (prepare-get-parameters (list (cons "msg" msg))))
-                                  :code hunchentoot:+http-moved-temporarily+)))
-    (handler-case
-        (try-to-registration)
-      (account-error (e)
-        (redirect-page (msg e)))
-      (eshop.odm:validation-error (e)
-        (let ((cause (slot-value e 'eshop.odm::cause))
-              (msg nil))
-          (when (eq (type-of cause) 'data-sift:validation-fail)
-            (setf msg (data-sift:validation-fail-message cause)))
-          (redirect-page msg))))
-    (hunchentoot:redirect (aif (hunchentoot:parameter "url")
-                               it
-                               "/")
-                          :code hunchentoot:+http-moved-temporarily+)))
-
 
 ;; LOGIN
 (restas:define-route loging-route ("/u/login" :method :post)
@@ -155,16 +98,6 @@
       (soy.cabinet:recovery
        (list :menu (render.menu)))))
 
-(restas:define-route user-request-reset-route/post ("/u/reset" :method :post)
-  (:decorators '@timer)
-  (let ((email (hunchentoot:parameter "username")))
-    (handler-case
-        (let ((reset (make-password-reset email)))
-          (send-reset-email reset)
-          (ajax-response "error" 0 "message" "Ссылка для сброса пароля выслана вам на почту"))
-      (account-error (e)
-        (ajax-response "error" 1 "message" (msg e))))))
-
 (restas:define-route user-apply-reset-route ("/u/reset/:id")
   (:decorators '@timer '@session)
   (let ((token (hunchentoot:parameter "token")))
@@ -183,30 +116,6 @@
             (soy.cabinet:recovery
              (list :msg (msg e)
                    :menu (render.menu))))))))
-
-(restas:define-route user-apply-reset-route/post ("/u/reset/:id" :method :post)
-  (:decorators '@timer)
-  (handler-case
-      (let* ((token (hunchentoot:parameter "token"))
-             (reset (find-password-reset (parse-integer id) token)))
-        (unless reset
-          (error 'account-error :msg "Неправильные данные для восстановления
-  пароля. Попробуйте ещё раз"))
-        (let ((user (password-reset-user reset)))
-          (apply-password-reset reset (hunchentoot:parameter "newpass"))
-          (new-session :persistent t)
-          (setf (current-user) user))
-        (ajax-response "error" 0 "message" "Пароль успешно сменён. Теперь вы можете авторизоваться на сайте"))
-    (account-error (e)
-      (ajax-response "error" 1 "message" (msg e)))))
-
-(restas:define-route send-validation-route ("/u/send-validation" :method :post)
-  (:decorators '@timer '@session '@no-cache '@protected-anon)
-  "AJAX"
-  (let ((slot (intern (string-upcase (hunchentoot:parameter "slot"))
-                      :eshop)))
-    (send-validation (make-validation (current-user) slot))
-    ""))
 
 (restas:define-route validation-route ("/u/validate")
   (:decorators '@timer '@session)
@@ -227,7 +136,79 @@
           (validation-error))
       (account-error (e) (validation-error e)))))
 
-;;;; Utils
+;;;; AJAX
 
-(defun ajax-response (&rest kv)
-  (st-json:write-json-to-string (apply #'son kv)))
+(define-ajax-route user-request-reset-ajax ("/u/api/reset")
+  (:decorators '@timer '@no-cache)
+  (let ((email (hunchentoot:parameter "username")))
+    (handler-case
+        (let ((reset (make-password-reset email)))
+          (send-reset-email reset)
+          (son "error" 0 "message" "Ссылка для сброса пароля выслана вам на почту"))
+      (account-error (e)
+        (son "error" 1 "message" (msg e))))))
+
+(define-ajax-route user-apply-reset-route-ajax ("/u/api/reset/:id")
+  (:decorators '@timer)
+  (handler-case
+      (let* ((token (hunchentoot:parameter "token"))
+             (reset (find-password-reset (parse-integer id) token)))
+        (unless reset
+          (error 'account-error :msg "Неправильные данные для восстановления
+  пароля. Попробуйте ещё раз"))
+        (let ((user (password-reset-user reset)))
+          (apply-password-reset reset (hunchentoot:parameter "newpass"))
+          (new-session :persistent t)
+          (setf (current-user) user))
+        (son "error" 0 "message" "Пароль успешно сменён. Теперь вы можете авторизоваться на сайте"))
+    (account-error (e)
+      (son "error" 1 "message" (msg e)))))
+
+(define-ajax-route send-validation-ajax ("/u/api/send-validation")
+  (:decorators '@timer '@session '@no-cache '@protected-anon)
+  (let ((slot (intern (string-upcase (hunchentoot:parameter "slot"))
+                      :eshop)))
+    (send-validation (make-validation (current-user) slot))
+    ""))
+
+(define-ajax-route request-user-profile-route-ajax ("/u/api/profile")
+  (:decorators '@timer '@session '@no-cache '@protected-anon)
+  (with-hunchentoot-parameters (name @birthdate city address @phone @pass1 @pass2)
+    (handler-case
+        (eshop.odm:with-transaction
+          (when (or @pass1 @pass2)
+            (if (string= @pass1 @pass2)
+                (eshop.odm:setobj (current-user)
+                                  'pass @pass1)
+                (return-from request-user-profile-route-ajax
+                  (son "error" 1 "message" "Новые пароли не совпадают"))))
+          (eshop.odm:setobj (current-user)
+                            'phone @phone
+                            'name name
+                            'birthdate @birthdate
+                            'city city
+                            'addresses (list address)))
+      (eshop.odm:validation-error (e)
+        (let ((cause (slot-value e 'eshop.odm::cause))
+              (msg nil))
+          (if (eq (type-of cause) 'data-sift:validation-fail)
+              (setf msg (data-sift:validation-fail-message cause))
+              (setf msg "Какая-то ошибка в заполнении каких-то полей"))
+          (return-from request-user-profile-route-ajax
+            (son "error" 1 "message" msg)))))
+    (son "error" 0 "message" "Данные успешно обновлены")))
+
+(define-ajax-route registration-route ("/u/api/registration")
+  (:decorators '@timer '@session)
+  (handler-case
+      (progn
+        (try-to-registration)
+        (son "error" 0))
+    (account-error (e)
+      (son "error" 1 "message" (msg e)))
+    (eshop.odm:validation-error (e)
+      (let ((cause (slot-value e 'eshop.odm::cause))
+            (msg nil))
+        (when (eq (type-of cause) 'data-sift:validation-fail)
+          (setf msg (data-sift:validation-fail-message cause)))
+        (son "error" 1 "message" msg)))))

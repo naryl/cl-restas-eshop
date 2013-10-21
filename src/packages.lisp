@@ -11,6 +11,7 @@
            #:+date+
 
            #:with-hunchentoot-parameters
+           #:define-ajax-route
 
            #:deftimer
            #:start-timer
