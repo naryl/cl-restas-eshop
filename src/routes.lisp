@@ -15,6 +15,9 @@
 (defun @protected-anon (route)
   (make-instance 'protected-route :target route :roles '("anon")))
 
+(defun @protected-tks (route)
+  (make-instance 'protected-route :target route :roles '("tks")))
+
 (defmethod restas:process-route :before ((route protected-route) bindings)
   (let ((current-user (current-user)))
     (unless (and current-user
