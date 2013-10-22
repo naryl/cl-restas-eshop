@@ -118,24 +118,30 @@ ENCODE-SESSION-STRING."
   (setf hunchentoot:*session* nil)
   (start-session :persistent persistent))
 
+(defun bot-request ()
+  (some #'(lambda (bot)
+            (search bot (hunchentoot:user-agent)))
+        (eshop:config.get-option :other-options :bot-useragents)))
+
 (defun start-session (&key persistent)
   "Returns the current SESSION object. If there is no current session,
 creates one and updates the corresponding data structures. In this
 case the function will also send a session cookie to the browser."
-  (let ((session (hunchentoot:session hunchentoot:*request*)))
-    (when session
-      (return-from start-session session))
-    (setf session (make-instance 'session)
-          (hunchentoot:session hunchentoot:*request*) session)
-    (hunchentoot:set-cookie (hunchentoot:session-cookie-name hunchentoot:*acceptor*)
-                :value (hunchentoot:session-cookie-value session)
-                :expires (if persistent
-                             (+ (get-universal-time)
-                                (* 60 60 24 30))
-                             nil)
-                :path "/")
-    (hunchentoot:session-created hunchentoot:*acceptor* session)
-    (setq hunchentoot:*session* session)))
+  (unless (bot-request)
+    (let ((session (hunchentoot:session hunchentoot:*request*)))
+      (when session
+        (return-from start-session session))
+      (setf session (make-instance 'session)
+            (hunchentoot:session hunchentoot:*request*) session)
+      (hunchentoot:set-cookie (hunchentoot:session-cookie-name hunchentoot:*acceptor*)
+                              :value (hunchentoot:session-cookie-value session)
+                              :expires (if persistent
+                                           (+ (get-universal-time)
+                                              (* 60 60 24 30))
+                                           nil)
+                              :path "/")
+      (hunchentoot:session-created hunchentoot:*acceptor* session)
+      (setq hunchentoot:*session* session))))
 
 (defun merge-session (session)
   (dolist (cookie '("cart" "nc-user"))
