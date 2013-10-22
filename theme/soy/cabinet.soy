@@ -1468,7 +1468,7 @@
 	}
 {/literal}
 </style>
-{call alerts-css /}
+{call alerts /}
 <div class="content" id="middle"> <div class="full">
 <div class="wrapper-content">
 	<div class="content-left">
@@ -1487,7 +1487,7 @@
                 {/if}
             </div>
 			<h1 style="font:24px 'Myriad Pro';color:#0071b3;padding-bottom:10px;">Мои личные данные</h1>
-            <form action="/u/profile" method="POST">
+            <form id="profile-form" action="#">
                 <div class="kabinet-formblock">
                     <div>
                         <span class="kab-label">Ф.И.О.</span>
@@ -1536,6 +1536,7 @@
                     </div>
                     <div>
                         <input type="submit" value="">
+                        <img id="loading" width="32" height="32" />
                     </div>
                 </div>
                 <div style="clear:both;"></div>
@@ -1544,25 +1545,60 @@
         {literal}
           <script>
             function send_validation(slot, message) {
+              $("#loading").attr("src", "/img/loading.gif");
               $.ajax({
                 type: "POST",
-                url: "/u/send-validation",
+                url: "/u/api/send-validation",
                 data: {slot: slot},
                 success : function(data) {
-                  $("#profile-alert").removeClass("alert-none alert-error").addClass("alert-success");
+                  var obj = $.parseJSON(data);
+                  setAlertClass("profile-alert", "alert-success");
                   $("#profile-alert").text(message);
                 },
                 error : function(data) {
-                  $("#profile-alert").removeClass("alert-none alert-success").addClass("alert-error");
+                  setAlertClass("profile-alert", "alert-error");
                   $("#profile-alert").text("Что-то пошло не так");
+                },
+                complete : function(data) {
+                  $("#loading").attr("src", "");
                 }
               });
             };
-			$("a#confirm-email").click(function(){
+			$("#confirm-email").click(function(){
               send_validation("email", "Ссылка на подтверждение почтового адреса выслана");
             });
-			$("a#confirm-phone").click(function(){
+			$("#confirm-phone").click(function(){
               send_validation("phone", "СМС с кодом подтверждения выслано");
+            });
+            $("form#profile-form").submit(function(){
+              $("#profile-form").submit(null);
+              $("#loading").attr("src", "/img/loading.gif");
+              $.ajax({
+                type: "POST",
+                url: "/u/api/profile",
+                data: {
+                  name: $("input[name='name']").val(),
+                  birthdate: $("input[name='birthdate']").val(),
+                  city: $("input[name='city']").val(),
+                  address: $("input[name='address']").val(),
+                  phone: $("input[name='phone']").val(),
+                  pass1: $("input[name='pass1']").val(),
+                  pass2: $("input[name='pass2']").val()
+                },
+                success : function(data) {
+                  var obj = $.parseJSON(data);
+                  if (obj.error == "1") {
+                    setAlertClass("profile-alert", "alert-error");
+                  } else if (obj.error == "0") {
+                    setAlertClass("profile-alert", "alert-success");
+                  };
+                  $("#profile-alert").text(obj.message);
+                },
+                complete : function(data) {
+                  $("#loading").attr("src", "");
+                }
+              });
+              return false;
             });
           </script>
         {/literal}
@@ -1996,7 +2032,7 @@
 	line-height:28px;
 }
 {/literal}
-{call alerts-css /}
+{call alerts /}
 </style>
 <div class="content" id="middle">
 	<div class="full">
@@ -2040,6 +2076,7 @@
 					/* </div> */
 					<div style="text-align:center;">
 						<input type="submit" name="reg" value="Регистрация">
+                        <img id="loading" width="32" height="32" />
 					</div>
 				</form>
 				{literal}
@@ -2050,7 +2087,7 @@
 					$(this).find("input[type='text']").css("border", "1px solid #d1d1d1");
 					$(this).find("input[type='password']").css("border", "1px solid #d1d1d1");
 					$(this).find(":input").each(function(){
-						for(var i=0;i<field.length;i++){
+						for(var i=0;i<$field.length;i++){
 							if($(this).attr("name")==field[i]){
 								if(!$(this).val()){
 									$(this).css("border", "1px solid red");
@@ -2071,7 +2108,7 @@
 						}
 					});
 					if(error==0){
-                                        alert(0);
+                        $("#loading").attr("src", "/img/loading.gif");
                         $.ajax({
                             type: "POST",
                             url: "/u/api/registration",
@@ -2084,15 +2121,18 @@
                                 reg: 1
                             },
                             success : function(data) {
-                                        alert(1);
                                 var obj = $.parseJSON(data);
                                 if (obj.error == 1) {
-                                    $("#reg-alert").removeClass("alert-none alert-success").addClass("alert-error");
+                                    setAlertClass("reg-alert", "alert-error");
                                     $("#reg-alert").text(obj.message);
                                 } else {
                                     window.location.replace("/u/orders");
                                 };
+                            },
+                            complete : function(data) {
+                              $("#loading").attr("src", "");
                             }
+
                         });
 						return false;
 					}
@@ -2215,7 +2255,7 @@
 }
 {/literal}
 </style>
-{call alerts-css /}
+{call alerts /}
 <div class="content" id="middle">
 	<div class="full">
 		<div class="left">
@@ -2233,6 +2273,7 @@
 					<br>
 					<div style="text-align:center;">
 						<input type="submit" name="recover" value="Восстановить">
+                        <img id="loading" width="32" height="32" />
 					</div>
 				</form>
 				{literal}
@@ -2241,21 +2282,26 @@
 					var error=0;
 					if(error==0){
                         var email = $("form#reg-form").find("input[type='text']").val();
+                        $("#loading").attr("src", "/img/loading.gif");
                         $.ajax({
                                 type: "POST",
-                                url: "/u/reset",
+                                url: "/u/api/reset",
                                 data: {
                                     username: email
                                 },
                                 success : function(data) {
                                     var obj = $.parseJSON(data);
                                     if (obj.error == 1) {
-                                        $("#recovery-alert").removeClass("alert-none alert-success").addClass("alert-error");
+                                        setAlertClass("recovery-alert", "alert-error");
                                     } else {
-                                        $("#recovery-alert").removeClass("alert-none alert-error").addClass("alert-success");
+                                        setAlertClass("recovery-alert", "alert-success");
                                     };
                                     $("#recovery-alert").text(obj.message);
+                                },
+                                complete : function(data) {
+                                  $("#loading").attr("src", "");
                                 }
+
                         });
 						return false;
 					}
@@ -2374,7 +2420,7 @@
 }
 {/literal}
 </style>
-{call alerts-css /}
+{call alerts /}
 <div class="content" id="middle">
 	<div class="full">
 		<div class="left">
@@ -2392,6 +2438,7 @@
 					<br>
 					<div style="text-align:center;">
 						<input type="submit" name="recover" value="Сменить пароль">
+                        <img id="loading" width="32" height="32" />
 					</div>
 				</form>
                 <script>
@@ -2405,9 +2452,10 @@
                         // Error checking and password hints here
 					    if(error==0){
                             var newpass = $("form#newpass-form").find("input[type='password']").val();
+                            $("#loading").attr("src", "/img/loading.gif");
                             $.ajax({
                                 type: "POST",
-                                url: "/u/reset/"+id,
+                                url: "/u/api/reset/"+id,
                                 data: {
                                     token: token,
                                     newpass: newpass
@@ -2415,11 +2463,14 @@
                                 success : function(data) {
                                     var obj = $.parseJSON(data);
                                     if (obj.error == 1) {
-                                        $("#newpass-alert").removeClass("alert-none alert-success").addClass("alert-error");
+                                        setAlertClass("newpass-alert", "alert-error");
                                     } else {
                                         window.location.replace("/u/orders");
                                     };
                                     $("#newpass-alert").text(obj.message);
+                                },
+                                complete : function(data) {
+                                  $("#loading").attr("src", "");
                                 }
                             })
 						    return false;
@@ -2442,9 +2493,9 @@
   {$message}
 {/template}
 
-{template alerts-css}
-  <style>
-    {literal}
+{template alerts}
+  {literal}
+    <style>
 .alert {
 	padding: 8px 14px;
 	margin:0 20px 18px;
@@ -2468,6 +2519,13 @@
 	background-color: #def2de;
 	border-color: #d3eed7;
 }
-    {/literal}
-  </style>
+    </style>
+    <script>
+      function setAlertClass(id, cls) {
+        $("#"+id).removeClass("alert-none alert-error alert-success");
+        $("#"+id).removeClass("alert-none alert-error alert-success");
+        $("#"+id).addClass(cls);
+      }
+    </script>
+  {/literal}
 {/template}
