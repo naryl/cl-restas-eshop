@@ -3,6 +3,14 @@
 
 (in-package #:eshop)
 
+
+(defmethod route-symbol ((route routes:proxy-route))
+  (route-symbol (routes:proxy-route-target route)))
+
+(defmethod route-symbol ((route routes:route))
+  (restas:route-symbol route))
+
+
 ;;;; check access level by user role
 
 (defclass protected-route (routes:proxy-route)
@@ -47,11 +55,10 @@
 (defmethod restas:process-route :around ((route timer-route) bindings)
   "log timing and additional data for current route processing and
    update current thread information"
- (let ((*current-route-symbol*
-         (restas:route-symbol (routes:proxy-route-target route))))
+  (setf *test* route)
+ (let ((*current-route-symbol* (route-symbol route)))
     (metric:time ((concatenate 'string "process-route." (route-name)))
       (call-next-method))))
-
 ;;;; Session decoration
 
 (defclass session-route (routes:proxy-route) ())
