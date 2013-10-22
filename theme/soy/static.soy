@@ -1,0 +1,28 @@
+{namespace soy.static}
+
+{template main}
+<div class="content" id="middle">
+  <div class="full">
+	<div class="left">
+	  {$menu |noAutoescape}
+    {call soy.index.social-block /}
+	</div>
+	<div class="right2">
+	  <p class="breadcrumbs">
+        {$breadcrumbs |noAutoescape}
+      </p>
+	</div>
+	<div class="center">
+    <div class="share-buttons">
+			{$sharebuttons | noAutoescape}
+		</div>
+      {$subcontent |noAutoescape}
+	</div>
+	<div class="right">
+      {$rightblock |noAutoescape}
+	</div>
+  </div>
+</div>
+{call soy.index.one-click-order-div /}
+{call soy.index.add-product-buy-div /}
+{/template}

@@ -1,0 +1,538 @@
+{namespace soy.newproduct}
+
+{template head}
+<!DOCTYPE html>
+<html>
+<head>
+
+	<title>{if $title}{$title|noAutoescape}{else}ЦиFры{/if}</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+	<!--[if lt IE 7]><meta http-equiv="refresh" content="0; URL=/badbrowser"><![endif]-->
+	<meta name='yandex-verification' content='46096f4a2b6678ca' />
+	<meta name='wmail-verification' content='d2b568b8747ee275' />
+	<meta name="google-site-verification" content="DLzcPenEQiGMh4ZhqmAOL6sZpTCRzDXB6QkAdA-sRXU" />
+	<meta name="keywords" content={if $keywords}"{$keywords}"{else}""{/if}/>
+	<meta name="description" content={if $description}"{$description}"{else}""{/if}/>
+
+	<link href="/css/plugins/fancybox/fancybox.css" rel="stylesheet" type="text/css" media="all" />
+	<link href="/css/plugins/fancybox/fancybox-thumbs.css" rel="stylesheet" type="text/css" media="all" />
+	<link rel='stylesheet' href='/css/screen.css' type='text/css' media='screen'/>
+	<link rel='stylesheet' href='/css/jquery-ui.css' type='text/css' media='screen'>
+	<!--[if IE]>
+	<link rel="stylesheet" href="/css/screen-ie.css" type="text/css" media="screen"/>
+	<![endif]-->
+
+	<script type="text/javascript" src="/js/jquery.js"></script>
+	<script type="text/javascript" src="/js/jquery-ui.js"></script>
+	<script type="text/javascript" src="/js/plugins/easing.js"></script>
+	<script type="text/javascript" src="/js/plugins/cookie.js"></script>
+	<script type="text/javascript" src="/js/plugins/mousewheel.js"></script>
+	<script type="text/javascript" src="/js/plugins/fancybox/fancybox.js"></script>
+	<script type="text/javascript" src="/js/plugins/fancybox/fancybox-thumbs.js"></script>
+	<script type="text/javascript" src="/js/plugins/jcarousel.js"></script>
+	<script type="text/javascript" src="/js/plugins/carousel.js"></script>
+	<script type="text/javascript" src="/js/plugins/readmore.js"></script>
+	<script type="text/javascript" src="/js/plugins/jquery.inputmask.js"></script>
+	<!--[if lte IE 7]>
+	<script type="text/javascript" src="/js/plugins/json2.js"></script>
+	<![endif]-->
+	<script type="text/javascript" src="/js/interface.js"></script>
+
+	<link href="/css/new/kartochka.css" rel="stylesheet" type="text/css">
+	<link href="/css/new/reset.css" rel="stylesheet" type="text/css">
+	<script src="/js/new/jquery/jqueryrotate.2.1.js" type="text/javascript"></script>
+	<script src="/js/new/kartochka.js" type="text/javascript"></script>
+	<script src="/js/new/base.js" type="text/javascript"></script>
+
+</head>
+{/template}
+
+{template all}
+
+	{call head data="all"/}
+
+<body>
+<div id="container" class="container">
+	{call soy.header.header /}
+<div class="content" id="middle">
+<div class="full">
+<!-- КОНТЕНТ СЛЕВА -->
+
+	<div class="wrapper_left">
+		<div class="content_left">
+	<div class="header_karta">
+	{if parent($product)}
+		<ul>
+			<li class="tree title_blue">Главная</li>
+			<span class="delitel">/</span>
+			<li class="tree title_blue">Каталог</li>
+			<span class="delitel">/</span>
+			<li class="tree title_blue">Ноутбуки и компьютеры</li>
+			<span class="delitel">/</span>
+			<li class="tree title_blue">Ноутбуки</li>
+		</ul>
+{/if}
+		<p class="title_product">
+      {if $product['NAME-PROVIDER']}{$product['NAME-PROVIDER']}{/if}
+      <span class="rep"></span><span class="art">арт. {if $product.ARTICUL}{$product.ARTICUL}{/if}</span></p>
+
+		{if $product.DESCRIPTION}<p class="opis">{$product.DESCRIPTION}</p>{/if}
+		<p class="dop_opis">Бесплатная доставка при заказе прямо сейчас!</p>
+		<ul>
+			<li class="infa-product title_blue">Обзор</li>
+			<li class="infa-product title_blue">Характеристики</li>
+			<li class="infa-product title_blue">Цвета и модификации</li>
+			<li class="infa-product title_blue">Аксессуары</li>
+			<li class="infa-product title_blue">Отзывы</li>
+		</ul>
+
+		<div class="img-product">
+			<div class="user_menu">
+				<div class="headr icon"></div>
+				<div class="reit icon"></div>
+				<div class="child icon"></div>
+			</div>{if productpics($product)}
+			<img class="first-product" src="/pic/big/{$product.KEY}/{productpics($product)[0]}">
+			<img class="two-product" src="/pic/big/{$product.KEY}/{productpics($product)[1]}">{/if}
+		</div>
+			<div class="menu-price">
+				{literal}
+				<script>
+				$(document).ready(function(){
+					$(".razbivko").each(function(){
+						var price = $(this).text();
+						$(this).text(price.replace(/(\d)(?=(\d\d\d)+([^\d]|$))/g, '$1 '));
+					});
+				});
+				</script>
+				{/literal}
+				{if $product['DELTA-PRICE']}
+				<p class="old_price">
+					<span class="razbivko">{$product.SITEPRICE + $product['DELTA-PRICE']}</span>
+					<span class="rub">руб.</span>
+				</p>
+				{/if}
+				{if $product.SITEPRICE}
+				<p class="price">
+					<span class="razbivko">{ $product.SITEPRICE}</span>
+					<span class="rub">руб.</span>
+				</p>
+				{/if}
+				{if $product['DELTA-PRICE']}
+				<p class="dif">Купив этот товар вы экономите <span class="razbivko dif-sum">{$product['DELTA-PRICE']}</span> рублей</p>
+				{/if}
+				<button class=" button_basket">В корзину<img src="/img/new/basket-product_big.png"></button>
+				<br>
+				<div class="wrapper_button">
+				<button class="oneclick">Купить в 1 клик<img src="/img/new/tel_big.png"></button>
+				<br>
+				<button class="kredit">Купить в кредит<span class="left"><P>99<span class="rub">р.</span><span class="stark">*</span></P><span class="oneday">в день</span></span></button>
+				</div>
+				<br>
+				{if $product.BONUSCOUNT}
+				<div class="bonus"><span class="col_bonus">{$product.BONUSCOUNT * 10}</span><img src="/img/new/logo_mini.png"><span class="opis_bonus">бонусов в подарок <br><span class="opis_bonus_big">к этому товару</span></span></div>
+				{/if}
+			</div>
+			<div class="clear"></div>
+			
+			<div class="as-look">
+				{if productpics($product)}
+				<div class="wrapper_car3">
+					<div class="carousel-component3">
+					{foreach $pic in productpics($product)}
+						<div class="product_carousel3">
+							<img class="super-price-item_img" src="/pic/minigoods/{$product.KEY}/{$pic}">
+						</div>
+					{/foreach}
+					</div>
+				</div>
+				<img data-carousel="3" class="carousel-prev left-button-image" style="cursor:pointer" src="/img/new/slaider_next.png" alt="Previous Button"/>
+				<img data-carousel="3" class="carousel-next right-button-image" style="cursor:pointer" src="/img/new/slaider_next.png" alt="Next Button"/>
+				{/if}
+				/*<p class="avail-color">Доступны другие цвета:<span class="red color"></span><span class="green color"></span><span class="black color"></span><span class="white color"></span></p>*/
+			</div>
+			<div class="clear"></div>
+
+	</div>
+	<div class="clear"></div>
+	<div class="opis_karta">
+		<div class="opis_mini">
+						<p class="header-opis_mini">Краткие характеристики ноутбука
+				Acer Aspire S5 Ultrabook</p>
+				<ul class="colw1">
+					<li class="tehn_mini">
+						<p>Диагональ</p>
+						<p class="tehn_opis_mini">18.4 “</p>
+					</li>
+				<li class="tehn_mini">
+					<p >Операционная система</p>
+					<p class="tehn_opis_mini">Windows 7 Professional</p>
+				</li>
+				<li class="tehn_mini">
+					<p>Процессор</p>
+					<p class="tehn_opis_mini">Intel Core i7 e6400</p>
+				</li>
+				</ul>
+				<ul class="colw2">
+				<li class="tehn_mini">
+					<p >Оперативная память</p>
+					<p class="tehn_opis_mini">32768 Мб.</p>
+				</li>
+				<li class="tehn_mini">
+					<p>Жесткий диск</p>
+					<p class="tehn_opis_mini">1256 Гб.</p>
+				</li>
+				<li class="tehn_mini">
+				<p >Видеокарта</p>
+				<p class="tehn_opis_mini">NVIDIA GeForce GTX 675M</p>
+			</li>
+				</ul>
+				<div class="clear"></div>
+				<a href="">Показать все характеристики</a>
+			</div>
+			<div class="show1200 clear"></div>
+{if $product['SEO-TEXT']}
+		<div class="opis-product">
+				<p class="header-opis">Описание {$product['NAME-PROVIDER']}</p>
+				<div class="opis">
+				{$product['SEO-TEXT']}
+				</div>
+		</div>
+
+		<div class="clear"></div>
+{/if}
+		<div class="otziv">
+		<p class="header-otziv">Отзывы<span class="col_otziv">(535)</span><span class="open_otziv">Посмотреть все отзывы</span><span class="write_otziv">Написать новый отзыв</span></p>
+
+		<p class="dop-inf"><span class="name_otziv">kachnov-ivan</span><span class="data_otziv">19 мая</span><span class="rep"><span class="output">отличная модель</span></span><span class="opit">Опыт пользования: несколько месяцев</span></p>
+
+		<p class="otziv_opis">Мобильный телефон Philips Xenium X623 отличается низким энергопотреблением и невероятно долгим временем автономной работы. Он имеет лаконичный и строгий дизайн в сочетании с хорошей функциональностью.
+
+	Поддержка двух сим-карт. Аппарат позволит пользователю с удобством управлять как деловыми, так и личными звонками. Благодаря возможности модели работать сразу с двумя сим-картами ее владелец всегда будет оставаться на связи.Мобильный телефон Philips Xenium X623 отличается низким энергопотреблением и невероятно долгим временем автономной работы. Он имеет лаконичный и строгий дизайн в сочетании с хорошей функциональностью.
+
+	Поддержка двух сим-карт. Аппарат позволит пользователю с удобством управлять как деловыми, так и личными звонками. Благодаря возможности модели работать сразу с двумя сим-картами ее владелец всегда будет оставаться на связи...
+	</p>
+	<p class="return">Отзыв полезен? <span class="yes">Да</span> 14 / <span class="no">Нет</span> 2</p>
+		</div>
+		<div class="review">
+			<p class="review-header">Обзор ноутбука Acer Aspire S5 Ultrabook</p>
+			<div class="opis">Мобильный телефон Philips Xenium X623 отличается низким энергопотреблением и невероятно долгим временем автономной работы. Он имеет лаконичный и строгий дизайн в сочетании с хорошей функциональностью.
+			<ul>
+				<li> Поддержка двух сим-карт. Аппарат позволит пользователю с удобством управлять как деловыми, так и личными звонками. Благодаря возможности модели работать сразу с двумя сим-картами ее владелец всегда будет оставаться на связи...
+	Мобильный телефон Philips Xenium X623 отличается низким энергопотреблением и невероятно долгим временем автономной работы. Он имеет лаконичный и строгий дизайн в сочетании с хорошей функциональностью. </li>
+				<li>Поддержка двух сим-карт. Аппарат позволит пользователю с удобством управлять как деловыми, так и личными звонками. Благодаря возможности модели работать сразу с двумя сим-картами ее владелец всегда будет оставаться на связи...Мобильный телефон Philips Xenium X623 отличается низким энергопотреблением и невероятно долгим временем автономной работы. Он имеет лаконичный и строгий дизайн в сочетании с хорошей функциональностью. </li>
+				<li>Поддержка двух сим-карт. Аппарат позволит пользователю с удобством управлять как деловыми, так и личными звонками. Благодаря возможности модели работать сразу с двумя сим-картами ее владелец всегда будет оставаться на связи...</li>
+			</ul>
+			</div>
+		</div>
+		<div class="tehn_opis">
+			<P class="tehn_opis_header">Технические характеристи <span class="spec"><span class="osnova">Основные</span> или полные</span></P>
+
+			<ul >
+				<li>Связь</li>
+				<li>Диапазоны UMTS : 850 , 900 , 1900 , 2100</li>
+				<li>Диапазоны GSM : 850 , 900 , 1800 , 1900</li>
+				<li>Доступ в Интернет : GPRS , EDGE , 3G Bluetooth : A2DP, EDR , 4.0 </li>
+				<li>Wi-Fi (802.11) : a , b , g , n </li>
+				<li>E-mail клиент : да </li>
+				<li>GPRS/3G-модем : да </li>
+
+
+			</ul>
+			<ul >
+				<li>Дисплей</li>
+				<li>Тип дисплея : Super AMOLED</li>
+				<li>Количество цветов дисплея : 16000000 </li>
+				<li>Разрешение дисплея (пикс) : 1280x720 </li>
+				<li>Диагональ дисплея (дюйм) : 5.5</li>
+				<li>Сенсорный экран : да </li>
+				<li>Тип сенсорного экрана : емкостный </li>
+				<li>Поддержка Multitouch : да </li>
+			</ul>
+
+
+			<ul >
+				<li>Корпус</li>
+				<li>Тип корпуса : классический</li>
+				<li>Длина (мм) : 151.1 </li>
+				<li>Ширина (мм) : 80.5 </li>
+				<li>Толщина (мм) : 9.4 </li>
+				<li>Вес (г) : 180</li>
+			</ul>
+			<ul >
+				<li>Память</li>
+				<li>Встроенная память (Мб) : 16000</li>
+				<li>Поддержка карт памяти : microSD</li>
+				<li> Максимальный объем карты памяти : 64 Гб</li>
+			</ul>
+			<ul >
+				<li>Питание</li>
+				<li>Тип аккумулятора : Li-ion </li>
+				<li>Емкость аккумулятора (мАч) : 3100</li>
+				<li>Время работы в режиме разговора (ч) : 35 (2G) / 16 (3G)</li>
+				<li>Время работы в режиме ожидания (ч) : 980 (2G) / 890 (3G)</li>
+
+			</ul>
+
+
+			<ul >
+				<li>Мультимедиа</li>
+				<li>Фотокамера (Мпикс) : 8 </li>
+				<li>Разрешение фотосъемки : 3248 x 2448 Автофокус : Есть</li>
+				<li>Вспышка : Светодиодная </li>
+				<li>Видеозапись : да </li>
+				<li>Разрешение видеосъемки : 1080p @ 30 fps Дополнительная камера (Мпикс) : 1.9</li>
+				<li>MP3 - звонок : да
+				</li>
+				<li>Аудиоплеер : да </li>
+				<li>Видеоплеер : да </li>
+				<li>FM - радио : да </li>
+				<li>Поддержка RDS : да </li>
+				<li>Аудиоразъем : 3.5 мм Диктофон : да </li>
+
+			</ul>
+
+
+			<ul >
+				<li>Система</li>
+				<li>GPS-навигация : да </li>
+				<li>Cистема A-GPS : да </li>
+				<li>Операционная система : Android v4.1 </li>
+				<li>Частота процессора (МГц) : 1600 </li>
+				<li>Объем оперативной памяти (Мб) : 2048</li>
+				<li>Кол-во ядер : 4 Видеочип : Mali-400MP </li>
+			</ul>
+
+			<ul >
+				<li>Прочее </li>
+				<li>Производитель : Samsung G-сенсор (датчик положения в пространстве) : да </li>
+				<li>Датчик освещенности : да </li>
+				<li>Датчик приближения : да </li>
+				<li>Цифровой компас : да </li>
+				<li>Громкая связь : да </li>
+				<li>Голосовой набор : Есть </li>
+				<li>Голосовое управление : Есть </li>
+				<li>Срок гарантии : 1 г. </li>
+				<li>Дополнительно : LTE 700 MHz Class 17 / 2100 - N7105; NFC </li>
+			</ul>
+
+
+		</div>
+		<div class="clear"></div>
+		<p class="warnin">*Уважаемые клиенты, описание товара Samsung P3100 на сайте носит информационный характер и не является публичной офертой. Производитель оставляет за собой право менять характеристики, комплектацию и внешний вид товара без предварительного уведомления продавца. Убедительно просим Вас при покупке Samsung P3100 проверять наличие желаемых функций и характеристик.</p>
+	</div>
+	</div>
+	</div>
+
+<!-- БАНЕРЫ СПРАВА -->
+	 	<div class="banner-right">
+
+			<div class="delivery">
+				<div class="header-delivery"><img src="/img/new/ok.png">Товар есть на складе.</div>
+				<div class="content-delivery">
+						<p class="way-delivery">Способы доставки:</p>
+
+
+					<div class="block-delivery">
+						<p class="as-delivery">Курьером,<span class="free">бесплатно</span></p>
+						<p class="place-delivery">Усть-Константинопольский район</p>
+						<p>Сроки: сейчас</p>
+					</div>
+
+
+					<div class="block-delivery">
+						<p class="as-delivery">Самовывоз,<span class="free">бесплатно</span></p>
+						<p>Сроки: сейчас</p>
+					</div>
+
+
+					<div class="block-delivery">
+						<p >Из постомата,<span class="free">100р.</span></p>
+						<p>Сроки: 17-18 января</p>
+					</div>
+			</div>
+			<div class="footer-delivery">
+				<P class="more">Подробнее о <span class="more_detal">доставке и оплате</span></P>
+			</div>
+			</div>
+
+			<div class="akss">
+				<p class="akss-header">Аксессуары</p>
+				<div class="akss-content">
+					<ul>
+						<li>Чистящие средства</li>
+						<li>Защитные пленки</li>
+						<li>Чехлы</li>
+						<li>Микрофоны</li>
+						<li>Наушники</li>
+						<li>Гарнитуры </li>
+						<li>Карты памяти </li>
+					</ul>
+				</div>
+			</div>
+
+			<div class="vert_slaider">
+				<img class="carousel-next_vert"
+				src="/img/new/slaider_next.png" alt="Next Button"/>
+				<img class="carousel-prev_vert"
+				src="/img/new/slaider_next.png" alt="Previous Button"/>
+				<div class="wrapper_car_vert">
+				<div class="carousel-component_vert">
+					<div class="product_carousel_vert">
+						<div class="item_vert">
+							<div class="wrapper-img-banner_vert">
+							<img class="item_img_vert" src="/img/new/box.png"></div>
+							<p class="title_blue">Western digital WD</p>
+							<p class="price_vert">4 999<span class="rub">р.</span></p>
+							<button class="button_basket">В корзину<img src="/img/new/basket-product.png"></button>
+						</div>
+					</div>
+					<div class="clear"></div>
+					<div class="product_carousel_vert">
+						<div class="item_vert">
+							<div class="wrapper-img-banner_vert">
+							<img class="item_img_vert" src="/img/new/super-price-item_1.png">
+							<img class="banner-product"src="/img/new/banner-skidka.png">
+							</div>
+							<p class="title_blue">Siemens Charger for Gigaset </p>
+							<p class="price_vert">999<span class="rub">р.</span></p>
+							<button class="button_basket">В корзину<img src="/img/new/basket-product.png"></button>
+						</div>
+					</div>
+					<div class="clear"></div>
+					<div class="product_carousel_vert">
+					<div class="item_vert">
+						<div class="wrapper-img-banner_vert">
+						<img class="item_img_vert" src="/img/new/nout.png">
+						</div>
+						<p class="title_blue">Western digital WD</p>
+						<p class="price_vert">1 999<span class="rub">р.</span></p>
+
+						<button class="button_basket">В корзину<img src="/img/new/basket-product.png"></button>
+					</div>
+					</div>
+					<div class="clear"></div>
+					<div class="product_carousel_vert">
+					<div class="item_vert">
+						<div class="wrapper-img-banner_vert">
+						<img class="item_img_vert" src="/img/new/foto.png">
+						<img class="banner-product"src="/img/new/banner-new.png"></div>
+						<p class="title_blue">HAMMER 202-501 DC</p>
+						<p class="price_vert">17 999<span class="rub">р.</span></p>
+
+						<button class="button_basket">В корзину<img src="/img/new/basket-product.png"></button>
+					</div>
+					</div>
+					<div class="clear"></div>
+					<div class="product_carousel_vert">
+					<div class="item_vert">
+						<div class="wrapper-img-banner_vert">
+						<img class="item_img_vert" src="/img/new/mob.png">
+						</div>
+						<p class="title_blue">KEMAP 600</p>
+						<p class="price_vert">1 230 999<span class="rub">р.</span></p>
+
+						<button class="button_basket">В корзину<img src="/img/new/basket-product.png"></button>
+					</div>
+					</div>
+					<div class="clear"></div>
+					<div class="product_carousel_vert">
+					<div class="item_vert">
+						<div class="wrapper-img-banner_vert">
+						<img class="item_img_vert" src="/img/new/box.png">
+						</div>
+						<p class="title_blue">Western digital WD</p>
+						<p class="price_vert">1 999<span class="rub">р.</span></p>
+
+						<button class="button_basket">В корзину<img src="/img/new/basket-product.png"></button>
+					</div>
+					</div>
+					<div class="clear"></div>
+					<div class="product_carousel_vert">
+					<div class="item_vert">
+						<div class="wrapper-img-banner_vert">
+						<img class="item_img_vert" src="/img/new/foto.png">
+						</div>
+						<p class="title_blue">KARCHER S 550 </p>
+						<p class="price_vert">99<span class="rub">р.</span></p>
+						<button class="button_basket">В корзину<img src="/img/new/basket-product.png"></button>
+					</div>
+					</div>
+					<div class="clear"></div>
+					<div class="product_carousel_vert">
+					<div class="item_vert">
+						<div class="wrapper-img-banner_vert">
+						<img class="item_img_vert" src="/img/new/nout.png">
+						</div>
+						<p class="title_blue">Western digital WD</p>
+						<p class="price_vert">1 999<span class="rub">р.</span></p>
+
+						<button class="button_basket">В корзину<img src="/img/new/basket-product.png"></button>
+					</div>
+					</div>
+					<div class="clear"></div>
+					<div class="product_carousel_vert">
+					<div class="item_vert">
+						<div class="wrapper-img-banner_vert">
+						<img class="item_img_vert" src="/img/new/super-price-item_1.png">
+						</div>
+						<p class="title_blue">GARDENA 1731</p>
+						<p class="price_vert">190 999<span class="rub">р.</span></p>
+
+						<button class="button_basket">В корзину<img src="/img/new/basket-product.png"></button>
+					</div>
+					</div>
+					<div class="clear"></div>
+					<div class="product_carousel_vert">
+					<div class="item_vert">
+						<div class="wrapper-img-banner_vert">
+						<img class="item_img_vert" src="/img/new/box.png">
+						</div>
+						<p class="title_blue">Электроды LINCOLN Basic </p>
+						<p class="price_vert">12 999<span class="rub">р.</span></p>
+
+						<button class="button_basket">В корзину<img src="/img/new/basket-product.png"></button>
+					</div>
+					</div>
+					<div class="clear"></div>
+					</div>
+				</div>
+
+			</div>
+
+			<div class="dop_service">
+				<p class="header_dop_service">Дополнительные услуги</p>
+				<div class="block_dop_service">
+					<p class="header_block_dop_service">Расширенная гарантия</p>
+					<p class="content_block_dop_service">Узнать о дополнительном сервисном обслуживании и пожизненной гарантии </p>
+				</div>
+
+				<div class="block_dop_service">
+					<p class="header_block_dop_service">Установка программного обеспечения</p>
+					<p class="content_block_dop_service">В нашем магазине вы можете воспользоваться услугой установки программного обеспечения на ваш компьютер </p>
+				</div>
+			</div>
+
+			<div class="garant">
+				<p class="header_garant">Гарантия</p>
+				<p class="content_garant">Вы можете отказаться от товара надлежащего качества в любое время до его передачи, а после передачи товара - в течение 7 календарных дней в соответствии с правилами продажи товаров дистанционным способом, утвержденными Постановлением Правительства РФ № 612 от 27.09.2007 г. Возврат товара надлежащего качества возможен в случае, если сохранены его товарный вид (ярлыки, пломбы, упаковка и т.п.), потребительские свойства, а также кассовый и товарный чеки. При отказе от переданного Вам товара надлежащего качества в течение указанного выше срока мы не возвращаем стоимость доставки товара от магазина к Вам.</p>
+				<P class="more">Подробнее о <span class="more_detal">доставке и оплате</span></P>
+
+			</div>
+
+
+
+		</div>
+<div class="clear"></div>
+
+<!-- КОНТЕНТ ВНИЗУ -->
+/*	{call soy.footer.footer /}*/
+
+</div>
+</div>
+</div>
+</div>
+</body>
+</html>
+
+{/template}

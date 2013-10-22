@@ -1,0 +1,46 @@
+{namespace soy.sitemap}
+
+/* Описание протокола http://www.sitemaps.org/ru/protocol.php
+Пример:
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+   <url>
+      <loc>http://www.example.com/</loc>
+      <lastmod>2005-01-01</lastmod>
+      <changefreq>monthly</changefreq>
+      <priority>0.8</priority>
+   </url>
+</urlset> */
+
+{template route}
+  <url>{\n}
+    {\t}<loc>{$loc}</loc>{\n}
+    /* {if $lastmod}{\t}<lastmod>{$lastmod}</lastmod>{\n}{/if} */
+    /* {if $changefreq}{\t}<changefreq>{$changefreq}</changefreq>{\n}{/if} */
+    /* {if $priority}{\t}<priority>{$priority}</priority>{\n}{/if} */
+  </url>{\n}
+{/template}
+
+
+{template head}
+  <?xml version="1.0" encoding="UTF-8"?>{\n}
+  <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{\n}
+{/template}
+
+{template tail}
+  </urlset>{\n}
+{/template}
+
+{template sitemap-index-file}
+  <?xml version="1.0" encoding="UTF-8"?>
+  <sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    {foreach $name in $names}
+      <sitemap>
+        <loc>http://www.320-8080.ru/{$name}</loc>
+        {if $lastmod}
+          <lastmod>{$lastmod}</lastmod>
+        {/if}
+      </sitemap>
+    {/foreach}
+  </sitemapindex>
+{/template}

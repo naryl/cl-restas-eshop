@@ -1,0 +1,40 @@
+{namespace soy.buttons}
+
+{template add-one-click}
+    <a href="#oneClickBox" class="fancybox-one-click fancybox.inline " name="{$articul}">{if $available}<span>Купить в 1 клик</span>{else}<span>Заказать в 1 клик</span>{/if}</a>
+{/template}
+
+{template add-product-onclick-func}
+$.addProduct('{$articul}', 1, '{$name}', {$siteprice}, '/pic/small/{$articul}/{$pic}');
+{/template}
+
+{template add-prerender-onclick}
+    class="fancybox-one-click fancybox.inline" name="{$articul}"
+{/template}
+
+{template add-product-onclick}
+  onclick="$.addProduct('{$articul}', 1, '{$name}', {$siteprice}, '/pic/small/{$articul}/{$pic}');"
+{/template}
+
+{template add-product-cart}
+	<a {call add-product-onclick data="all" /} href="#add_product_buy" class="fancybox-buy-product button black">
+		<img src="/img/buy-icon.png" alt="buy">
+		<span>В корзину</span>
+	</a>
+{/template}
+
+{template add-product-rasp}
+	<a href="#oneClickBox" class="fancybox-one-click button green"
+    name="{$articul}">{if $available}<span>Купить в 1 клик</span>{else}<span>Заказать в 1 клик</span>{/if}</a>
+{/template}
+
+{template buy-product-order}
+	<a href="#oneClickBox" class="fancybox-one-click button green"
+     name="{$articul}"><span>Заказать</span></a>
+{/template}
+
+{template buy-product-preorder}
+	<a href="#oneClickBox" class="fancybox-one-click button green"
+     name="{$articul}"><span>Предзаказать</span></a>
+{/template}
+

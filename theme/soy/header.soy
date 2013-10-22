@@ -1,0 +1,647 @@
+{namespace soy.header}
+
+{template short-linked-header}
+  <div class="header header-short">
+    <div class="logo"><a href="/"><img src="img/logo.png" alt="ЦиFры"/></a></div>
+    <div class="phone"><img src="img/phone.png" alt="320-8080"/></div>
+  </div>
+{/template}
+
+{template shortheader}
+  <div class="header header-short">
+    <div class="logo"><img src="img/logo.png" alt="ЦиFры"/></div>
+    <div class="phone"><img src="img/phone.png" alt="320-8080"/></div>
+  </div>
+{/template}
+
+{template header}
+/* <script src='http://bootstrap-ru.com/203/assets/js/bootstrap-tooltip.js'></script> */
+
+/* <link rel="stylesheet" href="/css/bootstrap.css"> */
+
+/* <div id="mouseover">Тестовый текст</div> */
+/* <div class="podlojka"></div> */
+{call changetown /}
+
+{literal}
+<style>
+	#mouseover {
+		padding:10px 15px;
+		max-width:250px;
+		background:#fff;
+		border:2px solid #ED1C24;
+		position:absolute;
+		z-index:1000;
+		font:12px/15px arial,sans-serif;
+		display:none;
+	}
+	.podlojka {
+	width: 100%;
+	position: fixed;
+	z-index: 1100;
+	height: 100%;
+	background: rgba(0,0,0,0.3);
+	display: none;
+	}
+	#townchange {
+		display:inline-block;
+		padding-left:40px;
+		height:27px;
+		line-height:27px;
+		font-weight:bold;
+		font-size:14px;
+		background:url(/img/townpick.png) left top no-repeat;
+	}
+	.voyti {position:absolute;top:10px;right:70px;cursor:pointer;color:red;font-weight:bold;font-size:14px;display:inline-block;line-height:27px;}
+	.voyti a {
+	color:red;
+	}
+	*+html #townchange,
+	*+html .voyti {
+		display:inline;
+		zoom:1;
+	}
+	#specify {
+		width:620px;
+		background: white;
+		/*display: none;*/
+		text-shadow: 1px 1px 2px white;
+		-webkit-box-shadow: 1px 1px 6px rgba(0,0,0,0.6);
+		-moz-box-shadow: 1px 1px 6px rgba(0,0,0,0.6);
+		box-shadow: 1px 1px 6px rgba(0,0,0,0.6);
+		position:absolute;
+		top: 50px;
+		z-index: 1200;
+		left: 50%;
+		margin-left:-310px;
+		display:none;
+	}
+		#specify .pozit-header {
+			border-bottom: 4px solid #393939;
+			font-weight:bold;
+			padding:10px 0 0 20px;
+		}
+		#specify-content {
+			padding:10px 10px 20px 0;
+		}
+			.town-col {
+				float:left;
+				width:200px;
+			}
+			.town-col a {
+				text-decoration:none;
+			}
+			.town-col a:hover {
+				color:#393939;
+			}
+			.town-col .tower {
+				font-weight:bold;
+			}
+	.pozit {
+	max-width: 600px;
+	font-size: 14px;
+	color: #404040;
+	text-align: center;
+	position: fixed;
+	background: white;
+	display: none;
+	text-shadow: 1px 1px 2px white;
+	-webkit-box-shadow: 1px 1px 6px rgba(0,0,0,0.6);
+	-moz-box-shadow: 1px 1px 6px rgba(0,0,0,0.6);
+	box-shadow: 1px 1px 6px rgba(0,0,0,0.6);
+	top: 20%;
+	z-index: 1200;
+	left: 35%;
+	}
+	#login-popup {
+	width:380px;
+	background:#fbfbfb;
+	padding-bottom:55px;
+	font-size:14px;
+	font-family:tahoma,sans-serif;
+	height:auto;
+	text-align:left;
+	}
+	#login-popup-title {
+	display:block;
+	height:33px;
+	background:url(/img/images/bg.png) top left repeat-x;
+	padding-left:9px;
+	line-height:28px;
+	color:#48484a;
+	text-shadow:0 1px 0 #fff;
+	margin-bottom:30px;
+	}
+	#popup-messenger {
+	margin-bottom:30px;
+	}
+	.popup-close {
+	position:absolute;
+	top:2px;
+	right:11px;
+	cursor:pointer;
+	display:block;
+	width:25px;
+	height:25px;
+	background:url(/img/images/close.png) left top no-repeat;
+	}
+	.popup-close:hover {
+	opacity:0.7;
+	-moz-opacity:0.7;
+	filter:progid:DXImageTransform.Microsoft.Alpha(opacity=70);
+	zoom:1;
+	}
+	.popup-label {
+	display:inline-block;
+	width:70px;
+	padding-right:17px;
+	text-align:right;
+	color:#484848;
+	vertical-align:middle;
+	height:28px;
+	}
+	#login-popup input[type="text"],
+	#login-popup input[type="password"] {
+	height:26px;
+	line-height:26px;
+	line-height:26px;
+	background:#fff;
+	border:1px solid #d1d1d1;
+	border-radius:4px;
+	-moz-border-radius:4px;
+	-webkit-border-radius:4px;
+	padding:0;
+	padding-left:7px;
+	width:220px;
+	display:inline-block;
+	box-shadow:0 1px 1px #e5e5e5;
+	-moz-box-shadow:0 1px 1px #e5e5e5;
+	-webkit-box-shadow:0 1px 1px #e5e5e5;
+	margin-bottom:17px;
+	vertical-align:middle;
+	}
+	.popup-check {
+	padding-left:110px;
+	font-size:10px;
+	color:#484848;
+	}
+	.popup-check span {
+	display:inline-block;
+	line-height:14px;
+	vertical-align:middle;
+	padding-left:3px;
+	}
+	#login-popup input[type="submit"] {
+	display:inline-block;
+	border:0;
+	font-family:tahoma,sans-serif;
+	font-size:14px;
+	color:#48484a;
+	text-shadow:0 1px 0 #fff;
+	line-height:28px;
+	height:28px;
+	vertical-align:middle;
+	padding:0 25px;
+	cursor:pointer;
+	margin:10px 7px 0;
+	border-radius:4px;
+	-moz-border-radius:4px;
+	-webkit-border-radius:4px;
+	background:#fbdf58;
+	background:-moz-linear-gradient(#fbdf58,#fbc547);
+	background:-webkit-linear-gradient(#fbdf58,#fbc547);
+	background:-o-linear-gradient(#fbdf58,#fbc547);
+	background:-ms-linear-gradient(#fbdf58,#fbc547);
+	background: linear-gradient(#fbdf58,#fbc547);
+	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#fbdf58',endColorstr='#fbc547',GradientType=0);
+	box-shadow:1px 2px 6px #bdbdbd;
+	-moz-box-shadow:1px 2px 6px #bdbdbd;
+	-webkit-box-shadow:1px 2px 6px #bdbdbd;
+	}
+	#login-popup input[type="submit"]:hover {
+	background:#fbc547;
+	background:-moz-linear-gradient(#fbc547,#fbdf58);
+	background:-webkit-linear-gradient(#fbc547,#fbdf58);
+	background:-o-linear-gradient(#fbc547,#fbdf58);
+	background:-ms-linear-gradient(#fbc547,#fbdf58);
+	background: linear-gradient(#fbc547,#fbdf58);
+	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#fbc547',endColorstr='#fbdf58',GradientType=0);
+	}
+	*+html .popup-label,
+	*+html #login-popup input[type="text"],
+	*+html #login-popup input[type="password"],
+	*+html #login-popup input[type="submit"],
+	.popup-check span {
+	display:inline;
+	zoom:1;
+	}
+</style>
+{/literal}
+<div class="hide">
+	<form action="/asd" id="phone_next_form">
+	<p class="phone_next_text">Есть вопросы? Потратьте 10 секунд и оставьте свой телефон.<br>
+	Мы обязательно свяжемся с Вами в удобное для Вас время!</p>
+	<div class="error_info"></div>
+	<div class="success_info"></div>
+	<img class="loaderImage" src="/img/loading.gif">
+	<input class="phone_next_input" type="text" value="Ваш телефон"><br>
+	 <button type="submit" value="Заказать" class="button_phone">Заказать звонок</button>
+	 </form>
+</div>
+
+<div id="userbar">
+	<ul class="top_navigation">
+		 <li>
+	   		<a href="#phone_next_form" class="phone_next_a fancybox-one-click fancybox.inline ">
+	   			<img class="phone_next_img" src="/img/pict_mobile_white.png" alt="Заказать звонок">
+	  			Заказать звонок
+	   		</a>
+	  	</li>
+	  	<li>
+	  		<a href="/address">Адрес Магазина</a>
+	  	</li>
+	  	<li>
+	  		<a href="/delivery">Доставка и оплата</a>
+	  	</li>
+	  	<li>
+	  		<a href="/warranty">Гарантии</a>
+	  	</li>
+	  	<li class="dropdown close">
+	  		<div class="wrap hide">
+	  			<div class="category">
+	  				<span>Покупателям</span>
+		  			<ul>
+			  			<li>
+			  				<a href="/delivery">Доставка и оплата</a>
+			  			</li>
+			  			<li>
+					  		<a href="/warranty">Гарантия</a>
+					  	</li>
+					  	<li>
+					  		<a href="/bonus">F-club</a>
+					  	</li>
+					  	<li class="big">
+					  		<a href="/corporate">Корпоративным клиентам</a>
+					  	</li>
+					  	<li class="big">
+					  		<a href="/listservice">Сервисные центры производителей</a>
+					  	</li>
+					  	<li>
+					  		<a href="/faq">FAQ</a>
+					  	</li>
+			  		</ul>
+	  			</div><!-- category -->
+	  			<div class="category">
+	  				<span>О нас</span>
+		  			<ul>
+			  			<li>
+			  				<a href="/about">О компании</a>
+			  			</li>
+			  			<li>
+					  		<a href="/levashovsky">Наш центральный магазин</a>
+					  	</li>
+					  	<li>
+					  		<a href="/contacts">Контакты</a>
+					  	</li>
+					  	<li>
+					  		<a href="/vacancy">Вакансии</a>
+					  	</li>
+					  	<li>
+					  		<a href="/address">Адрес Магазина</a>
+					  	</li>
+			  		</ul>
+	  			</div><!-- category -->
+	  			<div class="category">
+	  				<span>Услуги</span>
+		  			<ul>
+			  			<li class="big">
+			  				<a href="/warrantyservice">Бесплатный ремонт компьютеров</a>
+			  			</li>
+			  			<li>
+					  		<a href="/service">Сервисный центр</a>
+					  	</li>
+					  	<li class="big">
+					  		<a href="/dopolnitelnii-servis">Дополнительный сервис</a>
+					  	</li>
+					  	<li>
+					  		<a href="/pricesc">Прайс-лист</a>
+					  	</li>
+		          <li>
+	  	          <a href="/fcard">Активация дисконтных карт</a>
+	  	        </li>
+			  		</ul>
+	  			</div><!-- category -->
+	  			<div class="category">
+	  				<span>Информация</span>
+		  			<ul>
+			  			<li>
+			  				<a href="/articles/akcii">Акции</a>
+			  			</li>
+			  			<li>
+					  		<a href="/articles/news">Новости</a>
+					  	</li>
+					  	<li>
+					  		<a href="/articles/reviews">Обзоры</a>
+					  	</li>
+			  		</ul>
+	  			</div><!-- category -->
+	  			<div class="clr"></div>
+	  		</div><!-- wrap -->
+	  		<a href="#" class="open gradient">
+	  			<span>Больше информации</span>
+	  			<img src="/img/blank.gif" alt="">
+	  		</a>
+	  	</li>
+	</ul><!-- top navigation -->
+	<ul class="top_social">
+		<li>
+			<a href="http://vkontakte.ru/zifry3208080" target="_blank" >
+				<img src="/img/vk.png" title="Вступайте в нашу группу Вконтакте" alt="vk" />
+			</a>
+		</li>
+		<li>
+			<a href="http://www.facebook.com/3208080.ru" target="_blank" >
+				<img src="/img/fb.png" title="Присоединяйтесь к нам на Facebook" alt="fb" />
+			</a>
+		</li>
+		<li>
+			<a href="http://www.twitter.com/3208080_ru" target="_blank" >
+				<img src="/img/tw.png" title="Следите за новостями в Twitter" alt="tw" />
+			</a>
+		</li>
+		<li>
+			<a href="http://www.320-80-80.livejournal.com/" target="_blank" >
+				<img src="/img/jj.png" title="Читайте блог ЦиFроМана" alt="jj" />
+			</a>
+		</li>
+	</ul><!-- top social -->
+</div><!-- userbar -->
+<div id="header">
+	<div id="logo">
+		<a href="/">
+			<img src="/img/logo-full.png" alt="ЦиFры">
+		</a>
+	</div><!-- logo -->
+	{$cart |noAutoescape}
+	<div id="search" style="position:relative;">
+		<script src="/js/test.js"></script>
+		<script src="/js/function.js"></script>
+		<span id="townchange" class="city_hd" style="position:absolute;top:10px;left:0;cursor:pointer;display:none;" onclick="$('.podlojka').show();$('#specify').show();">Выберите город</span>
+    {if $ij.user}
+        <p class="voyti">
+			<a href="/u/orders">{$ij.user.key}</a>
+        </p>
+        {else}
+		<p class="voyti" style="display:none;">
+			<a class="popup-call">Войти</a> /
+			<a href="/u/registration">Регистрация</a>
+		</p>
+      {/if}
+		<div class="catalog-link">
+			<a href="/catalog">Каталог</a>
+		</div>
+		<noindex>
+      <div class="search-form">
+			  <form action="/search" method="get">
+				  <div class="field">
+					  <label for="search-field">Например iPad new</label>
+					  <input type="text" name="q" class="clear-field" value="" id="search-field">
+				  </div>
+				  <input class="button red" type="submit" value="Найти" id="search-submit">
+			  </form>
+		  </div>
+    </noindex>
+		<div class="clr"></div>
+	</div>
+	<div id="login-popup" class="pozit login_kabinet">
+		<span id="login-popup-title">Авторизация</span>
+		<a class="popup-close" onclick="$('#login-popup').hide();$('.podlojka').hide();"></a>
+		<div id="popup-warning"></div>
+		<form name="login-popup" action="/u/login" method="post">
+      {if $ij.currenturl}
+        <input type="hidden" name="url" value="{$ij.currenturl}"/>
+      {/if}
+			<span class="popup-label">E-mail:</span>
+			<input type="text" name="username">
+			<br>
+			<span class="popup-label">Пароль:</span>
+			<input type="password" name="password">
+			<br>
+			/* <div class="popup-check"> */
+			/* 	<input type="checkbox" name="remember"> */
+			/* 	<span>Запомнить меня</span> */
+			/* </div> */
+			<div style="text-align:center;">
+				<input type="submit" name="log" value="Войти">
+				<input type="submit" name="reg" value="Регистрация">
+			</div>
+		</form>
+	</div><!-- search -->
+	<div class="clr"></div>
+</div><!-- header -->
+<div id="stock">
+	{if $bannertype}
+		<a href="{$url}">
+		 	<img src="{$src}" alt="">
+		 	<span>{$name}</span>
+	 		<img src="{$src2}" alt="">
+	 	</a>
+ 	{else}
+	 	<a href="{$url}">
+		 	<img src="{$src}" alt="">
+		</a>
+ 	{/if}
+</div><!-- stock -->
+{/template}
+
+{template changetown}
+
+<div id="specify">
+	<div class="pozit-header">Укажите ваш город <img onclick="$('#specify').hide();$('.podlojka').hide();" class="closebox" src="/img/close.png"></div>
+	<div id="specify-content">
+		<div class="town-col">
+			<ul>
+				<li>
+					<div><a class="g-underline tower SPE" href="#mesto">Санкт-Петербург </a></div>
+					<ul>
+						<li>
+							<div><a class="g-underline SPE" href="#mesto">Волхов </a></div>
+						</li>
+						<li>
+							<div><a class="g-underline SPE" href="#mesto">Всеволожск </a></div>
+						</li>
+						<li>
+							<div><a class="g-underline SPE">Выборг </a></div>
+						</li>
+						<li>
+							<div><a class="g-underline SPE" href="#mesto">Гатчина </a></div>
+						</li>
+						<li>
+							<div><a class="g-underline SPE" href="#mesto">Ивангород </a></div>
+						</li>
+						<li>
+							<div><a class="g-underline SPE" href="#mesto">Кингисепп </a></div>
+						</li>
+						<li>
+							<div><a class="g-underline SPE" href="#mesto">Кириши </a></div>
+						</li>
+						<li>
+							<div><a class="g-underline SPE" href="#mesto">Кировск </a></div>
+						</li>
+						<li>
+							<div><a class="g-underline SPE" href="#mesto">Колпино </a></div>
+						</li>
+						<li>
+							<div><a class="g-underline SPE" href="#mesto">Красное Село </a></div>
+						</li>
+						<li>
+							<div><a class="g-underline SPE" href="#mesto">Кронштадт </a></div>
+						</li>
+						<li>
+							<div><a class="g-underline SPE" href="#mesto">Лодейное Поле </a></div>
+						</li>
+					</ul>
+					<ul>
+						<li>
+							<div><a class="g-underline SPE" href="#mesto">Ломоносов </a></div>
+						</li>
+						<li>
+							<div><a class="g-underline SPE" href="#mesto">Луга </a></div>
+						</li>
+						<li>
+							<div><a class="g-underline SPE" href="#mesto">Петергоф </a></div>
+						</li>
+						<li>
+							<div><a class="g-underline SPE" href="#mesto">Подпорожье </a></div>
+						</li>
+						<li>
+							<div><a class="g-underline SPE" href="#mesto">Приозерск </a></div>
+						</li>
+						<li>
+							<div><a class="g-underline SPE" href="#mesto">Пушкин </a></div>
+						</li>
+						<li>
+							<div><a class="g-underline SPE" href="#mesto">Светогорск </a></div>
+						</li>
+						<li>
+							<div><a class="g-underline SPE" href="#mesto">Сертолово </a></div>
+						</li>
+						<li>
+							<div><a class="g-underline SPE" href="#mesto">Сестрорецк </a></div>
+						</li>
+						<li>
+							<div><a class="g-underline SPE" href="#mesto">Сланцы </a></div>
+						</li>
+						<li>
+							<div><a class="g-underline SPE" href="#mesto">Сосновый Бор </a></div>
+						</li>
+						<li>
+							<div><a class="g-underline SPE" href="#mesto">Тихвин </a></div>
+						</li>
+						<li>
+							<div><a class="g-underline SPE" href="#mesto">Тосно </a></div>
+						</li>
+					</ul>
+				</li>
+			</ul>
+		</div>
+		<div class="town-col">
+			<ul>
+				<li>
+					<div><a class="g-underline tower" href="#mesto">Москва </a></div>
+					<ul>
+						<li> <div><a class="g-underline" href="#mesto">Балашиха </a></div> </li>
+						<li> <div><a class="g-underline" href="#mesto">Жуковский </a></div> </li>
+						<li> <div><a class="g-underline" href="#mesto">Зеленоград </a></div> </li>
+						<li> <div><a class="g-underline" href="#mesto">Коломна </a></div> </li>
+						<li> <div><a class="g-underline" href="#mesto">Люберцы </a></div> </li>
+						<li> <div><a class="g-underline" href="#mesto">Одинцово </a></div> </li>
+						<li> <div><a class="g-underline" href="#mesto">Подольск </a></div> </li>
+						<li> <div><a class="g-underline" href="#mesto">Раменское </a></div> </li>
+						<li> <div><a class="g-underline" href="#mesto">Реутов </a></div> </li>
+						<li> <div><a class="g-underline" href="#mesto">Химки </a></div> </li>
+					</ul>
+				</li>
+			</ul>
+			<ul>
+				<li> <div><a class="g-underline tower" href="#mesto">Великий Новгород </a></div> </li>
+				<li> <div><a class="g-underline tower" href="#mesto">Владимир </a></div> </li>
+				<li> <div><a class="g-underline tower" href="#mesto">Воронеж </a></div> </li>
+				<li> <div><a class="g-underline tower" href="#mesto">Иваново </a></div> </li>
+				<li>
+					<div><a class="g-underline tower" href="#mesto">Казань </a></div>
+					<ul>
+						<li> <div><a class="g-underline" href="#mesto">Альметьевск </a></div> </li>
+						<li> <div><a class="g-underline" href="#mesto">Зеленодольск </a></div> </li>
+						<li> <div><a class="g-underline" href="#mesto">Лениногорск </a></div> </li>
+						<li> <div><a class="g-underline" href="#mesto">Набережные Челны </a></div> </li>
+						<li> <div><a class="g-underline" href="#mesto">Нижнекамск </a></div> </li>
+						<li> <div><a class="g-underline" href="#mesto">Чистополь </a></div> </li>
+					</ul>
+				</li>
+				<li> <div><a class="g-underline tower" href="#mesto">Калуга </a></div> </li>
+				<li>
+					<div><a class="g-underline tower" href="#mesto">Краснодар </a></div>
+					<ul>
+						<li> <div><a class="g-underline" href="#mesto">Анапа </a></div> </li>
+						<li> <div><a class="g-underline" href="#mesto">Кропоткин </a></div> </li>
+						<li> <div><a class="g-underline" href="#mesto">Новороссийск </a></div> </li>
+						<li> <div><a class="g-underline" href="#mesto">Славянск-на-Кубани </a></div> </li>
+						<li> <div><a class="g-underline" href="#mesto">Туапсе </a></div> </li>
+						<li> <div><a class="g-underline" href="#mesto">Усть-Лабинск </a></div> </li>
+					</ul>
+				</li>
+			</ul>
+		</div>
+		<div class="town-col">
+			<ul>
+				<li>
+					<div><a class="g-underline tower" href="#mesto">Нижний Новгород </a></div>
+					<ul>
+						<li> <div><a class="g-underline" href="#mesto">Бор </a></div> </li>
+						<li> <div><a class="g-underline" href="#mesto">Дзержинск </a></div> </li>
+						<li> <div><a class="g-underline" href="#mesto">Кстово </a></div> </li>
+						<li> <div><a class="g-underline" href="#mesto">Павлово </a></div> </li>
+					</ul>
+				</li>
+				<li>
+					<div><a class="g-underline tower" href="#mesto">Петрозаводск </a></div>
+					<ul>
+						<li> <div><a class="g-underline" href="#mesto">Кондопога </a></div> </li>
+						<li> <div><a class="g-underline" href="#mesto">Олонец </a></div> </li>
+					</ul>
+				</li>
+				<li> <div><a class="g-underline tower" href="#mesto">Псков </a></div> </li>
+				<li> <div><a class="g-underline tower" href="#mesto">Ростов-на-Дону </a></div> </li>
+				<li> <div><a class="g-underline tower" href="#mesto">Рязань </a></div> </li>
+				<li> <div><a class="g-underline tower" href="#mesto">Самара </a></div> <ul> <li> <div><a class="g-underline" href="#mesto">Тольятти </a></div> </li> </ul> </li>
+				<li> <div><a class="g-underline tower" href="#mesto">Саратов </a></div> </li>
+				<li> <div><a class="g-underline tower" href="#mesto">Тамбов </a></div> </li>
+				<li> <div><a class="g-underline tower" href="#mesto">Тверь </a></div> </li>
+				<li> <div><a class="g-underline tower" href="#mesto">Тула </a></div> </li>
+				<li> <div><a class="g-underline tower" href="#mesto">Ярославль </a></div> </li>
+			</ul>
+		</div>
+		<div style="clear: both;height: 1px;font-size: 1px;"></div>
+		{literal}
+		<script>
+		$(document).ready(function(){
+			$('#specify-content a').click(function(){
+				$('#specify').hide();
+				$('.podlojka').hide();
+			});
+            $('.popup-call').click(function  () {
+                $('#login-popup').show();
+                $('.podlojka').show();
+            });
+            /* $('a').tooltip({ */
+            /*     title: 'hhh' */
+            /* }); */
+        });
+		</script>
+		{/literal}
+	</div>
+	<div style="clear: both;height: 1px;font-size: 1px;"></div>
+</div>
+
+{/template}

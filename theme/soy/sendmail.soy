@@ -1,0 +1,316 @@
+{namespace soy.sendmail}
+
+{template product}
+<tr>{\n}
+  <td>{$articul}</td>{\n}
+  <td>{$name}</td>{\n}
+  <td>{if $siteprice == 0}
+          {$price}
+      {else}
+          {$siteprice}
+      {/if}</td>{\n}
+  <td>{$cnt}</td>{\n}
+  <td>{$sum}</td>{\n}
+</tr>{\n}
+{/template}
+
+/**
+ * Письмо с информацией для клиента
+ **/
+{template clientmail}
+<p><b>{if $name == ''}Уважаемый покупатель{else}{$name}{/if}, большое спасибо за то, что выбрали наш магазин!</b></p>
+<p>В рабочее время, в течение 1 часа, с Вами свяжется менеджер.{\n}</p>
+<p>Доставка товара осуществляется в течении 2 рабочих дней с момента заказа.</p>
+
+/*дляакции*/
+<strong>АКЦИЯ:</strong><a href="http://www.320-8080.ru/articles/besplatnaja_dostavka_2013"> Бесплатная доставка!</a>
+Бесплатная доставка действует на товары со специальным значком.
+/* <strong>АКЦИЯ:</strong><a href="http://www.320-8080.ru/articles/delivery2"> Доставка курьером 100 рублей!</a> */
+/* <p>Новый айпад на Новый год! Просто сделай фотографию любимого города и <b>выиграй IPad</b><br/> */
+/* <b>Все подробности <a href="http://www.320-8080.ru/articles/darim_ipad">здесь!</a>.<br /></p> */
+/* 	<p><b>Обратите внимание</b><br /> */ /*pickpoint*/
+/* <b>Доставка в пункты выдачи</b><br /> */
+/* <a href="http://www.320-8080.ru/articles/PickPoint_news">Точки выдачи во всех районах города!</a></p> */
+/* <font color=red><strong>Новая акция!</strong></font><br />
+Не упускайте возможность каждый день покупать отличные товары со скидкой до 50%! Подробности <a href="http://www.320-8080.ru/articles/cifrovaja_gonka">здесь</a>!
+<br /> */
+
+<br />
+<b>Хотите прямо сейчас получить отличный подарок?</b><br />
+Потратьте всего три минуты, оставьте отзыв о нашей работе, и мы <b>гарантировано</b> подарим Вам флешку,
+  либо другой полезный подарок на Ваш выбор!
+Все подробности <a href="http://www.320-8080.ru/articles/podarok_za_3_minuti">здесь!</a> </b>
+
+<br/>
+<br/>
+<div style="font-family:Arial, Helvetica; font-size:12px">{\n}
+  Дата и время заказа: {$datetime}{\n}
+</div>{\n}
+<br/>{\n}
+<table style="font-family:Arial, Helvetica; font-size:12px" border="0"
+	   cellpadding="1">{\n}
+  <tbody>{\n}
+	<tr>{\n}
+	  <td>Номер заказа:</td>{\n}
+	  <td>{$order_id}</td>{\n}
+	</tr>{\n}
+	<tr>{\n}
+	  <td>ФИО:</td>{\n}
+	  <td>{$name} {$family}</td>{\n}
+	</tr>{\n}
+	<tr>{\n}
+	  <td>Форма оплаты:</td>{\n}
+	  <td>{$paytype}</td>{\n}
+	</tr>{\n}
+	<tr>{\n}
+	  <td>Вид доставки:</td>{\n}
+	  <td>{$deliverytype}</td>{\n}
+	</tr>{\n}
+	<tr>{\n}
+	  <td>Адрес доставки:</td>{\n}
+	  <td>{$addr}</td>{\n}
+	</tr>{\n}
+	<tr>{\n}
+	  <td>Стоимость доставки:</td>{\n}
+	  <td>{$deliverysum}</td>{\n}
+	</tr>{\n}
+	<tr>{\n}
+	  <td>Реквизиты:</td>{\n}
+	  <td>{$bankaccount}</td>{\n}
+	</tr>{\n}
+	<tr>{\n}
+	  <td>Контактный телефон:</td>{\n}
+	  <td>{$phone}</td>{\n}
+	</tr>{\n}
+	<tr>{\n}
+	  <td>Контактный email:</td>{\n}
+	  <td>{$email}</td>{\n}
+	</tr>{\n}
+    {if $ekk}
+	<tr>{\n}
+	  <td>Номер карты F-клуба:</td>{\n}
+	  <td>{$ekk}</td>{\n}
+	</tr>{\n}
+    {/if}
+	<tr>{\n}
+	  <td>Комментарий:</td>{\n}
+	  <td>{$comment}</td>{\n}
+	</tr>{\n}
+  </tbody>{\n}
+</table>{\n}
+{\n}
+{if $bonuscount}Если ваша карта активна, вы получите <b>{$bonuscount} F-{$bonusname}</b>{/if}
+<br/><br/>{\n}
+{\n}
+<table style="font-family:Arial,Helvetica;font-size:11px;border:1px
+			  solid black" border="1" cellspacing="0" cellpadding="1"
+	   width="100%">{\n}
+  <tbody>{\n}
+	<tr style="font-weight:bold">{\n}
+	  <td>Артикул</td>{\n}
+	  <td>Название</td>{\n}
+	  <td>Цена , руб</td>{\n}
+	  <td>Кол-во</td>{\n}
+	  <td align="right">Сумма, руб</td>{\n}
+	</tr>{\n}
+	{foreach $product in $products}
+	{call product data="$product" /}
+	{/foreach}
+	<tr style="font-weight:bold">{\n}
+	  <td colspan="4">Доставка:</td>{\n}
+	  <td align="right">{$deliverysum}</td>{\n}
+	</tr>{\n}
+	<tr style="font-weight:bold">{\n}
+	  <td colspan="4">Итого:</td>{\n}
+	  <td align="right">&nbsp;{$itogo}</td>{\n}
+	</tr>{\n}
+  </tbody>{\n}
+</table>{\n}
+{\n}
+<br/>
+<br/>
+<b>Узнайте чуть больше о наших <a href="http://www.320-8080.ru/articles/akcii">акциях и скидках!</a></b><br/>{\n}
+Только за последний месяц мы разыграли призов на сумму более 30000 рублей! Подпишись на
+нашу <a href="http://vk.com/zifry3208080">страничку ВКонтакте</a> и выиграй новый планшет, фотоаппарат или телефон!<br/>{\n}
+Понравился наш магазин? Не забудь нажать кнопочку <a href="http://www.facebook.com/3208080.ru">на Фейсбуке</a>!<br/>{\n}
+Нужен дружеский совет? Пиши на <a href="http://twitter.com/3208080_ru">твиттер</a> @3208080_ru – мы всегда онлайн!<br/>{\n}
+Любишь до хрипоты спорить о новых технологиях? Читай <a href="http://320-80-80.livejournal.com/">блог ЦиFромана в ЖЖ</a>!<br/><br/>{\n}
+<b>Полезная информация:</b><br/>
+Если у Вас остались вопросы по доставке, то вам <a href="http://www.320-8080.ru/delivery">сюда</a>.<br/>
+Если у Вас остались вопросы по оплате, то вам <a href="http://www.320-8080.ru/payment">сюда</a>.<br/>
+Если Вы не знаете, как к нам пройти, то посмотреть карту проезда можно <a href="http://www.320-8080.ru/kakdobratsja">здесь</a>.<br/>
+Выдача интернет-заказов производится с 10 до 22 часов.<br/>
+<br/>
+<br/>
+{if $articles}
+<div  style="height: 23px ;text-align: center; background-image: url('http://www.320-8080.ru/img/september2011/bg.jpg');"><strong>Также смотрите:</strong>
+</div>
+{foreach $article in $articles}
+{call article-tab-short data="$article" /}<br />
+{/foreach}
+{/if}
+
+
+{/template}
+
+{template tks-clientmail-wrapper}
+   {$body | noAutoescape}
+   <p> IP: {$ip | noAutoescape} {$city | noAutoescape}</p>
+   <p> User-Agent: {$agent | noAutoescape} </p>
+{/template} // tks-clientmail-wrapper
+
+/*
+<!-- Строка 1: Файл_интернет_заказа -->
+<!-- Строка 2: номер заказа -->
+<!-- Строка 3: 00014 -->
+<!-- Строка 4: номер карты ЕКК -->
+<!-- Строка 5: ФИО покупателя -->
+<!-- Строка 6: [Если доставка, то слово «Доставка»] -->
+<!-- Строка 7: Адрес доставки -->
+<!-- Строка 8: телефон -->
+<!-- Строка 9: адрес эл. почты -->
+<!-- Строка 10: комментарий -->
+<!-- Строка 11: дата заказа -->
+<!-- Строка 12: время заказа -->
+<!-- Строка 13 и далее код товара и количество --> */
+
+{template mailfile}
+Файл_интернет_заказа{\n}
+{$order_id}{\n}
+00014{\n}
+{$ekk}{\n}
+{$name} {$family}{\n}
+{$isdelivery}{\n}
+{$addr}{\n}
+{$phone}{\n}
+{$email}{\n}
+{$comment}{\n}
+{$date}{\n}
+{$time}
+{foreach $product in $products}
+{call fileproduct data="$product" /}
+{/foreach}
+{/template}
+
+{template fileproduct}
+  {\n}{$articul}{\t}{$cnt}{\t}{$siteprice}
+{/template}
+
+
+/**
+ * Письмо с информацией для клиента при покупке с новогодней елки
+ **/
+{template clientmail-elka}
+
+<b>Ура! Вы сделали заказ с нашей <a href="http://www.320-8080.ru/elka2012">Ёлки!</a>
+<br/><br/>
+А это значит, что Вы стали автоматическим участником ежедневного розыгрыша.<br/> В случае победы Вы получите сертификат на <font color=red>1000 рублей!</font>  Подведение ежедневных  итогов начиная с 21 декабря будет осуществляться на нашей публичной <a href="http://vkontakte.ru/zifry3208080">страничке В Контакте!</a></b><br/><br/>
+
+В рабочее время, в течение 1 часа, с Вами свяжется наш менеджер и уточнит параметры заказа.
+<br/><br/>{\n}
+<div style="font-family:Arial, Helvetica; font-size:12px">{\n}
+  Дата и время заказа: {$datetime}{\n}
+</div>{\n}
+<br/>{\n}
+<table style="font-family:Arial, Helvetica; font-size:12px" border="0"
+	   cellpadding="2">{\n}
+  <tbody>{\n}
+	<tr>{\n}
+	  <td>Номер заказа:</td>{\n}
+	  <td>{$order_id}</td>{\n}
+	</tr>{\n}
+	<tr>{\n}
+	  <td>ФИО:</td>{\n}
+	  <td>{$name} {$family}</td>{\n}
+	</tr>{\n}
+	<tr>{\n}
+	  <td>Форма оплаты:</td>{\n}
+	  <td>{$paytype}</td>{\n}
+	</tr>{\n}
+	<tr>{\n}
+	  <td>Вид доставки:</td>{\n}
+	  <td>{$deliverytype}</td>{\n}
+	</tr>{\n}
+	<tr>{\n}
+	  <td>Адрес доставки:</td>{\n}
+	  <td>{$addr}</td>{\n}
+	</tr>{\n}
+	<tr>{\n}
+	  <td>Стоимость доставки:</td>{\n}
+	  <td>{$deliverysum}</td>{\n}
+	</tr>{\n}
+	<tr>{\n}
+	  <td>Реквизиты:</td>{\n}
+	  <td>{$bankaccount}</td>{\n}
+	</tr>{\n}
+	<tr>{\n}
+	  <td>Контактный телефон:</td>{\n}
+	  <td>{$phone}</td>{\n}
+	</tr>{\n}
+	<tr>{\n}
+	  <td>Контактный email:</td>{\n}
+	  <td>{$email}</td>{\n}
+	</tr>{\n}
+    {if $ekk}
+	<tr>{\n}
+	  <td>Номер карты F-клуба:</td>{\n}
+	  <td>{$ekk}</td>{\n}
+	</tr>{\n}
+    {/if}
+	<tr>{\n}
+	  <td>Комментарий:</td>{\n}
+	  <td>{$comment}</td>{\n}
+	</tr>{\n}
+  </tbody>{\n}
+</table>{\n}
+{\n}
+<br/><br/>{\n}
+{\n}
+<table style="font-family:Arial,Helvetica;font-size:12px;border:1px
+			  solid black" border="1" cellspacing="0" cellpadding="5"
+	   width="100%">{\n}
+  <tbody>{\n}
+	<tr style="font-weight:bold">{\n}
+	  <td>Артикул</td>{\n}
+	  <td>Название</td>{\n}
+	  <td>Цена , руб</td>{\n}
+	  <td>Кол-во</td>{\n}
+	  <td align="right">Сумма, руб</td>{\n}
+	</tr>{\n}
+	{foreach $product in $products}
+	{call product data="$product" /}
+	{/foreach}
+	<tr style="font-weight:bold">{\n}
+	  <td colspan="4">Доставка:</td>{\n}
+	  <td align="right">{$deliverysum}</td>{\n}
+	</tr>{\n}
+	<tr style="font-weight:bold">{\n}
+	  <td colspan="4">Итого:</td>{\n}
+	  <td align="right">&nbsp;{$itogo}</td>{\n}
+	</tr>{\n}
+  </tbody>{\n}
+</table>{\n}
+{\n}
+<br/>
+<b>Еще бонусы!</b><br/>
+Дарим 4Gb памяти за Ваше мнение! Не упустите, все подробности <a href="http://www.320-8080.ru/articles/pust_zavidujut">здесь</a>.
+<br/><br/>
+<b>Обратная связь:</b><br/>
+Оцените работу Интернет магазина <a href="http://320-8080.ru">www.320-8080.ru</a> <a href="http://market.yandex.ru/shop-opinions.xml?shop_id=19790&cmid=157122792">здесь</a>. Будем благодарны за любые оценки.<br/>
+Если у вас остались вопросы по доставке, то вам <a href="http://www.320-8080.ru/delivery">сюда</a>.<br/>
+Если у вас остались вопросы по оплате, то вам <a href="http://www.320-8080.ru/payment">сюда </a>.<br/>
+Если вы не знаете, как к нам пройти, то посмотреть карту проезда можно <a href="http://www.320-8080.ru/kakdobratsja">здесь</a>.<br/>
+<br/><br/>
+<b>Давайте дружить!</b><br/>
+•  <a href="http://vkontakte.ru/zifry3208080">Мы Вконтакте</a> (регулярные конкурсы и призы)<br/>
+•  <a href="http://www.facebook.com/3208080.ru">Мы на Фейсбуке</a><br/>
+•  <a href="http://www.twitter.com/3208080_ru">Мы в твиттере</a> (ЦиFровые новости в реальном времени!)<br/>
+•  <a href="http://www.320-80-80.livejournal.com">Читайте блог "ЦиFромана" в ЖЖ</a><br/>
+
+
+{/template}
+
+
+{template phonemail}
+{$phone}
+{/template}

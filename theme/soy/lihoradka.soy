@@ -1,0 +1,21 @@
+{namespace soy.lihoradka}
+
+
+
+{template item}
+
+<div class="mob-sale-item">
+  <div class="mob-sale-ava">
+    <a href="/{$articul}"><img src='/pic/goods/{$articul}/{$picname}' alt='{$nameseo}'></a>
+  </div>
+  <div class="mob-sale-text">
+    <div class="mob-sale-info">
+      <span><a href="/{$articul}">{$nameseo}</a></span>
+    </div>
+    <div class="mob-sale-price">
+      <b>{$siteprice} р.</b>
+    </div>
+  </div>
+</div>
+
+{/template}

@@ -1,0 +1,75 @@
+{namespace soy.yml}
+
+{template xml}
+<?xml version="1.0" encoding="utf-8"?>{\n}
+<!DOCTYPE yml_catalog SYSTEM "shops.dtd">{\n}
+<yml_catalog date="{$datetime}">{\n}
+  <shop>{\n}
+	<name>{$marketname}</name>{\n}
+	<company>{$marketcompany}</company>{\n}
+	<url>{$marketurl}</url>{\n}
+	<currencies>{\n}
+      <currency id="RUR" rate="1"/>{\n}
+    </currencies>{\n}
+
+    <categories>{\n}
+	  {foreach $category in $categoryes}
+	  {call category data="$category" /}
+	  {/foreach}
+    </categories>{\n}
+
+	<offers>{\n}
+	  {$offers |noAutoescape}
+	</offers>{\n}
+
+  </shop>{\n}
+</yml_catalog>{\n}
+{/template}
+
+{template category}
+<category id="{$id}" {if $parent != 0} parentId="{$parent}"{/if}>{$name |noAutoescape}</category>{\n}
+{/template}
+
+{template offer}
+<offer id="{$articul}" available="true">{\n}
+  <url>http://www.320-8080.ru/{$articul}</url>{\n}
+  <price>{$price}</price>{\n}
+  <currencyId>RUR</currencyId>{\n}
+  <categoryId>{$category}</categoryId>{\n}
+  {if $picture}
+  <picture>http://www.320-8080.ru/pic/small/{$articul}/{$picture}</picture>{\n}
+  {/if}
+  <delivery>true</delivery>{\n}
+ <local_delivery_cost>{if $deliveryprice}{$deliveryprice}{else}300{/if}</local_delivery_cost>
+  <name>{$name}</name>{\n}
+  {if $vendorcode}
+  <vendorCode>{$vendorcode}</vendorCode>{\n}
+  {/if}
+  <description>{if $description}{$description}{/if}</description>{\n}
+  <sales_notes>Бонусы на карту F-клуба</sales_notes>{\n}
+</offer>{\n}
+{/template}
+
+
+
+
+{template offer-full}
+<offer id="{$articul}" type="vendor.model"  available="true">{\n}
+  <url>http://www.320-8080.ru/{$articul}</url>{\n}
+  <price>{$price}</price>{\n}
+  <currencyId>RUR</currencyId>{\n}
+  <categoryId>{$category}</categoryId>{\n}
+  {if $picture}
+    <picture>http://www.320-8080.ru/pic/small/{$articul}/{$picture}</picture>{\n}
+  {/if}
+  <delivery>true</delivery>{\n}
+  <local_delivery_cost>{if $deliveryprice}{$deliveryprice}{else}300{/if}</local_delivery_cost>{\n}
+  <name>{$name}</name>{\n}
+  /* <typePrefix>{if $typeprefix}{$typeprefix}{/if}</typePrefix>{\n} */
+  <vendor>{if $vendor}{$vendor}{/if}</vendor>{\n}
+  <vendorCode>{if $vendorcode}{$vendorcode}{/if}</vendorCode>{\n}
+  {if $model}<model>{$model}</model>{\n}{/if}
+  <description>{if $description}{$description}{/if}</description>{\n}
+  <sales_notes>Бонусы на карту F-клуба</sales_notes>{\n}
+</offer>{\n}
+{/template}

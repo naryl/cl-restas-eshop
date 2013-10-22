@@ -1,0 +1,824 @@
+{namespace soy.product}
+
+/* Здесь шаблоны для вывода опций, групп опций и всего блока опций.
+Они подставляются друг в друга и выглядят интуитивно простыми.
+|noAutoescape рядом с именем переменной означает не заменять теги,
+например "<" ">" их html-эквивалентами "&lt;" "&gt;" */
+
+  {template test}
+		{call credit data="all" /}
+	{/template}
+	{template delivery-text}
+	  <noindex>
+	  /*дляакции*/
+	  <p><strong>АКЦИЯ:</strong> “Бесплатная доставка!”</br>
+	  Распространяется на следующие группы товаров: телевизоры LG и Samsung диагональю от 32 дюймов, специальные товары с шильдиком "Бесплатная доставка", а также товары дня с главной страницы сайта, бесплатная доставка осуществляется только в пределах Санкт-Петербурга.</p>
+/* <h2>АКЦИЯ: Доставка курьером 100 рублей!</h2> */
+/* <p>Весь апрель при покупке любого товара из ряда групп, представленных в нашем магазине, вы можете заказать доставку до квартиры всего за 100 рублей</p> */
+/* <h2>Доставка в пункты выдачи</h2> */ /* pickpoint */
+/* <p>Товар доставляется в специализированную точку выдачи, откуда Вы забиратее его в удобное для Вас время.  Доставка осуществляется на следующий день после заказа. При наличии заказанного Вами товара менеджер нашего контакт-центра позвонит Вам и подтвердит доставку. По прибытии Вашего товара на пункт выдачи Вы получаете SMS. Оплата товара осуществляется на месте. */
+/* Так же, при выборе этой опции доставки на товар действуют ограничения:  максимальные габариты составляют 36х36х60, а максимальная стоиость до 15 тысяч рублей. */
+/* Подробнее про удаленные пункты выдачи Вы можете прочитать <a href="/articles/PickPoint_news">здесь</a></p> */
+      <h2>Доставка "Стандарт"</h2>
+      <p>Стоимость доставки "Стандарт" составляет <b>300 рублей</b> для некрупногабаритных товаров по Санкт-Петербургу. Доставка осуществляется <b>на следующий после заказа день</b>. При наличии заказанного Вами товара менеджер нашего контакт-центра позвонит Вам и подтвердит доставку. Вы также можете выбрать удобный для Вас день доставки (не позднее 5 дней с момента заказа). Время доставки: ежедневно с 11-00 до 19-00 часов. С Вами обязательно свяжется диспетчер для согласования более точного интервала доставки (2-3 часа).</p>
+      /* <h2>Дополнительные тарифы на доставку</h2>*/
+      <ul>
+        /*<li>«День в день» (400 рублей) – Вы получаете товар в тот же день, в какой его и заказали</li>*/
+        /*<li>«Точное время» (500 рублей) – Вы получаете товар на следующий день в указанном Вами интервале в 15 минут</li>*/
+        /*<li> «F-экспресс» (600 рублей) – Вы получаете товар в тот же день в течение 3 часов</li>*/
+      </ul>
+      <h2>Доставка крупногабаритных товаров</h2>
+      Доставка крупногабаритной бытовой техники составляет 500 рублей по Санкт-Петербургу. Кроме того, при доставке крупногабаритных товаров оплачивается также работа грузчика в соответствии с габаритами заказа:
+      <ul>
+         <li>КБТ до 60 кг - 200 рублей к стоимости доставки при наличии лифта и 100 рублей за этаж к стоимости доставки в отсутствие лифта</li>
+         <li>КБТ от 60 до 90 кг - 300 рублей к стоимости доставки при наличии лифта и 150 рублей за этаж к стоимости доставки в отсутствие лифта</li>
+		 <li>КБТ более 90 кг - 400 рублей к стоимости доставки при наличии лифта и подъем без лифта не осуществляется</li>
+      </ul>
+	  <p>Стоимость доставки телевизора с диагональю больше 51 дюйма составляет 500 рублей.</p>
+	  <p>По условиям стандартной доставки везется три крупногабаритных товара.</p>
+      <h2>Доставка по Ленинградской области</h2>
+      Стоимость доставки за пределы Санкт-Петербурга пропорциональна расстоянию, на которое осуществляется доставка (от 500 рублей).
+
+      <h2>Адрес Магазина для самовывоза</h2>
+      <ul>
+        <li><a href="/kakdobratsja">Левашовский проспект, 12</a> - время работы 24 часа (отгрузка интернет-заказов осуществляется с 10:00 до 22:00) </li>
+        <li><a href="/kakdobratsja">Петергоф, ул.Ботаническая 18, к.3</a> - время работы с 11:00 до 21:00, кроме воскресенья</li>
+      </ul>
+      <a href="/delivery">Более подробно о доставке →</a>
+	  {/template}
+
+	  {template warranty-text}
+		  <p class="h3">Возврат и гарантия</p>
+	    <p><b>Возврат товара в нашем интернет-магазине</b></p>
+	    <p>Вы можете отказаться от товара надлежащего качества в любое время до его передачи, а после передачи товара - в течение 7 календарных дней в соответствии с правилами продажи товаров дистанционным способом, утвержденными Постановлением Правительства РФ № 612 от 27.09.2007 г.
+		    Возврат товара надлежащего качества возможен в случае, если сохранены его товарный вид (ярлыки, пломбы, упаковка и т.п.), потребительские свойства, а также кассовый и товарный чеки.
+		    При отказе от переданного Вам товара надлежащего качества в течение указанного выше срока мы не возвращаем стоимость доставки товара от магазина к Вам.</p>
+	    <p><b>Возврат товара для магазинов и точек выдачи</b></p>
+	    <p>Вы можете вернуть товар надлежащего качества, если он не подошел по форме, габаритам, фасону, расцветке, размеру или комплектации в течение 14 календарных дней после покупки, за исключением товаров, включенных в Перечень товаров, не подлежащих обмену или возврату, утвержденному Постановлением Правительства РФ № 55 от 19.01.1998 г.
+		    Обмен и возврат товара надлежащего качества возможен в случае, если указанный товар не был в употреблении, сохранены его товарный вид (ярлыки, пломбы, упаковка и т.п.), потребительские свойства, а также документ, подтверждающий факт и условия покупки указанного товара (кассовый и товарный чеки, гарантийное обязательство).</p>
+	    <p class="h3">Гарантия</p>
+	    <p><b>Вы купили технику в нашем интернет-магазине, но что-то пошло не так?</b></p>
+	    <p>Мы торгуем только сертифицированной продукцией, поэтому на любой товар, который мы продаем, действует гарантия. В течение срока гарантии Вы можете обращаться в сервисные центры производителя. Для экономии Вашего времени мы собрали информацию о сервисных центрах, с которыми мы сотрудничаем <a href="/listservice">здесь</a>.
+		    Что-то не так с персональным компьютером, который Вы купили у нас?</p>
+	    <p>Компания "ЦиFры" имеет свой собственный <a href="/servicecenter">Сервисный Центр</a>, в котором мы проводим бесплатное гарантийное обслуживание наших компьютеров. Наш сервисный центр расположен в Санкт-Петербурге по адресу Левашовский проспект дом 12. Время работы: с 10.00 до 22.00, ежедневно.</p>
+	    <p><a href="/warranty">Более подробно о гарантии...</a></p>
+    {/template} //warranty-text
+
+    {template likes-block}
+	    {literal}
+	      <div class="social_buttons">
+		      <div class="vkontakte like">
+			      <div id="vk_like"></div>
+			      <script type="text/javascript"> VK.Widgets.Like("vk_like", {type: "vertical"}, {/literal}"{$key}"{literal});</script>
+		          </div><!-- vkontakte -->
+		      <div class="google_plus like">
+			      <script type="text/javascript" src="https://apis.google.com/js/plusone.js">
+			        {lang: 'ru'}
+			      </script>
+			      <g:plusone size="tall" href={/literal}"/{$key}"{literal}></g:plusone>
+		          </div><!-- google -->
+		      <div class="facebook like">
+			      <div id="fb-root"></div>
+			      <script>(function(d, s, id) {
+			        var js, fjs = d.getElementsByTagName(s)[0];
+			        if (d.getElementById(id)) return;
+			        js = d.createElement(s); js.id = id;
+			        js.src = "//connect.facebook.net/ru_RU/all.js#xfbml=193818717336934";
+			        fjs.parentNode.insertBefore(js, fjs);
+			        }(document, 'script', 'facebook-jssdk'));</script>
+			      <div class="fb-like" data-href={/literal}"/{$key}"{literal} data-send="false" data-layout="box_count" data-show-faces="true"></div>
+		          </div><!-- facebook-->
+	      </div>
+	    {/literal}
+    {/template} //likes-block
+
+
+    {template pics-block}
+	    {foreach $pic in $pics}
+		    <div id="bigImage{index($pic)}" class="popup popup-bigImage">
+			    <p class="close"><a href="#close" rel="popup-close"><img src="/img/close.png" alt="*"/>Закрыть</a></p>
+			    <div class="yellow">
+				    <p class="h2">{$name}</p>
+			    </div>
+			    <div class="pic">
+				    <img src="/pic/big/{$articul}/{$pic}" alt="*"/>
+			    </div>
+		    </div>
+	    {/foreach}
+    {/template} //pics-block
+
+    {template econom-block}
+	    <div id="econom" class="full yellow-block">
+		    <div class="left">&nbsp;</div>
+		    <div class="center">
+			    <div class="item-buy">
+				    {if $active}
+					    <div class="item-col1">
+                {if not $formatsiteprice}
+                  <p>Цена уточняется.</p>
+                  {else}
+						    <p class="price"><big>{$formatsiteprice}</big> руб.</p>
+                {/if}
+						    <p class="note gray">цена для интернет-магазина</p>
+						    <p class="add">
+							    {$addproductcart|noAutoescape}
+							    {$addoneclick|noAutoescape}
+						    </p>
+					    </div>
+					    <div class="item-col2">
+						    {if not $equalprice}
+							    <p class="price gray"><big class="strike">{$formatstoreprice}</big> <span class="strike">руб.</span></p>
+						    <p class="note gray">цена в магазине</p>
+					    {/if}
+					    </div>
+					    <div class="item-col3">
+						    {if not $equalprice}
+							    <p class="price red"><big>{$diffprice}</big> руб. <big class="gray">({$procent}%)</big></p>
+						    <p class="note red">экономия</p>
+					    {/if}
+					    {if not $predzakaz}
+						    <p class="deliver"><big>Доставим завтра, возможен <a href="kakdobratsja" target="blank">самовывоз.</a></big></p>
+						    {else}
+						    <p class="deliver"><big>Сроки поступления {$name} уточняйте у наших операторов.</big></p>
+					    {/if}
+					    </div>
+				    <p class="str"></p>
+				    {else}
+			    {/if}
+			    </div>
+		    </div>
+		    <div class="right">
+		    </div>
+	    </div>
+    {/template} //econom-block
+
+    {template credit}
+	    <div id="credit" class="full grey-block credit-block">
+		    <div class="left">&nbsp;</div>
+		    <div class="right2">
+			    <p class="h2">Купить {$name} с большей выгодой?
+				    <ul class="credit-list">
+					    <li>
+						    <var class="num">1</var>
+						    <big class="title">Купить {$name} используя карту F-клуба и получить бонусы!</big>
+						    <p>Если у Вас есть карта участника F-клуба, не забудьте воспользоваться ей при покупке! Это важно, ведь с ее помощью Вы сможете зарабатывать бонусы за каждый купленный товар! <a href="/bonus">Подробности здесь!</a>
+					    </li>
+					    <li>
+						    <var class="num">2</var>
+						    <big class="title">Забрать {$name} в магазине самостоятельно</big>
+						    <p class="shops-p">Если вы не хотите ждать курьера, Вы можете забрать товар в наших магазинах самостоятельно уже через 1 час при наличии товара в интересующем Вас магазине!  <a href="/address" class="js" rel="shops-show">Адрес Магазина</a>.</p>
+						    <div class="shops-block shops-hidden">
+							    <p><b>Левашовский пр-т, 12</b><br/>24 часа <a href="kakdobratsja">карта проезда</a></p>
+							    <p><b>Петергоф, ул. Ботаническая, д.18,
+									    к.3.</b><br/>11:00-21:00, выходной - воскресенье <a href="kakdobratsja">карта проезда</a></p>
+						    </div>
+					    </li>
+					    <li>
+						    <var class="num">3</var>
+						    <big class="title">Купить {$name} в кредит</big>
+						    <p>Хотите забрать товар уже сегодня, а заплатить потом? Или взять комфортный кредит на 10 месяцев?  Нет проблем! Подберите наиболее подходящие Вам кредитные условия в нашем магазине на <a href="/kakdobratsja">Левашовском 12</a>!</p>
+					    </li>
+				    </ul>
+		    </div>
+	    </div>
+
+    {/template}
+
+    {template option}
+	    <tr>{\n}
+		    <th>{$name}:</th>{\n}
+		    <td>{$value | noAutoescape}</td>{\n}
+	    </tr>
+    {/template}
+
+    {template optgroup}
+	    <p class="h5">{$name}</p>{\n}
+	    <table class="tech-specs">{\n}
+		    {foreach $option in $options}{\n}
+		    {$option |noAutoescape}{\n}
+	    {/foreach}{\n}
+	    </table>
+    {/template}
+
+    {template optlist}
+	    {foreach $optgroup in $optgroups}
+        {$optgroup |noAutoescape}
+      {/foreach}
+    {/template}
+
+
+    {template breadcrumbtail}
+	    &nbsp;
+    {/template}
+
+    {template breadcrumbelt}
+	    <a href="{$key}">{$val}</a>&nbsp;/&nbsp;
+    {/template}
+
+    {template breadcrumbs}
+	    <a href="/">Главная</a>&nbsp;/&nbsp;
+	    <a href="/catalog">Каталог</a>&nbsp;/&nbsp;
+	    {foreach $breadcrumbelt in $breadcrumbelts}
+		    {call breadcrumbelt data="$breadcrumbelt" /}
+	    {/foreach}
+	    {call breadcrumbtail data="$breadcrumbtail" /}
+    {/template}
+
+    {template keyoptions}
+	    <tr>
+		    <th>{$optname}</th>
+		    <td>{$optvalue}</td>
+	    </tr>
+    {/template}
+
+    {template best-product}
+	    <li class="vintage-best-item">{\n}
+		    <div class="pic">{\n}
+			    <a href="/{$articul}">{\n}
+				    <img src="/pic/middle/{$articul}/{$pic}" alt="{$name}"/>{\n}
+			    </a>{\n}
+		    </div>{\n}
+		    <div class="info">{\n}
+			    <p class="h2">{\n}
+				    <a href="/{$articul}">{\n}
+					    {$name}</a>{\n}
+			    </p>{\n}
+			    <big class="price">{$showsiteprice}<var>руб.</var></big>{\n}
+			    <span class="add">{\n}
+				    {$buttonaddcart | noAutoescape}
+			    </span>{\n}
+			    <small class="price-old">{\n}
+				    {$showprice}  руб.</small>{\n}
+		    </div>{\n}
+	    </li>{\n}
+    {/template}
+
+    {template best}
+	    <div class="vintage-best">{\n}
+		    <div class="hspace">{\n}
+			    <p class="h2">{\n}
+				    Лучшие цены <span>{\n}
+					    &mdash; на сайте дешевле, чем в магазинах</span>{\n}
+			    </p>{\n}
+		    </div>{\n}
+		    <ul class="vintage-best-catalog">{\n}
+			    {foreach $item in $items}
+				    {call best-product data="$item" /}
+			    {/foreach}
+		    </ul>{\n}
+	    </div>{\n}
+	    {\n}
+    {/template}
+
+    {template similar-products}
+	    {if $products}
+		    <div class="similar-products-title">
+			    <div class="hspace">{\n}
+				    <p class="h2" id="bestproducts">{\n}
+					    Вас могут заинтересовать товары: <span></span>{\n}
+				    </p>{\n}
+			    </div>{\n}
+		    </div>
+		    <ul class="catalog catalog-2">{\n}
+			    {foreach $product in $products}
+				    {$product | noAutoescape}
+			    {/foreach}
+		    </ul>{\n}
+	    {/if}
+    {/template} //similar-products
+
+    {template otherelt}
+      <td rel="/{$articul}" class="product">
+	      <div class="bg">
+		      <div class="head">
+			      <div class="area">
+				      <p class="rating rating5"><i></i></p>
+				      <div class="clr"></div>
+			      </div>
+		      </div>
+		      <div class="midd">
+			      <div class="image">
+				      <a href="/{$articul}">
+					      {if $firstpic}
+						      <img src="/pic/middle/{$articul}/{$firstpic}" alt="Фото"/>
+					        {else}
+						      <img src="/img/temp/empty-foto.jpg" width="225" alt="Фото"/>
+					      {/if}
+				      </a>
+			      </div>
+			      <div class="title" rel="link">
+				      <h2>
+					      <a href="/{$articul}">{$name}</a>
+				      </h2>
+			      </div>
+		      </div>
+		      <div class="foot">
+			      <div class="price">
+				      <span class="new black"><b>{$price}</b> руб.</span>
+			      </div>
+			      <div class="buy" rel="link">
+				      <a onclick="$.addProduct('{$articul}','{$group_id}', '{$name}', {$price},1,'/{$articul}','/pic/small/{$articul}/{$firstpic}'); return false" href="#add_product_buy" class="fancybox-buy-product button black">
+					      <img src="/img/buy-icon.png" alt="buy">
+					      <span>В корзину</span>
+				      </a>
+			      </div>
+			      <div class="clr"></div>
+		      </div>
+	      </div>
+      </td>
+    {/template}
+
+    {template others}
+	    <div class="full" id="other_items">
+		    <div class="main_title">
+			    <h2>
+				    <span class="black p50">Другие модели</span>
+				    <span class="black p50">Вместе с этой моделью часто смотрят</span>
+			    </h2>
+		    </div>
+		    <div class="wrap">
+			    <table cellspacing="0" width="100%">
+				    <tr>
+					    {foreach $other in $others}
+						    {call otherelt data="$other" /}
+					    {/foreach}
+				    </tr>
+			    </table>
+		    </div>
+	    </div>
+    {/template}
+
+
+    {template jcarousel-items}
+	    <div class="carousel_big acc_carousel carousel_outer">
+		    <button class="carousel_left"></button>
+		    <button class="carousel_right"></button>
+		    <div class="carousel_wrap">
+			    <ul>
+				    {foreach $item in $items}
+					    <li rel="/{$item.articul}" class="product">
+						    <div class="bg">
+							    <div class="head">
+								    <div class="group" rel="link">
+									    <a href="/{$item.grouplink}">{$item.groupname}</a>
+								    </div>
+							    </div>
+							    <div class="midd">
+								    <div class="image">
+									    <a href="/{$item.articul}">
+										    {if $item.pic}
+											    <img src="/pic/middle/{$item.articul}/{$item.pic}" alt="{$item.name}"/>
+										      {else}
+									  		  <img src="/img/temp/empty-foto.jpg" width="225" alt="Фото"/>
+										    {/if}
+									    </a>
+								    </div>
+								    <div class="title">
+									    <h2>
+										    <a href="/{$item.articul}">{$item.name}</a>
+									    </h2>
+								    </div>
+							    </div>
+							    <div class="foot">
+								    <div class="price">
+									    <span class="new"><b>{$item.showsiteprice}</b> руб.</span>
+									    <span class="old">{$item.showprice} руб.</span>
+								    </div>
+								    <div class="buy">
+									    {$item.buttonaddcart | noAutoescape}
+								    </div>
+								    <div class="clr"></div>
+							    </div>
+						    </div>
+					    </li>
+				    {/foreach}
+			    </ul>
+		    </div><!-- carousel wrap -->
+	    </div><!-- carousel -->
+    {/template}
+
+    {template upsale}
+	    <div id="acc" class="full accessories">
+		    <p class="h2 h2-head">Аксессуары и сопутствующие товары для {$groupnameskl}</p>
+		    <div class="left">
+			    <ul class="acc-nav">
+				    {foreach $block in $upsaleblocks}
+					    <li {if isFirst($block)}class="active"{/if}>
+					    <a href="#acc{index($block)}">{$block.name}</a>
+					    </li>
+				    {/foreach}
+			    </ul>
+		    </div>
+		    <div class="right2 tabWrap">
+			    {foreach $block in $upsaleblocks}
+				    <div class="tab_v upsale_carousel">
+					    {call jcarousel-items}
+						    {param items: $block.items /}
+					    {/call}
+				    </div>
+			    {/foreach}
+		    </div>
+	    </div>
+    {/template} //upsale
+
+    {template content}
+	    <div class="content" id="middle">
+		    <div class="full">
+			    <div class="left">
+				    {$menu |noAutoescape}
+			    </div>
+			    <div class="right2">
+				    <p class="breadcrumbs">
+					    {$breadcrumbs |noAutoescape}
+				    </p>
+				    <div class="item-heading">
+					    <p class="h1">{$name}<var class="art">Арт.:{$articul}</var>{if $ymlname}<br><var class="yml-name">Код производителя: {$ymlname}</var>{/if}</p>
+					    {if $slogan}
+						    <p class="h2">{$slogan|noAutoescape}</p>
+					    {/if}
+				    </div>
+				    <div class="item-info">
+					    <div class="item-info-left">
+						    <div class="pic">
+				{if $freedelivery}
+	   				<img class="freedelivery" src="/img/banner-free.png">
+					{else}
+                  	{if $groupd_woman}
+                    	<p class="badge"><img src="/img/mart2012/plashka.png" alt="Товары для мужчин" style="width:auto"/></p>
+					          {else}
+							      {if $groupd}
+							        <div class="badge blue"> <span>распродажа</span> </div>
+							        {else}
+							        {if $bestprice}
+							           /* <div class="badge red"> <span>Лучшая цена!</span> </div>*/
+								        /* <p class="badge"><img src="/img/bestprice.png" alt="Лучшая цена" style="width:auto"/></p> */
+							        {/if}
+							      {/if}
+							    {/if}
+							  {/if}
+							    {if $firstpic}
+							    <table>
+							    	<tr>
+							    		<td>
+							    			<img src="/pic/goods/{$articul}/{$firstpic}" width="225" alt="Фото {$name}, картинка {$name}"/>
+							    		</td>
+							    	</tr>
+							    </table>
+							    <a rel='fancy_pics' title="{$name}" href="/pic/big/{$articul}/{$firstpic}">
+								    <var class="zoom"></var>
+							    </a>
+							    {else}
+								    <table>
+								    	<tr>
+								    		<td>
+								    			<img src="/img/temp/empty-foto.jpg" width="225" alt="Фото"/>
+								    		</td>
+								    	</tr>
+								    </table>
+							    {/if}
+						    </div>
+
+						    {if $firstpic}
+							    {if length($pics) > 0}
+								    <div class="block block-item-pics">
+									    <ul>
+										    {foreach $pic in $pics}
+											    <li>{\n}
+												    <a rel='fancy_pics' title="{$name}" href="/pic/big/{$articul}/{$pic}">{\n}
+													    <img src="/pic/minigoods/{$articul}/{$pic}" alt=""/>{\n}
+												    </a>{\n}
+											    </li>{\n}
+										    {/foreach}
+									    </ul>
+								    </div>
+							    {/if}
+						    {/if}
+						    <div class="block block-border block-warranty br5">
+							    <p class="h2">Гарантия {if $warranty}&mdash; {$warranty}{/if}</p>
+							    <p class="more"><a href="/warranty">Подробнее о гарантии</a></p>
+						    </div>
+						    {call likes-block}
+							    {param key: $articul /}
+						    {/call}
+					    </div>
+
+					    <div class="item-info-right">
+						    <div class="item-info-right-space">
+							    <div class="chars-small">
+								    <div  class="chars-left">
+									    <table class="chars-table">
+										    {foreach $keyoption in $keyoptions}
+											    {if $keyoption.optvalue}
+												    {if not $keyoption.optvalue == ''}
+													    <tr {if isLast($keyoption)}class="noborder"{/if}>
+													    <th>{$keyoption.optname}</th>
+													    <td>{$keyoption.optvalue}</td>
+													    </tr>
+												    {/if}
+											    {/if}
+										    {/foreach}
+										    <tr class="noborder">{\n}
+											    <th></th>{\n}
+											    <td></td>{\n}
+										    </tr>{\n}
+									    </table>
+								    </div>
+							    </div>
+							    {if $optlist}
+								    <p class="item-bigtext">
+									    <span class="link"><a class="js animate_scroll" href="#tech-real" rel="tech-link">Технические характеристики</a>&nbsp;&darr;</span>
+									    {if $upsaleinfo}
+										    <span class="link"><a class="js animate_scroll" href="#acc" rel="tech-link">Аксессуары</a>&nbsp;&darr;</span>
+									    {/if}
+								    </p>
+							    {/if}
+							    {if $vintage}
+								    <div class="item-buy">
+									    <!--noindex-->
+									    <p class="outs-and-shorts">К сожалению, такого товара больше нет.</p>
+									    <!--/noindex-->
+									    <p class="outs-and-shorts-small">Не расстраивайтесь!<br />
+										    Мы уже подобрали для Вас доступные аналоги - все они находятся в списке товаров, представленных <a href="#bestproducts">ниже</a>.<br />
+										    Также вы можете посетить наш <a href="/catalog">каталог</a>, чтобы самостоятельно выбрать то, что Вас интересует.<br />
+									    </p>
+								    </div>
+							    <p class="item-bigtext">
+								    <span class="link"><a class="js animate_scroll" href="#econom">Хотите сэкономить больше?</a></span>
+								    <span class="link"><a class="js animate_scroll" href="#credit">Купить в кредит</a></span>
+							    </p>
+							    {else} //$vintage
+							      <div class="item-buy">
+								    {if $active}
+									    <div class="item-col1">
+                        {if not $formatsiteprice}
+                          <p>Цена уточняется.</p>
+                          {else}
+										    <p class="price"><big>{$formatsiteprice}</big> руб.</p>
+                        {/if}
+										    <p class="note gray">цена для интернет-магазина</p>
+										    {if $bonuscount}
+                          {if $groupd}
+                            <p class="red note bonuscount">F-бонусы: <b>{$bonuscount}</b> /* x2 c 19 по 23 февраля бонусы удваиваются */</p>
+                          {else}
+                             <p class="red note bonuscount">F-бонусы: <b>{$bonuscount}</b></p>
+                          {/if}
+                        {/if}
+										    <p class="add">
+											    /* {if not $predzakaz} */
+												    {$addproductcart|noAutoescape}
+                          {if not $predzakaz}
+											      {$addoneclick|noAutoescape}
+                        {/if}
+										    </p>
+									    </div>
+									    {if not $predzakaz}
+                        <div class="fancybox-buy-block hide">
+                          <div class="ready">
+                            <p class="price"><big>{$formatsiteprice}</big> руб.</p>
+                            <p class="add">
+                              {$addproductcart|noAutoescape}
+                              {$addoneclick|noAutoescape}
+                            </p>
+
+                          </div>
+                          <div class="success hide">
+                            <p class="price">Товар добавлен в корзину!</p>
+                            <div class="button_border gold">
+                              <a href="/cart" class="button green">Оформить заказ</a>
+                            </div>
+                          </div>
+                        </div>
+                      {/if}
+									    <div class="item-col2">
+										    {if not $equalprice}
+											    <p class="price gray">
+												    <big class="strike">{$formatstoreprice}</big>
+												    <span class="strike">руб.</span>
+											    </p>
+										    <p class="note gray">
+											    цена в магазине
+										    </p>
+									    {/if}
+									    </div>
+									    <div class="item-col3">
+										    {if not $equalprice}
+											    <p class="price red"><big>{$diffprice}</big> руб. <big class="gray">({$procent}%)</big></p>
+										    <p class="note red">экономия</p>
+									    {/if}
+									    {if not $predzakaz}
+											  <p class="deliver"><big>Доставим завтра, возможен <a href="kakdobratsja" target="blank">самовывоз.</a></big></p>
+											  {else}
+										    <p class="deliver"><big>Сроки поступления {$name} уточняйте у наших операторов.</big></p>
+									    {/if}
+                      </div>
+									    {if not $predzakaz}
+										    <p class="str">В пределах
+											    Санкт-Петербурга.</p>
+										    {/if}
+										    {else}
+								        <!--noindex-->
+								    <p class="outs-and-shorts">Извините, {$name} уже купили.</p>
+								    <!--/noindex-->
+								    <p class="outs-and-shorts-small">Прямо сейчас можно заказать {$name}: по телефону (812) 320-8080, в системе он-лайн консультант, или просто написав письмо на <a href="mailto:shop@320-8080.ru">shop@320-8080.ru</a>.</p>
+							    {/if}
+							    </div>
+							    <p class="item-bigtext">
+								    <span class="link"><a class="js animate_scroll" href="#econom">Хотите сэкономить больше?</a></span>
+								    <span class="link"><a class="js animate_scroll" href="#credit">Купить в кредит</a></span>
+							    </p>
+						    {/if}
+						    </div>
+					    </div>
+					    {if $vintage} {$bestproducts | noAutoescape} {/if}
+				    </div>
+			    </div>
+
+			    <div class="center center-tech" id="tech">
+				    <ul class="tabs">
+					    /* {if $seotextflag} */
+						  /*   <li class="h2 {if not $optlist}active{/if}"><a href="#overview">Обзор</a></li> */
+					    /* {/if} */
+					    {if $optlist or $seotextflag}
+						    <li class="h2 active"><a href="#tech">
+                    {if $seotextflag}Обзор
+                    {if $optlist} и {/if}{/if}
+                    {if $optlist}Технические&nbsp;характеристики{/if}</a></li>
+					    {/if}
+
+					    <li class="h2  {if not $seotextflag}{if not $optlist}active{/if}{/if}"><a href="#delivery">Информация о доставке</a></li>
+					    <li class="h2"><a href="#moneyback">Возврат и гарантия</a></li>
+
+				    </ul>
+
+				    /* {if $seotextflag} */
+					  /*   <div class="tab tab-overview {if $optlist}tab-hidden{/if}"> */
+					  /*   <p>{$shortdescr|noAutoescape}</p> */
+					  /*   <p>{$descr|noAutoescape}</p> */
+					  /*   </div> */
+				    /* {/if} */
+
+				    {if $optlist or $seotextflag}
+              <div class="tab tab-tech">{\n}
+                {if $seotextflag}
+                  <span class="h2">Обзор {$name} </span><br/>
+                  <div class="readmore">
+                    {$shortdescr|noAutoescape}
+                  </div>
+                  <br/><br/>
+                {/if}
+                {if $optlist}
+                <span class="h2" id="tech-real">Технические характеристики {$name} </span><br/>
+                {$optlist |noAutoescape}
+`               {/if}
+                <div class="orferta">Уважаемые клиенты, описание товара {$name} на сайте носит информационный характер и не является публичной офертой. Производитель оставляет за собой право менять характеристики, комплектацию и внешний вид товара без предварительного уведомления продавца. Убедительно просим Вас при покупке {$name} проверять наличие желаемых функций и характеристик.</div>
+              </div>
+            {/if}
+
+				    <div class="tab tab-delivery {if $optlist or $seotextflag}tab-hidden{/if}">
+				    {call delivery-text /}
+				    </div>
+
+				    <div class="tab tab-moneyback tab-hidden">
+					    {call warranty-text /}
+				    </div>
+			    </div>
+
+			    <div class="right right-reviews">
+			    </div>
+
+		    </div>
+
+		    {call econom-block data="all" /}
+
+		    {call credit data="all" /}
+
+		    {if $upsaleinfo}
+			    {$upsaleinfo |noAutoescape }
+		    {/if}
+
+		    {$simulars |noAutoescape}
+		    {$others |noAutoescape}
+	    </div>
+
+	    {call pics-block}
+		    {param pics: $pics /}
+		    {param name: $name /}
+		    {param articul: $articul /}
+	    {/call}
+
+    {/template}
+
+{template marth8}
+<a href="/{$articul}">
+  <div class="product">
+  <p class="name_product">{$name}</p>
+    <img class="product_img" src="/pic/middle/{$articul}/{$pic}">
+    <div class="clear"></div>
+		{foreach $keyoption in $keyoptions}
+			{if $keyoption.optvalue}
+				{if not $keyoption.optvalue == ''}
+					<span class="opis">{$keyoption.optname}</span>
+					<span class="opis_to">{$keyoption.optvalue}</span>
+					<br/>
+				{/if}
+			{/if}
+		{/foreach}
+    <div class="clear"></div>
+     <p class="price">{$price}<span class="rub">руб.</span></p>
+ </div>
+ </a>
+{/template}
+
+
+
+
+{template free_delivery_items}
+	{foreach $item in $items}
+		{if isFirst($item)}
+			<tr>
+			<td colspan="2" class="item_min_free"><a alt="{$item.name}" class="link_min_free" href="/{$item.articul}">
+				<div class="hd_item_min_free big_title_free">{$item.name}</div>
+
+				<img class="img_item_free" src="/pic/middle/{$item.articul}/{$item.pic}">
+				<div class="ft_item_min_free">
+					<ul class="ul_item_big_free">
+						{foreach $keyoption in $item.keyoptions}
+							{if $keyoption.optvalue}
+								{if not $keyoption.optvalue == ''}
+								<li>
+									<div class="first_opis_item_min_free">{$keyoption.optname}</div>
+									<div class="two_opis_item_min_free">{$keyoption.optvalue}</div>
+								</li>
+								{/if}
+							{/if}
+						{/foreach}
+					</ul>
+				</div>
+				<div class="clear"></div>
+				<div class="price_item_min_free">{$item.price}<span class="rub_item_min_free">руб.</span>
+				</div>
+				</a>
+			</td>
+		</tr>
+
+		{/if}
+		{if index($item)%2 == 0}
+		<tr>
+		{/if}
+			<td class="item_min_free"><a class="link_min_free" href="/{$item.articul}">
+				<div class="hd_item_min_free">{$item.name}</div>
+				<div class="wrapper_img_item_min_free">
+					<img class="banner_img_item_min_free" src="/img/banner-free.png">
+					<img class="img_item_min_free" alt="{$item.name}" src="/pic/middle/{$item.articul}/{$item.pic}">
+				</div>
+				<div class="ft_item_min_free">
+					<ul class="ul_item_free">
+						{foreach $keyoption in $item.keyoptions}
+							{if $keyoption.optvalue}
+								{if not $keyoption.optvalue == ''}
+								<li>
+									<div class="first_opis_item_min_free">{$keyoption.optname}</div>
+									<div class="two_opis_item_min_free">{$keyoption.optvalue}</div>
+								</li>
+								{/if}
+							{/if}
+						{/foreach}
+					</ul>
+				</div>
+				<div class="price_item_min_free">{$item.price}<span class="rub_item_min_free">руб.</span>
+				</div>
+			</a>
+		{if index($item)%2 == 1}
+		</tr>
+		{/if}
+		{ifempty}
+		<p align=\"center\" color="red"><strong>Товаров нет =(</strong></p>
+	{/foreach}
+
+{/template}
+
+
+
+
+
+
+{template green_item}
+			<td class="item_min_free green_item"><a class="link_min_free" href="/{$item.articul}">
+				<div class="hd_item_min_free">{$item.name}</div>
+					<img class="img_item_min_free" alt="{$item.name}" src="/pic/middle/{$item.articul}/{$item.pic}">
+				<div class="price_item_min_free green_price">{$item.price}<span class="rub_item_min_free"> руб.</span>
+				</div>
+				</a>
+			</td>
+{/template}
+
+
+{template yellow_item}
+			<td class="item_min_free yellow_item"><a class="link_min_free" href="/{$item.articul}">
+				<div class="hd_item_min_free">{$item.name}</div>
+					<img class="img_item_min_free" alt="{$item.name}" src="/pic/middle/{$item.articul}/{$item.pic}">
+				<div class="price_item_min_free yellow_price">{$item.price}<span class="rub_item_min_free"> руб.</span>
+				</div>
+				</a>
+			</td>
+{/template}

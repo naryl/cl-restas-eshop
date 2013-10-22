@@ -1,0 +1,361 @@
+{namespace soy.catalog}
+
+{template seotext}
+  <div class="block models-notebook">
+    {$text |noAutoescape}
+  </div>
+{/template}
+
+
+{template rightblock2}
+  /*
+  <div class="block how-select">
+    <p class="h2">Вам может быть интересно</p>
+    <p class="item"><a href="article.html">Как выбрать комплектующие?</a></p>
+    <p>Советы по выбору оптимальной модели - на что важно обратить внимание?</p>
+    <p class="item"><a href="article.html">Цифровое обозрение</a></p>
+    <p>Анонсы новых моделей, которые скорко поступят в продажу.</p>
+  </div>
+  */
+{/template}
+
+{template rightblock1}
+  <div class="block">
+    <p class="h2">Надежно и комфортно</p>
+    <div class="olist">
+	    <ol>
+        <li>{\n}
+          <a href="/articles/new_plansheti"> Новинки</a>{\n}
+          <span class="text">Самые новые и эксклюзивные товары</span>
+        </li>{\n}
+        <li class="pct">{\n}
+          <a href="/warranty">Гарантия на все товары</a>{\n}
+          <span class="text">Только 100% белые и сертифицированные товары</span>
+        </li>{\n}
+        <li>
+		  <a href="/moneyback">Возврат без проблем</a>
+		  <span class="text">Вы можете вернуть товар в течение 7 дней без объяснения причин.</span>
+	      </li>
+	    </ol>
+	    <p class="more"><a href="/about">Подробнее о компании &rarr;</a></p>
+    </div>
+  </div>
+{/template}
+
+{template accessories}
+  /*
+  <p class="h2 h2-catalog-in">Аксессуары и дополнительное оборудование</p>
+  <ul class="catalog">
+    <li class="item block">
+	    <p class="place"><a href="catalog-in.html">Кабели</a>&nbsp;(28)</p>
+	    <div class="area">
+	      <p class="rating rating5"><i></i></p>
+	    </div>
+	    <div class="pic"><a href="item.html"><img src="img/temp/i27.jpg" alt="Фото"/></a></div>
+	    <div class="info">
+	      <p class="h2"><a href="item.html">Кабель EIDE133 круглый со спираль.неон.лампой 45см (NEN-3-IDERD)</a></p>
+	      <big class="price">690 <var>руб.</var></big>
+	      <span class="add"><a href="#add" onclick="return rAddCart('954854', '574', 'Asus K50ID', 24990.00, 1,'item.html','img/temp/s1.jpg');"><img src="img/cart-add.png" alt="В корзину"/></a></span>
+	    </div>
+	    <hr/>
+	    <ul class="filters-list">
+	      <li><a href="catalog-in.html">Кабели IDE,SATA</a>&nbsp;(9)</li>
+	      <li><a href="catalog-in.html">Кабели VGA, DVI</a>&nbsp;(15)</li>
+	      <li><a href="catalog-in.html">Кабели USB, FireWire</a>&nbsp;(4)</li>
+	      <li><a href="catalog-in.html">Кабели аудио, видео</a>&nbsp;(2)</li>
+	      <li><a href="catalog-in.html">Кабели питания</a>&nbsp;(12)</li>
+	    </ul>
+    </li>
+  </ul>
+  */
+{/template}
+
+{template vendorelt}
+  <li><a href="{$link}">{$vendor}</a>&nbsp;({$cnt})</li>
+{/template}
+
+{template producers}
+  <div class="producer-block">
+    <p class="h2">Производители
+      {if $vendorhiddenblocks}
+        <span class="switch switch-full">
+          <a rel="switch" href="#full">Полный список</a>
+        </span>
+      {/if}
+    </p>
+    <ul class="producer-list">
+      {foreach $vendorblock in $vendorblocks}
+        <li class="item">
+          <ul class="catalog-in-list">
+            {foreach $vendorelt in $vendorblock}
+              {call vendorelt data="$vendorelt" /}
+            {/foreach}
+          </ul>
+        </li>
+      {/foreach}
+    </ul>
+    <ul class="producer-list producer-list-collapsed">
+      {foreach $vendorblock in $vendorhiddenblocks}
+        <li class="item">
+          <ul class="catalog-in-list">
+            {foreach $vendorelt in $vendorblock}
+              {call vendorelt data="$vendorelt" /}
+            {/foreach}
+          </ul>
+        </li>
+      {/foreach}
+    </ul>
+  </div>
+{/template}
+
+{template filter}
+  <li><a href="/{$groupkey}/{$key}">{$name}</a>&nbsp;{$num | noAutoescape}</li>{\n}
+{/template}
+
+{template product}
+  <li class="item block">{\n}
+    <p class="place"><a href="/{$groupkey}">{$groupname}</a></p>{\n}
+    <div class="area">
+		/* <p class="rating rating4"><i></i></p> */
+    </div>
+    <div class="pic block">
+		  /* {if $groupd_holiday} */
+		    /* <p class="badge"><img src="/img/holiday.png" alt="Для отдыха" style="width:auto"/></p> */
+		    /* {else} */
+        {if $freedelivery}
+          <img class="freedelivery_mini" src="/img/banner-free.png">
+          {else}
+          {if $groupd_woman}
+            <p class="badge"><img src="/img/mart2012/plashka.png" alt="Товары для женщин" style="width:auto"/></p>
+            {else}
+            {if $groupd}
+              <div class="badge blue"> <span>распродажа</span> </div>
+              {else}
+              {if $bestprice}
+  							/* <div class="badge red"> <span>Лучшая цена!</span> </div> */
+                /* <p class="badge"><img src="/img/bestprice.png" alt="Лучшая цена" style="width:auto"/></p> */
+              {/if}
+            {/if}
+          /* {/if} */
+  		  {/if}
+       {/if}
+      <a href="/{$articul}"rel="nofollow"><img {if $firstpic}
+        src="/pic/middle/{$articul}/{$firstpic}"
+                                               alt="Фото {$name},
+                                                    картинка {$name}"
+                                               {else}
+                                               src="/img/temp/empty-middle-foto.jpg"
+                                               alt="Фото"
+                                             {/if}
+                                             /></a></div>{\n}
+
+    <div class="info">{\n}
+		  <p class="h2"><a href="/{$articul}">{$name}</a><var class="art">Арт:{$articul}</var></p>{\n}
+      <p><em>{$promotiontext |noAutoescape}</em></p>
+      <p>
+        {if $ymlname}<var class="yml-name">Код производителя: {$ymlname}</var><br/>{/if}
+			  {foreach $keyopt in $keyopts}
+          <i>{$keyopt.optgroup}</i> {$keyopt.optvalue}{if not isLast($keyopt)}{$keyopt.optunits},{/if}
+			  {/foreach}
+      </p>
+
+      {if $bestprice}
+        <big class="price price-red">{$formatprice} <var>руб.</var></big>{\n}
+        <big class="price price-old">{$formatstoreprice} <var>руб.</var></big>{\n}
+        {else}
+		    <big class="price">{$formatprice} <var>руб.</var></big>{\n}
+      {/if}
+		  <span class="add">
+        {$oneclickbutton|noAutoescape}
+        {$addbutton|noAutoescape}
+      </span>{\n}
+    </div>{\n}
+  </li>{\n}
+{/template}
+
+{template group}
+  <li class="item block">{\n}
+    <p class="place"><a href="{$key}">{$name}</a>&nbsp;({$cnt})</p>{\n}
+    <div class="pic"><a href="/{$key}"rel="nofollow"><img src="{$pic}" alt="{$name}"/></a></div>{\n}
+	  <hr/>{\n}
+	  <ul class="filters-list">{\n}
+		  {foreach $filter in $filters}
+		    {call filter data="$filter" /}
+		  {/foreach}
+	  </ul>{\n}
+  </li>{\n}
+{/template}
+
+{template centergroup}
+  {$producers |noAutoescape}
+  {foreach $group in $groups}
+    {if index($group)%2 == 0}
+      <ul class="catalog">{\n}
+    {/if}
+    {call group data="$group" /}
+    {if isLast($group) or (index($group)%2 == 1)}
+      </ul>{\n}
+    {/if}
+  {/foreach}
+
+  {$accessories |noAutoescape}
+{/template}
+
+{template sortelt}
+  <a href="?{$url}" {if $active} class="active" {/if}>{$name}</a>{\n}
+{/template}
+
+{template printer-view}
+	<div class="sc_item">
+		<div class="sc_item_img">
+			<img src="/pic/middle/{$articul}/{$pic}" alt="{$name}">
+		</div>
+		<div class="sc_item_info">
+			<div class="sc_item_info_title">Подбор картриджа для:</div>
+			<a href="{$key}">{$name}</a>
+      {if $price}
+			  <span class="price"><b>{$price}</b> руб. </span>
+      {/if}
+		</div>
+		<div class="clr"></div>
+	</div>
+{/template} /*printer-view*/
+
+{template cartige-select}
+  <div id="select_catridges">
+	  <div class="sc_form gradient">
+		  <div class="sc_head">
+			  <div class="sc_title">Подбор картриджа</div>
+		  </div><!-- sc head -->
+		  <div class="sc_wrap">
+			  <form id="catriges_form">
+				  <table>
+					  <tr>
+						  <td width="45%">
+							  <div class="sc_parametrs">
+								  <div class="field">
+									  <select name="vendor" id="sc_vendor">
+										  <option disabled="true" selected="selected">Выберите бренд</option>
+										  {foreach $vendor in $vendors}
+										    <option value="{$vendor}">{$vendor}</option>
+										  {/foreach}
+									  </select>
+								  </div>
+								  <div class="field">
+									  <select name="type" disabled="true" id="sc_type">
+										  <option disabled="true" selected="selected">Выберите тип</option>
+									  </select>
+								  </div>
+								  <div class="field">
+									  <select name="printer-articul" disabled="true" id="sc_articul">
+										  <option disabled="true" selected="selected">Выберите модель</option>
+									  </select>
+								  </div>
+							  </div>
+						  </td>
+						  <td valign="middle" width="55%">
+							  <div class="sc_choose">
+								  <p class="sc_info">При помощи этой формы вы можете легко и быстро подобрать расходные материалы к вашей оргтехнике.</p>
+								  <button type="submit" class="button black" disabled="disabled" id="sc_submit">
+									  <span>Подобрать</span>
+								  </button>
+							  </div>
+						  </td>
+					  </tr>
+				  </table>
+			  </form>
+		  </div><!-- sc wrap -->
+	  </div><!-- sc form -->
+	  {if $printer}
+	    {$printer | noAutoescape}
+	  {/if}
+  </div><!-- select catridges -->
+{/template} /*cartrige-select*/
+
+{template centerproduct}
+  {if $cartrigeselect}
+	  {$cartrigeselect | noAutoescape}
+  {else}
+    {$producers |noAutoescape}
+  {/if}
+  {if $products}
+    <div class="pager">{\n}
+	    <p>{$pager |noAutoescape}</p>
+    </div>{\n}
+
+    <p class="sort-on">{\n}
+      Сортировать по:
+      {foreach $sort in $sorts}
+        {call sortelt data="$sort" /}
+      {/foreach}
+    </p>{\n}
+
+    <ul class="catalog catalog-2">{\n}
+/*    	<div class="main_title">
+    		<span class="red">Оригинальные</span> расходные материалы
+    		<a href="#supported_catridges" class="animate_scroll">(Показать совместимые)</a>
+    	</div>
+    	<div class="main_title" id="supported_catridges">
+    		<span class="black">Совместимые</span> расходные материалы
+    	</div> */
+      {foreach $product in $products}
+        {call product data="$product" /}
+      {/foreach}
+    </ul>{\n}
+    <p class="sort-on">{\n}
+      Сортировать по:
+      {foreach $sort in $sorts}
+        {call sortelt data="$sort" /}
+      {/foreach}
+    </p>{\n}
+    <div class="pager">{\n}
+      <p>{$pager |noAutoescape}</p>
+    </div>{\n}
+    {else}
+    <p>Извините, ни одного товара с похожими характеристиками не найдено. Попробуйте изменить параметры поиска.</p>
+  {/if}
+
+  {$accessories |noAutoescape}
+{/template}
+
+{template breadcrumbtail}
+  &nbsp;<span class="h1">{$val}</span>{\n}
+{/template}
+
+{template breadcrumbelt}
+  <a href="/{$key}">{$val}</a>&nbsp;/&nbsp;{\n}
+{/template}
+
+{template breadcrumbs}
+  <a href="/">Главная</a>&nbsp;/&nbsp;
+  <a href="/catalog">Каталог</a>&nbsp;/&nbsp;{\n}
+  {foreach $breadcrumbelt in $breadcrumbelts}
+    {call breadcrumbelt data="$breadcrumbelt" /}
+  {/foreach}
+  {call breadcrumbtail data="$breadcrumbtail" /}
+{/template}
+
+{template content}
+  <div class="content" id="middle">{\n}
+    <div class="full">{\n}
+		  <div class="left">{\n}
+			  {$menu |noAutoescape}
+		  </div>{\n}
+		  <div class="right2">{\n}
+			  <p class="breadcrumbs">{\n}
+          {$breadcrumbs |noAutoescape}
+        </p>{\n}
+
+		  </div>{\n}
+		  <div class="center">{\n}
+        {$subcontent |noAutoescape}
+		  </div>{\n}
+		  <div class="right">{\n}
+        {foreach $rightblock in $rightblocks}
+          {$rightblock |noAutoescape}
+        {/foreach}
+		  </div>{\n}
+    </div>{\n}
+    {$tradehits |noAutoescape}
+  </div>{\n}
+{/template}

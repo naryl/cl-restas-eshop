@@ -1,0 +1,428 @@
+{namespace soy.class_forms}
+
+{template formwindow}
+    <form id="editform" method="POST" action="/administration-super-panel/{$target}?key={$key | noAutoescape}{if $type}&type={$type}{/if}" class="form-horizontal">
+        {foreach $field in $fields}
+            {$field | noAutoescape}
+        {/foreach}
+        <div class="form-actions">
+            <input type="submit" class="btn btn-danger btn-large" value="Сохранить">
+            <input type="button" class="btn" value="Удалить">
+            <span class="control-title alert"></span>
+        </div>
+    </form>
+{/template}
+
+{template make-choose-key}
+    <form id="maketype" method="POST" action="/administration-super-panel/new-make" class="form-horizontal">
+        <label>Key</label> <input type="text" id="key" name="key">
+        <br/>
+        <label>Type</label>
+        <select name="type" form=maketype>
+            <option name="product">Product</options>
+            <option name="group">Group</options>
+        </select>
+        <div class="form-actions">
+            <input type="submit" class="btn btn-danger btn-large" value="Перейти">
+            <span class="control-title alert"></span>
+        </div>
+    </form>
+{/template} /* make-choose-key */
+
+{template group-tree-branch}
+<li {if $opened}class="open"{/if}>
+    <span class="group-name {if $children}folder{else}file{/if}">
+        <label for="{$hashkey}{$fieldname}" {if $checked}class="checked"{/if}>
+            <input type="checkbox" name="{$fieldname}" class="control-field" value="{$hashkey}" id="{$hashkey}{$fieldname}" class="group-check" {if $checked}checked{/if} />
+            {$name}
+        </label>
+    </span>
+    {if $children}
+        <ul class="nav nav-list nav-child">
+            {foreach $child in $children}
+                {$child | noAutoescape}
+            {/foreach}
+        </ul>
+    {/if}
+{/template}
+
+{template group-field}
+<div class="control-group" type="groups" name="{$name | noAutoescape}">
+    <div class="well">
+        <h3>{$name | noAutoescape}:</h3>
+        {$tree | noAutoescape}
+        <button type="button" class="control-send btn">Отправить</button>
+        <span class="control-title alert"></span>
+    </div>
+</div>
+{/template}
+
+{template group-tree}
+    <ul class="nav nav-list group-tree">
+        {foreach $root in $roots}
+            {$root | noAutoescape}
+        {/foreach}
+    </ul>
+{/template}
+
+{template parenting-page}
+<div class="page-header">
+    <h1><small>Всего продуктов:</small> {$length | noAutoescape}</h1>
+</div>
+<div class="row">
+    <button style="margin-bottom:10px; margin-left:30px;" class="btn btn-primary" id="all_select">Выделить все</button>
+    <form id="editform" method="POST" action="/administration-super-panel/parenting">
+        <div class="span8" id="products-list">
+            <table class="table table-striped table-bordered table-condensed">
+                {foreach $product in $products}
+                    {$product | noAutoescape}
+                {/foreach}
+            </table>
+        </div>
+        <div class="span4 span-fixed" id="products-group">
+            {$groups | noAutoescape}
+            <input type="submit" class="btn btn-large" value="Сохранить">
+        </div>
+    </form>
+</div>
+{/template}
+
+{template unparented-product-checkbox}
+<tr>
+    <td class="select">
+        <input type="checkbox" id="i{$key | noAutoescape}" name="PRODUCTS" value="{$key | noAutoescape}"/>
+    </td>
+    <td class="select">
+        <label for="i{$key | noAutoescape}">{$key | noAutoescape}</label>
+    </td>
+    <td class="cancel_select">
+        <span>{$name | noAutoescape}</span>
+    </td>
+</tr>
+{/template}
+
+{template bool-field}
+<div class="control-group" type="bool">
+    <label class="control-label" for="{$name | noAutoescape}">{$name | noAutoescape}</label>
+    <div class="controls">
+        <input type="checkbox" class="control-field" id="{$name | noAutoescape}" name="{$name | noAutoescape}" {if $disabled}disabled{/if} value="T" {if $checked}checked{/if} size="40">
+        <button type="button" class="control-send btn"{if $disabled} disabled="true"{/if}>Отправить</button>
+        <span class="control-title alert"></span>
+    </div>
+</div>
+{/template}
+
+{template string-field}
+<div class="control-group" type="string">
+    <label class="control-label" for="{$name | noAutoescape}">{$name | noAutoescape}</label>
+    <div class="controls">
+        <input type="text" class="control-field" id="{$name | noAutoescape}" name="{$name | noAutoescape}" {if $disabled}disabled{/if} value="{$value}" size="40" key="{$key | noAutoescape}">
+        <button type="button" class="control-send btn"{if $disabled} disabled="true"{/if}>Отправить</button>
+        <span class="control-title alert"></span>
+    </div>
+</div>
+{/template}
+
+{template integer-field}
+<div class="control-group" type="integer">
+    <label class="control-label" for="{$name | noAutoescape}">{$name | noAutoescape}</label>
+    <div class="controls">
+        <input type="text" class="control-field" id="{$name | noAutoescape}" name="{$name | noAutoescape}" {if $disabled}disabled{/if} value="{$value}" size="40" key="{$key | noAutoescape}">
+        <button type="button" class="control-send btn"{if $disabled} disabled="true"{/if}>Отправить</button>
+        <span class="control-title alert"></span>
+    </div>
+</div>
+{/template}
+
+{template nullable-integer-field}
+<div class="control-group" type="nullable-integer">
+    <label class="control-label" for="{$name | noAutoescape}">{$name | noAutoescape}</label>
+    <div class="controls">
+        <input type="text" class="control-field" id="{$name | noAutoescape}" name="{$name | noAutoescape}" {if $disabled}disabled{/if} value="{$value}" size="40" key="{$key | noAutoescape}">
+        <button type="button" class="control-send btn"{if $disabled} disabled="true"{/if}>Отправить</button>
+        <span class="control-title alert"></span>
+    </div>
+</div>
+{/template}
+
+{template data-field}
+<div class="control-group control-group-data" type="data" name="{$name | noAutoescape}">
+    <label class="control-label">{$name | noAutoescape}</label>
+    <div class="controls">
+        <input class="btn btn-primary option-add" type="button" value="Добавить">
+        <button type="button" class="control-send btn">Отправить</button>
+        <span class="control-title alert"></span>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Value</th>
+                    <th width="10"></th>
+                </tr>
+            </thead>
+            <tbody name="{$name | noAutoescape}">
+                {foreach $pair in $pairs}
+                    <tr>
+                        <td>
+                            <input type="text" name="name" value="{$pair.name}" class="control-field">
+                        </td>
+                        <td>
+                            <input type="text" name="value" value="{$pair.value}" class="control-field">
+                        </td>
+                        <td>
+                            <a href="#" class="remove-field">
+                                <i class="icon-remove animate"></i>
+                            </a>
+                        </td>
+                    </tr>
+                {/foreach}
+            </tbody>
+        </table>
+    </div>
+</div>
+{/template}
+
+{template texteditor}
+<div class="control-group" type="editor">
+    <label class="control-label" for="{$name}">{$name}</label>
+    <div class="controls">
+        <textarea id="ck-edit-field" class="control-field" id="{$name}" name="{$name}">{$value}</textarea>
+        <button type="button" class="control-send btn">Отправить</button>
+        <span class="control-title alert"></span>
+    </div>
+</div>
+{/template}
+
+{template texteditor-raw}
+<div class="control-group" type="string">
+    <label class="control-label" for="{$name}">{$name}</label>
+    <div class="controls">
+        <textarea id="{$name}" class="control-field" name="{$name}" rows="8">{$value}</textarea>
+        <button type="button" class="control-send btn">Отправить</button>
+        <span class="control-title alert"></span>
+    </div>
+</div>
+{/template}
+
+
+{template keyoptions-field}
+<div class="control-group control-group-option" type="options" name="{$name | noAutoescape}">
+    <label class="control-label">{$name | noAutoescape}</label>
+    <div class="controls">
+        <input class="btn btn-primary option-add" type="button" value="Добавить">
+        <button type="button" class="control-send btn">Отправить</button>
+        <span class="control-title alert"></span>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Группа опций</th>
+                    <th>Имя опции</th>
+                    <th>Короткое имя</th>
+                    <th>Единицы измерения</th>
+                    <th width="10"></th>
+                </tr>
+            </thead>
+            <tbody name="KEYOPTION">
+                {foreach $keyoption in $keyoptions}
+                    <tr>
+                        <td>
+                            <input type="text" name="optgroup" value="{$keyoption.optgroup}" class="control-field">
+                        </td>
+                        <td>
+                            <input type="text" name="optname" value="{$keyoption.optname}" class="control-field">
+                        </td>
+                        <td>
+                            <input type="text" name="showname" value="{$keyoption.showname}" class="control-field">
+                        </td>
+                        <td>
+                            <input type="text" name="units" value="{$keyoption.units}" class="control-field">
+                        </td>
+                        <td>
+                            <a href="#" class="remove-field">
+                                <i class="icon-remove animate"></i>
+                            </a>
+                        </td>
+                    </tr>
+                {/foreach}
+            </tbody>
+        </table>
+    </div>
+</div>
+{/template}
+
+
+{template catalog-keyoptions-field}
+<div class="control-group control-group-option" type="options" name="{$name | noAutoescape}">
+    <label class="control-label">{$name | noAutoescape}</label>
+    <div class="controls">
+        <input class="btn btn-primary option-add" type="button" value="Добавить">
+        <button type="button" class="control-send btn">Отправить</button>
+        <span class="control-title alert"></span>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Группа опций</th>
+                    <th>Имя опции</th>
+                    <th>Короткое имя</th>
+                    <th>Единицы измерения</th>
+                    <th width="10"></th>
+                </tr>
+            </thead>
+            <tbody name="CATALOG-KEYOPTION">
+                {foreach $keyoption in $keyoptions}
+                    <tr>
+                        <td>
+                            <input type="text" name="optgroup" value="{$keyoption.optgroup}" class="control-field">
+                        </td>
+                        <td>
+                            <input type="text" name="optname" value="{$keyoption.optname}" class="control-field">
+                        </td>
+                        <td>
+                            <input type="text" name="showname" value="{$keyoption.showname}" class="control-field">
+                        </td>
+                        <td>
+                            <input type="text" name="units" value="{$keyoption.units}" class="control-field">
+                        </td>
+                        <td>
+                            <a href="#" class="remove-field">
+                                <i class="icon-remove animate"></i>
+                            </a>
+                        </td>
+                    </tr>
+                {/foreach}
+            </tbody>
+        </table>
+    </div>
+</div>
+{/template}
+
+{template filter-hash-table-field}
+<div class="control-group" type="filters" name="{$name}">
+    <div class="well" id="filter-templates">
+        <h2>{$name}</h2>
+        <div class="form-actions">
+            <button class="btn btn-primary btn-primary btn-large" type="button" name="add" id="filter-add">Добавить фильтр</button>
+            <button type="button" class="control-send btn">Отправить</button>
+            <span class="control-title alert"></span>
+        </div>
+        <div id="filters-list">
+            {foreach $filter in $filters}
+            <div class="filter-item">
+                <div class="filter-type">
+                    <select name="" key="">
+                        <option disabled="true" selected="selected">Выберите тип</option>
+                        {foreach $type in $filter.types}
+                            <option name="{$type.value}" {if $type.selected}selected="selected"{/if}>{$type.name}</option>
+                        {/foreach}
+                    </select>
+                </div>
+                <div class="filter-fields">
+                    {foreach $field in $filter.fields}
+                        <div class="filter-field">
+                            {if $field.type == 'multi'}
+                                <label>{$field.label}</label>
+                                <a href="#" class="btn btn-success filter-option-add">Добавить поле</a>
+                                {foreach $variant in $field.variants}
+                                    <div class="filter-option">
+                                        <input type="text" name="{$variant.name}" value="{$variant.value}" class="control-field" placeholder="{$variant.placeholder}">
+                                        <a href="#" class="filter-option-remove animate">
+                                            <i class="icon-remove"></i>
+                                        </a>
+                                    </div>
+                                {/foreach}
+                            {else}
+                                <label>{$field.label}</label>
+                                <input type="text" name="{$field.name}" value="{$field.value}" class="control-field" placeholder="{$field.placeholder}">
+                            {/if}
+                        </div><!-- filter field -->
+                    {/foreach}
+                </div><!-- filter fields -->
+                <div class="filter-item-remove">
+                    <a href="#" class="btn btn-danger">Удалить фильтр</a>
+                </div>
+            </div><!-- filter item -->
+            {/foreach}
+            <div class="clr"></div>
+        </div><!-- filter list -->
+    </div><!-- filter templates -->
+</div><!-- control group -->
+/*
+<div id="table-data" class="well">
+    <div class="form-search">
+        <input type="text" class="input-medium search-query">
+        <button type="submit" class="btn">Поиск</button>
+    </div>
+    <table class="table table-bordered list-checked">
+        <thead>
+            <tr>
+                <th width="10">
+                    <input type="checkbox" class="check-all">
+                </th>
+                <th>Имя</th>
+                <th>Организация</th>
+                <th>Телефон</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>
+                    <input type="checkbox" class="check">
+                </td>
+                <td>Рашид</td>
+                <td>Цифры</td>
+                <td>320-8080</td>
+            </tr>
+            <tr>
+                <td>
+                    <input type="checkbox" class="check">
+                </td>
+                <td>Рашид</td>
+                <td>Цифры</td>
+                <td>320-8080</td>
+            </tr>
+            <tr>
+                <td>
+                    <input type="checkbox" class="check">
+                </td>
+                <td>Рашид</td>
+                <td>Цифры</td>
+                <td>320-8080</td>
+            </tr>
+            <tr>
+                <td>
+                    <input type="checkbox" class="check">
+                </td>
+                <td>Рашид</td>
+                <td>Цифры</td>
+                <td>320-8080</td>
+            </tr>
+            <tr>
+                <td>
+                    <input type="checkbox" class="check">
+                </td>
+                <td>Рашид</td>
+                <td>Цифры</td>
+                <td>320-8080</td>
+            </tr>
+            <tr>
+                <td>
+                    <input type="checkbox" class="check">
+                </td>
+                <td>Рашид</td>
+                <td>Цифры</td>
+                <td>320-8080</td>
+            </tr>
+        </tbody>
+    </table>
+    <div class="pagination">
+        <ul>
+            <li><a href="#">Prev</a></li>
+            <li class="active"><a href="#">1</a></li>
+            <li><a href="#">2</a></li>
+            <li><a href="#">3</a></li>
+            <li><a href="#">4</a></li>
+            <li><a href="#">Next</a></li>
+        </ul>
+    </div>
+</div>*/
+{/template}

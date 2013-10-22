@@ -1,0 +1,249 @@
+{namespace soy.admin-table}
+
+{template test-html}
+  <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+  <html>
+    <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+      <title>{if $title}{$title}{else}Table{/if}</title>
+      <link rel="stylesheet" type="text/css" href="/css/tosha/ext-all.css" />
+      <script type="text/javascript" src="/js/bootstrap.js"></script>
+      <script type="text/javascript" src="/js/ext-all.js"></script>
+    <script type="text/javascript">
+      {$script | noAutoescape}
+    </script>
+    <style>
+      .x-grid-cell-topic b {lb}
+      display: block;
+      {rb}
+      .x-grid-cell-topic .x-grid-cell-inner {lb}
+      white-space: normal;
+      {rb}
+      .x-grid-cell-topic a {lb}
+      color: #385F95;
+      text-decoration: none;
+      {rb}
+      .x-grid-cell-topic a:hover {lb}
+      text-decoration:underline;
+      {rb}
+	  .x-grid-cell-topic .x-grid-cell-innerf {lb}
+	  padding: 5px;
+	  {rb}
+	  .x-grid-rowbody {lb}
+	  padding: 0 5px 5px 5px;
+	  {rb}
+    </style>
+    </head>
+    <body>
+      <a href="content-table?type=groups">Groups-list</a>
+      <form id="editform" method="POST" action="/administration-super-panel/test-get-post">
+        <div id="ext-grid"></div>
+        <p class="submit">
+          <input type="submit" class="submit" value="send">
+        </p>
+      </form>
+    </body>
+  </html>
+{/template}
+
+{template group-table-js}
+  Ext.Loader.setConfig( {lb} enabled: true {rb} );
+  Ext.Loader.setPath('Ext.ux', '../ux');
+  Ext.require('Ext.data.Store');
+  Ext.require('Ext.grid.Panel');
+  Ext.require([
+    'Ext.grid.*',
+    'Ext.data.*',
+    'Ext.util.*',
+    'Ext.toolbar.Paging',
+    'Ext.ux.PreviewPlugin',
+    'Ext.ModelManager',
+    'Ext.tip.QuickTipManager'
+  ]);
+
+  Ext.define('Group', {lb}
+    extend: 'Ext.data.Model',
+    fields: [ {foreach $field in $fields}'{$field}'{if not isLast($field)}, {/if}{/foreach} ] /*'checkbox', 'name', 'key', 'numprod', 'order', 'active'*/
+  {rb});
+
+  Ext.onReady(function() {lb}
+    var pluginExpanded = true;
+    var groupStore = Ext.create('Ext.data.Store', {lb}
+      model: 'Group',
+      autoLoad: true,
+      pageSize: 50,
+      remoteSort: true,
+      proxy: {lb}
+        type: 'ajax',
+        url: '/administration-super-panel/getjson?type=groups',
+        reader: {lb}
+            type: 'json',
+            root: 'groups',
+            totalProperty: 'total'
+        {rb}
+      {rb}
+    {rb});
+
+    Ext.create('Ext.grid.Panel', {lb}
+        renderTo: document.getElementById("ext-grid"),
+        store: groupStore,
+        width: 700,
+        height: 500,
+        title: 'Groups',
+        columns: [
+            {lb}
+                text: 'Selected',
+                width: 30,
+                hideable: false,
+                dataIndex: 'checkbox'
+            {rb},
+            {lb}
+                text: 'Name',
+                width: 100,
+                hideable: false,
+                dataIndex: 'name'
+            {rb},
+            {lb}
+                text: 'Key',
+                width: 150,
+                dataIndex: 'key'
+            {rb},
+            {lb}
+                text: 'Number of products',
+                flex: 1,
+                dataIndex: 'numprod'
+            {rb},
+            {lb}
+                text: 'Order',
+                width: 150,
+                dataIndex: 'order'
+            {rb},
+            {lb}
+                text: 'Active',
+                width: 150,
+                sortable: false,
+                dataIndex: 'active'
+            {rb}
+        ],
+        bbar: Ext.create('Ext.PagingToolbar', {lb}
+            store: groupStore,
+            displayInfo: true,
+            displayMsg: 'Displaying groups {lb}0{rb} - {lb}1{rb} of {lb}2{rb}',
+            emptyMsg: "No groups to display",
+            items:[
+                '-'
+            ]
+        {rb})
+  {rb});
+  groupStore.loadPage(1);
+{rb});
+{/template} /*group-table-js*/
+
+{template table-column}
+  {lb}
+  text: '{$text}',
+  {if $width} width: {$width},{/if}
+  {if $hideable} hideable: {$hideable},{/if}
+  {if $flex}flex: {$flex},{/if}
+  {if $sortable}sortable: {$sortable},{/if}
+  dataIndex: '{$dataindex}'
+  {rb}
+{/template}
+
+
+
+{template table-js}
+  Ext.Loader.setConfig( {lb} enabled: true {rb} );
+  Ext.Loader.setPath('Ext.ux', '../ux');
+  Ext.require('Ext.data.Store');
+  Ext.require('Ext.grid.Panel');
+  Ext.require([
+    'Ext.grid.*',
+    'Ext.data.*',
+    'Ext.util.*',
+    'Ext.toolbar.Paging',
+    'Ext.ux.PreviewPlugin',
+    'Ext.ModelManager',
+    'Ext.tip.QuickTipManager'
+  ]);
+
+  Ext.define('{$name}', {lb}
+    extend: 'Ext.data.Model',
+    fields: [ {foreach $field in $fields}'{$field}'{if not isLast($field)}, {/if}{/foreach} ] /*'checkbox', 'name', 'key', 'numprod', 'order', 'active'*/
+  {rb});
+
+  Ext.onReady(function() {lb}
+    var pluginExpanded = true;
+    var {$type}Store = Ext.create('Ext.data.Store', {lb}
+      model: '{$name}',
+      autoLoad: true,
+      pageSize: {$pagesize},
+      remoteSort: {$remotesort},
+      proxy: {lb}
+        type: 'ajax',
+        url: '/administration-super-panel/getjson?type={$type}{if $parent}&parent={$parent}{/if}',
+        reader: {lb}
+            type: 'json',
+            root: '{$type}',
+            totalProperty: 'total'
+        {rb}
+      {rb}
+    {rb});
+
+    Ext.create('Ext.grid.Panel', {lb}
+        renderTo: document.getElementById("ext-grid"),
+        store: {$type}Store,
+        width: {if $width}{$width}{else}700{/if},
+        height: {if $height}{$height}{else}500{/if},
+        title: '{$name}',
+        columns: [
+          {foreach $column in $columns}
+            {$column | noAutoescape}
+            {if not isLast($column)},{/if}
+          {/foreach}
+        ],
+        bbar: Ext.create('Ext.PagingToolbar', {lb}
+            store: {$type}Store,
+            displayInfo: true,
+            displayMsg: 'Displaying groups {lb}0{rb} - {lb}1{rb} of {lb}2{rb}',
+            emptyMsg: "No {$type} to display",
+            items:[
+                '-'
+            ]
+        {rb})
+  {rb});
+  {$type}Store.loadPage(1);
+{rb});
+{/template} /*table-js*/
+
+{template json-group-elt}
+  {lb}
+  "checkbox":"<input type=\"checkbox\" name=\"selected\" value=\"{$key}\" {if $checked}checked{/if}/>",
+  "name": "<a href=\"content-table?type=products&parent={$key}\">{$name}</a>",
+  "key": "<a href=\"edit?key={$key}\">{$key}</a>",
+  "numprod": {$numprod},
+  "order": {$order},
+  "active": {$active}
+  {rb}
+{/template} /* json-group-elt */
+
+{template json-product-elt}
+  {lb}
+  "checkbox":"<input type=\"checkbox\" name=\"selected\" value=\"{$key}\" {if $checked}checked{/if}/>",
+  "name": "<a href=\"edit?key={$key}\">{$name}</a>",
+  "key": "{$key}",
+  "active": {$active}
+  {rb}
+{/template} /* json-product-elt */
+
+{template json-data}
+  {lb}
+  "success": true,
+  "total": {$number},
+  "{$type}": [
+    {foreach $elt in $elts}
+      {$elt | noAutoescape}{if not isLast($elt)},{/if}
+    {/foreach}
+  ]
+  {rb}
+{/template} /* json-data */

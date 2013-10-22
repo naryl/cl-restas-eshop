@@ -1,0 +1,678 @@
+{namespace soy.admin}
+
+{template main}
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Панель Администратора</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+
+        <script type="text/javascript" src="/js/jquery.js"></script>
+        <script type="text/javascript" src="/js/jquery-ui.js"></script>
+        <script type="text/javascript" src="/js/admin/bootstrap.js"></script>
+        <script type="text/javascript" src="/js/admin/scripts.js"></script>
+
+        <link rel="stylesheet" type="text/css" href="/css/admin/styles.css">
+        <link rel="stylesheet" type="text/css" href="/css/admin/bootstrap.css">
+        <link rel="stylesheet" type="text/css" href="/css/admin/bootstrap-responsive.css">
+
+        <script type="text/javascript" src="/js/admin/tree/jquery.treeview.js"></script>
+        <script type="text/javascript" src="/js/admin/ckeditor/ckeditor.js"></script>
+        <script type="text/javascript" src="/js/admin/ckeditor/adapters/jquery.js"></script>
+        <script type="text/javascript" src="/js/admin/ckeditor/config.js"></script>
+        <script type="text/javascript" src="/js/admin/ckeditor/lang/en.js"></script>
+        <script type="text/javascript" src="/js/admin/ckeditor/plugins/styles/styles/default.js"></script>
+        <script type="text/javascript" src="/js/admin/ckeditor/plugins/link/dialogs/link.js"></script>
+
+        <link rel="stylesheet" type="text/css" href="/js/admin/ckeditor/skins/kama/dialog.css">
+        <link rel="stylesheet" type="text/css" href="/js/admin/ckeditor/skins/kama/editor.css">
+
+    </head>
+    <body>
+        <div id="wrapper">
+            <div class="navbar navbar-fixed-top">
+                <div class="navbar-inner">
+                    <div class="container">
+                        <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                        </button>
+                        <a href="/" target="_blank" class="brand">
+                            <img src="/img/admin/logo.png" alt="logo">
+                        </a>
+                        <div class="nav-collapse collapse">
+                            <ul class="nav">
+                                <li>
+                                    <a href="/administration-super-panel/actions">Actions</a>
+                                </li>
+                                <li>
+                                    <a href="/administration-super-panel/parenting">Bind</a>
+                                </li>
+                                <li>
+                                    <a href="/administration-super-panel/make?key=test&type=group">Create</a>
+                                </li>
+                                <li>
+                                    <a href="/administration-super-panel/pics">Remove Img</a>
+                                </li>
+                                <li>
+                                    <a href="/administration-super-panel/templates">Templates</a>
+                                </li>
+                                <li>
+                                    <a href="/administration-super-panel/makebackup">Backup</a>
+                                </li>
+                                <li>
+                                    <a href="/administration-super-panel/info">Info</a>
+                                </li>
+                                <li>
+                                    <a href="/administration-super-panel/black-list">Black-list</a>
+                                </li>
+                                {if $user}
+                                <li>
+                                   <a href="#">{$user.key}</a>
+                                </li>
+                                <li>
+                                   <a href="/administration-super-panel/logout">logout</a>
+                                </li>
+                                {/if}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="middle" class="container">
+                {call content data="all" /}
+            </div>
+            <footer>
+                <div class="container">
+                    <div id="copyright">
+                        <h5>© Copyright 2013. 320-8080.ru</h5>
+                    </div>
+                </div>
+            </footer>
+        </div>
+    </body>
+</html>
+{/template}
+
+{template content}
+    {$content |noAutoescape}
+{/template}
+
+{template action-buttons}
+<div class="page-header">
+    <h1>Выполнить следующее действие</h1>
+</div>
+<div class="container-fluid">
+    <div class="row-fluid">
+        <div class="span8">
+            <h3>Отчеты</h3>
+            <div class="admin-action-button">
+                <form name="input" action="/administration-super-panel/actions" method="post">
+                    <input type="hidden" name="action" value="report-products">
+                    <input type="submit" value="Создание отчета для контент отдела" class="btn">
+                </form>
+             </div>
+            <div class="admin-action-button">
+                <form name="input" action="/administration-super-panel/actions" method="post">
+                    <input type="hidden" name="action" value="seo-report">
+                    <input type="submit" value="Создание отчета по для смарт СЕО" class="btn">
+                </form>
+            </div>
+            <div class="admin-action-button">
+                <form name="input" action="/administration-super-panel/actions" method="post">
+                    <input type="hidden" name="action" value="groups-products-report">
+                    <input type="submit" value="Отчет по группам" class="btn">
+                </form>
+            </div>
+            <div class="admin-action-button">
+                <form name="input" action="/administration-super-panel/actions" method="post">
+                    <input type="hidden" name="action" value="keyoptions-aliases-restore">
+                    <input type="submit" value="Создание отчета о алиасах и ключевых опциях групп" class="btn">
+                </form>
+            </div>
+            <h3>Выгрузка</h3>
+            <div class="admin-action-button">
+                <form name="input" action="/administration-super-panel/actions" method="post">
+                    <input type="hidden" name="action" value="articles-restore">
+                    <input type="submit" value="Обновление статей" class="btn btn-primary">
+                </form>
+            </div>
+            <div class="admin-action-button">
+                <form name="input" action="/administration-super-panel/actions" method="post">
+                    <input type="hidden" name="action" value="main-page-restore">
+                    <input type="submit" value="Обновление главной страницы" class="btn btn-primary">
+                </form>
+            </div>
+            <div class="admin-action-button">
+                <form name="input" action="/administration-super-panel/actions" method="post">
+                    <input type="hidden" name="action" value="static-pages-restore">
+                    <input type="submit" value="Обновление статических страниц" class="btn btn-primary">
+                </form>
+            </div>
+            <div class="admin-action-button">
+                <form name="input" action="/administration-super-panel/actions" method="post">
+                    <input type="hidden" name="action" value="groupd-restore">
+                    <input type="submit" value="Обновление списка SALE" class="btn btn-primary">
+                </form>
+            </div>
+            <div class="admin-action-button">
+                <form name="input" action="/administration-super-panel/actions" method="post">
+                    <input type="hidden" name="action" value="cartrige-restore">
+                    <input type="submit" value="Обновление списка катриджей" class="btn btn-primary">
+                </form>
+            </div>
+            <div class="admin-action-button">
+                <form name="input" action="/administration-super-panel/actions" method="post">
+                    <input type="hidden" name="action" value="gateway-restore">
+                    <input type="submit" value="Выгрузка из 1C" class="btn btn-primary">
+                </form>
+            </div>
+            <h3>Загрузка</h3>
+            <div class="admin-action-button">
+                <form name="input" action="/administration-super-panel/actions" method="post">
+                    <input type="hidden" name="action" value="proccess-pictures">
+                    <input type="submit" value="Загрузка и переименование картинок" class="btn btn-success">
+                </form>
+            </div>
+            <div class="admin-action-button">
+                <form name="input" action="/administration-super-panel/actions" method="post">
+                    <input type="hidden" name="action" value="dtd">
+                    <input type="submit" value="Загрузка характеристик из файлов xls" class="btn btn-success">
+                </form>
+            </div>
+            <h3>Сборщик мусора</h3>
+            <div class="admin-action-button">
+                <form name="input" action="/administration-super-panel/actions" method="post">
+                    <input type="hidden" name="action" value="do-gc">
+                    <input type="submit" value="Очистить память" class="btn btn-inverse">
+                </form>
+            </div>
+        </div>
+        <div class="span4">
+            {if $post}
+                <h2>{$post}</h2>
+            {/if}
+            {if $info}<p>{$info | noAutoescape}</p>{/if}
+        </div>
+    </div>
+</div>
+
+{/template}
+
+{template pics-deleting}
+<div class="page-header">
+    <h1>Удаление изображений</h1>
+</div>
+<div class="row">
+    {if $output}
+        <div class="span12">
+            <div class="alert alert-error">
+                <a class="close" data-dismiss="alert" href="#">×</a>
+                {$output}
+            </div>
+         </div>
+    {/if}
+    <div class="span12">
+        <div class="compile-template">
+            <form name="key" action="/administration-super-panel/pics" method="post">
+                <div class="well form-inline">
+                    <input type="text" name="key" class="span9">
+                    <input type="submit" value="Удалить изображение" class="btn">
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{/template} /*pics-deleting*/
+
+{template compile-template}
+<div class="page-header">
+    <h1>Компиляция файлов</h1>
+</div>
+  {if $output}
+    <div class="row">
+      <div class="span12">
+        <div class="alert alert-success">
+          <a class="close" data-dismiss="alert" href="#">×</a>
+          {$post.output}
+        </div>
+      </div>
+    </div>
+{/if}
+<div class="row">
+    <div class="span2" id="compiles">
+      {foreach $tmpl in $tmpls}
+        <div><input type="button" class="btn" value="{$tmpl}"></div>{\n}
+      {/foreach}
+    </div>
+    <div class="span10">
+        <div class="compile-template">
+            <form name="key" action="/administration-super-panel/templates" method="post" id="compile-form">
+                <div class="well form-inline">
+                    <input type="text" name="name" class="span8">
+                    <input type="submit" value="Скомпилировать" class="btn">
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{/template} /*compile-template*/
+
+{template make-backup}
+<div class="page-header">
+    <h1>Backup файлов</h1>
+</div>
+{if $output}
+    <div class="span12">
+        <div class="alert alert-success">
+            <a class="close" data-dismiss="alert" href="#">×</a>
+            {$output}
+        </div>
+     </div>
+{/if}
+<div class="row">
+    <div class="span12">
+        <div class="compile-template">
+            <form name="key" action="/administration-super-panel/makebackup" method="post">
+                <input type="hidden" name="dobackup" value="dobackup" />
+                <input type="submit" value="Сделать Backup" class="btn btn-danger btn-large" />
+            </form>
+        </div>
+    </div>
+</div>
+{/template} /*make-backup*/
+
+{template cron-job}
+	<p>"Job key:      {$key}"<br />
+		"Minutes:      {$minutes}"<br />
+		"Hours key:    {$hours}"<br />
+		"Day of month: {$dom}"<br />
+		"Month:        {$month}"<br />
+		"Day of week:  {$dow}"<br />
+		"Function:     {$func}"<br />
+	</p>
+{/template} /*cron-job*/
+
+{template cron-job-list}
+	{if $output}<span>{$output}</span>{/if}
+  <div class="cron-job-list">
+    {foreach $job in $jobs}
+		<div class="admin-cron-job">{call cron-job data="$job" /}</div>
+	{/foreach}
+  </div>
+{/template} /*cron-job-list*/
+
+{template info}
+    <div class="page-header">
+        <h1>Информация о сервере</h1>
+    </div>
+    {foreach $item in $info}
+        <p>{$item | noAutoescape}</p>
+    {/foreach}
+{/template}
+
+{template vendor-seo-upload}
+  <form name="seo-text" action="/administration-super-panel/vendor-seo" method="post">
+    <p>Group: </p> <input type="textarea" name="group" value="" /><br />
+    <p>Vendor: </p> <input type="textarea" name="vendor" value="" /><br />
+    <p>Text: </p><textarea  name="text" >{if $text} {$text} {/if} </textarea>
+    <input type="submit" value="Загрузить текст" class="btn btn-danger btn-large" />
+  </form>
+{/template}
+
+
+{template black-list}
+<div class="page-header">
+    <h1>Черный список</h1>
+</div>
+{if $output}
+    <div class="span12">
+        <div class="alert alert-success">
+            <a class="close" data-dismiss="alert" href="#">×</a>
+            {$output | noAutoescape}
+        </div>
+     </div>
+{/if}
+{if $errortext}
+    <div class="span12">
+        <div class="alert alert-error">
+            <a class="close" data-dismiss="alert" href="#">×</a>
+            {$errortext}
+        </div>
+     </div>
+{/if}
+<div class="row">
+    <div class="span12">
+        <div class="compile-template">
+            <form name="key" action="/administration-super-panel/black-list" method="post">
+                <input type="hidden" name="dobackup" value="dobackup" />
+                <input type="input" name="key" value="" />
+                <input type="submit" value="Добавить в черный список" class="btn btn-danger btn-large" />
+            </form>
+        </div>
+    </div>
+</div>
+{/template} /* black-list */
+
+
+
+{template login}
+<div class="row">
+    <div class="span4 offset4">
+      <div class="well">
+        <legend>Sign in eshop 3208080.ru</legend>
+        <form method="GET" action="/administration-super-panel/login" accept-charset="UTF-8">
+          {if $alerterror}
+            <div class="alert alert-error">
+                <a class="close" data-dismiss="alert" href="#">x</a>{$alerterror}
+            </div>
+            {/if}
+            <input class="span3" placeholder="{$name}" type="text" name="username">
+            <input class="span3" placeholder="{$pass}" type="password" name="password">
+            <label class="checkbox">
+                <input type="checkbox" name="remember" value="1" {if $remember}checked{/if}>Запомнить меня
+            </label>
+            <button class="btn-info btn" type="submit" name="log">Войти</button>
+            <button class="btn-info btn pull-right" type="submit" name="reg">Регистрация</button>
+        </form>
+      </div>
+    </div>
+</div>
+{/template}
+
+{template table-monitoring}
+<div class="page-header">
+    <h1>Название таблицы</h1>
+</div>
+<ul class="bg-paginator">
+	<li><a href="">В начало</a></li>
+	<li><a href="">Пред.</a></li>
+	<li class="bg-current-page"><a href="">1</a></li>
+	<li><a href="">2</a></li>
+	<li><a href="">3</a></li>
+	<li><a href="">4</a></li>
+	<li><a href="">5</a></li>
+	<li><a href="">След.</a></li>
+	<li><a href="">В конец</a></li>
+</ul>
+<div class="bg-table">
+	<div class="bg-table-row bg-table-header">
+		<div class="bg-table-cell">Заголовок 1</div>
+		<div class="bg-table-cell">Заголовок 2</div>
+		<div class="bg-table-cell">Заголовок 3</div>
+	</div>
+	<div class="bg-table-row bg-table-string">
+		<div class="bg-table-cell">содержание</div>
+		<div class="bg-table-cell">более длинное содержание, скажем вот такое, а может даже ещё больше. Настолько длинное, что не должно помещаться в одну строку ни при каких обстоятельствах</div>
+		<div class="bg-table-cell">!</div>
+	</div>
+	<div class="bg-table-row bg-table-string">
+		<div class="bg-table-cell">содержание</div>
+		<div class="bg-table-cell">более длинное содержание, скажем вот такое, а может даже ещё больше. Настолько длинное, что не должно помещаться в одну строку ни при каких обстоятельствах</div>
+		<div class="bg-table-cell">!</div>
+	</div>
+	<div class="bg-table-row bg-table-string">
+		<div class="bg-table-cell">содержание</div>
+		<div class="bg-table-cell">более длинное содержание, скажем вот такое, а может даже ещё больше. Настолько длинное, что не должно помещаться в одну строку ни при каких обстоятельствах</div>
+		<div class="bg-table-cell">!</div>
+	</div>
+</div>
+<ul class="bg-paginator">
+	<li><a href="">В начало</a></li>
+	<li><a href="">Пред.</a></li>
+	<li class="bg-current-page"><a href="">1</a></li>
+	<li><a href="">2</a></li>
+	<li><a href="">3</a></li>
+	<li><a href="">4</a></li>
+	<li><a href="">5</a></li>
+	<li><a href="">След.</a></li>
+	<li><a href="">В конец</a></li>
+</ul>
+<style>
+{literal}
+	.bg-paginator {
+		display:block;
+		text-align:center;
+		border:1px solid #e1e1e1;
+		border-radius:4px;
+		-webkit-border-radius:4px;
+		-moz-border-radius:4px;
+		-webkit-box-shadow:inset 0 1px 1px rgba(0, 0, 0, 0.05);
+		-moz-box-shadow:inset 0 1px 1px rgba(0, 0, 0, 0.05);
+		box-shadow:inset 0 1px 1px rgba(0, 0, 0, 0.05);
+		background:#f9f9f9;
+		margin:0;
+	}
+		.bg-paginator li {
+			display:inline-block;
+			height:30px;
+			text-shadow: 0 1px 0 #fff;
+			font: 700 12px/30px Tahoma;
+			color:#111;
+		}
+			.bg-paginator li a {
+				display:block;
+				padding:0 10px;
+				height:30px;
+				text-decoration:none;
+				color: #111;
+			}
+			.bg-paginator li a:hover {
+				background:rgba(0, 0, 0, 0.05);
+			}
+			.bg-paginator .bg-current-page a {
+				color:#0076a3;
+			}
+	.bg-table {
+		width:100%;
+		box-sizing: border-box;
+		display:table;
+		border:1px solid #e1e1e1;
+		border-radius:4px;
+		-webkit-border-radius:4px;
+		-moz-border-radius:4px;
+		-webkit-box-shadow:0 1px 1px rgba(0, 0, 0, 0.05);
+		-moz-box-shadow:0 1px 1px rgba(0, 0, 0, 0.05);
+		box-shadow:0 1px 1px rgba(0, 0, 0, 0.05);
+		margin-bottom:15px;
+	}
+	.bg-paginator +.bg-table {
+		margin-top:15px;
+	}
+		.bg-table-row {
+			display:table-row;
+		}
+			.bg-table-cell {
+				display:table-cell;
+				padding:5px 10px;
+				border-left:1px solid #e1e1e1;
+				border-bottom:1px solid #e1e1e1;
+				background:#f9f9f9;
+				vertical-align:middle;
+				height:100%;
+			}
+			.bg-table-row .bg-table-cell:first-child {
+				border-left:0;
+			}
+			.bg-table-header .bg-table-cell {
+				text-align:center;
+				font-weight:bold;
+				background:#f2f2f2;
+				color: #111;
+				text-shadow: 0 1px 0 #fff;
+				font: 700 12px Tahoma;
+			}
+			.bg-table .bg-table-row:last-child .bg-table-cell {
+				border-bottom:0;
+			}
+{/literal}
+</style>
+{/template}
+
+{template bg-paginator-link}
+  {if $currentpage == $page}
+    <li class="bg-current-page"><a href="?class={$class}&sortfield={$sortfield}&sortdir={$sortdir}&page={$page}">{$page}</a></li>
+  {else}
+    <li><a href="?class={$class}&sortfield={$sortfield}&sortdir={$sortdir}&page={$page}">{$page}</a></li>
+  {/if}
+{/template}
+
+{template bg-paginator}
+<ul class="bg-paginator">
+  {call bg-paginator-link data="all"}{param page: 0 /}{/call}
+  {if $lastpage!=0}
+    {if $pages[0]==1}
+    {else}
+      <li>...</li>
+    {/if}
+    {if $lastpage!=1}
+      {if $pages}
+        {foreach $page in $pages}
+          {call bg-paginator-link data="all"}{param page: $page /}{/call}
+        {/foreach}
+      {/if}
+      {if $pages[length($pages)-1]+1==$lastpage}
+      {else}
+        <li>...</li>
+      {/if}
+    {/if}
+    {call bg-paginator-link data="all"}{param page: $lastpage /}{/call}
+  {/if}
+</ul>
+{/template}
+
+{template bg-header-link}
+  <div class="bg-table-cell"><li>
+    {if $sortfield==$slot}
+      {if $sortdir==1}
+        <a href="?class={$class}&sortfield={$slot}&sortdir=-1&page={$page}">{$slot}&nbsp;▲</a>
+      {else}
+        <a href="?class={$class}&sortfield={$slot}&sortdir=1&page={$page}">{$slot}&nbsp;▼</a>
+      {/if}
+    {else}
+      <a href="?class={$class}&sortfield={$slot}&sortdir=1&page={$page}">{$slot}</a>
+    {/if}
+  </li></div>
+{/template}
+
+{template list-obj}
+<div class="page-header">
+    <h1>Объекты {$class}</h1>
+</div>
+{call bg-paginator data="all" /}
+<div class="bg-table">
+	<div class="bg-table-row bg-table-header">
+      {foreach $slot in $slots}
+        {call bg-header-link data="all"}
+          {param slot: $slot /}
+          {param page: $currentpage /}
+        {/call}
+      {/foreach}
+	</div>
+    {foreach $obj in $data}
+      <div class="bg-table-row bg-table-string">
+        {foreach $slot in $obj}
+          <div class="bg-table-cell">{$slot}</div>
+        {/foreach}
+      </div>
+    {/foreach}
+</div>
+{call bg-paginator data="all" /}
+<style>
+{literal}
+	.bg-paginator {
+		display:block;
+		text-align:center;
+		border:1px solid #e1e1e1;
+		border-radius:4px;
+		-webkit-border-radius:4px;
+		-moz-border-radius:4px;
+		-webkit-box-shadow:inset 0 1px 1px rgba(0, 0, 0, 0.05);
+		-moz-box-shadow:inset 0 1px 1px rgba(0, 0, 0, 0.05);
+		box-shadow:inset 0 1px 1px rgba(0, 0, 0, 0.05);
+		background:#f9f9f9;
+		margin:0;
+	}
+		.bg-paginator li {
+			display:inline-block;
+			height:30px;
+			text-shadow: 0 1px 0 #fff;
+			font: 700 12px/30px Tahoma;
+			color:#111;
+		}
+			.bg-paginator li a {
+				display:block;
+				padding:0 10px;
+				height:30px;
+				text-decoration:none;
+				color: #111;
+			}
+			.bg-paginator li a:hover {
+				background:rgba(0, 0, 0, 0.05);
+			}
+			.bg-paginator .bg-current-page a {
+				color:#0076a3;
+			}
+	.bg-table {
+		width:100%;
+		box-sizing: border-box;
+		display:table;
+		border:1px solid #e1e1e1;
+		border-radius:4px;
+		-webkit-border-radius:4px;
+		-moz-border-radius:4px;
+		-webkit-box-shadow:0 1px 1px rgba(0, 0, 0, 0.05);
+		-moz-box-shadow:0 1px 1px rgba(0, 0, 0, 0.05);
+		box-shadow:0 1px 1px rgba(0, 0, 0, 0.05);
+		margin-bottom:15px;
+	}
+	.bg-paginator +.bg-table {
+		margin-top:15px;
+	}
+		.bg-table-row {
+			display:table-row;
+		}
+			.bg-table-cell {
+				display:table-cell;
+				padding:5px 10px;
+				border-left:1px solid #e1e1e1;
+				border-bottom:1px solid #e1e1e1;
+				background:#f9f9f9;
+				vertical-align:middle;
+				height:100%;
+			}
+			.bg-table-row .bg-table-cell:first-child {
+				border-left:0;
+			}
+			.bg-table-header .bg-table-cell {
+				text-align:center;
+				font-weight:bold;
+				background:#f2f2f2;
+				color: #111;
+				text-shadow: 0 1px 0 #fff;
+				font: 700 12px Tahoma;
+			}
+		    .bg-table-header .bg-table-cell li {
+			    display:inline-block;
+			    height:30px;
+			    text-shadow: 0 1px 0 #fff;
+			    font: 700 12px/30px Tahoma;
+			    color:#111;
+		    }
+			    .bg-table-header .bg-table-cell li a {
+				    display:block;
+				    padding:0 10px;
+				    height:30px;
+				    text-decoration:none;
+				    color: #111;
+			    }
+			    .bg-table-header .bg-table-cell li a:hover {
+				    background:rgba(0, 0, 0, 0.05);
+			    }
+			.bg-table .bg-table-row:last-child .bg-table-cell {
+				border-bottom:0;
+			}
+{/literal}
+</style>
+{/template}

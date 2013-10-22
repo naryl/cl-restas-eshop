@@ -1,0 +1,41 @@
+{namespace soy.menu}
+
+{template ordinal}
+<li {if $divider}class="divider"{/if}>
+    <a href="/{$key}">
+        <img src="{$icon}" alt="">
+        <span>{$name}</span>
+    </a>
+</li>
+{/template}
+
+{template sub}
+  <li><a href="/{$key}">{$name}</a></li>
+{/template}
+
+{template selected}
+<li class="active {if $divider}divider{/if}">
+    <a href="/{$key}">
+        <img src="{$icon}" alt="">
+        <span>{$name}</span>
+    </a>
+	<div class="block menu-level2">
+        <ul>
+        {foreach $sub in $subs}{\n}
+            {call sub data="$sub" /}{\n}
+        {/foreach}{\n}
+        </ul>
+    </div>
+</li>
+{/template}
+
+{template main}
+  <ul class="catalog-menu">
+    {foreach $elt in $elts}{\n}
+    {$elt |noAutoescape}{\n}
+  {/foreach}{\n}
+<li class="all">
+    <a href="catalog" class="br5">Весь каталог</a>
+</li>
+  </ul>
+{/template}

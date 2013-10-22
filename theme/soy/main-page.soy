@@ -1,0 +1,539 @@
+{namespace soy.main-page}
+
+/**
+ * блок Товар дня daily
+ */
+{template daily}
+<!-- товар дня  -->{\n}
+<div class="block block-daily-item">
+  <p class="h2">Товар дня <span>= специальная цена + <a href="/articles/dostavka_besplatno">доставим бесплатно!</a> </span></p>
+  <div class="switch">
+	<ul class="slider-pager">
+       {foreach $item in $items}
+             {if isFirst($item)}
+                 <li class="active">
+                   <a href="/{$item.articul}" rel="nofollow">{index($item) + 1}</a>
+                 </li>{\n}
+             {else}
+                  <li> <a href="/{$item.articul}" rel="nofollow">{index($item) + 1}</a></li>
+             {/if}
+       {/foreach}
+	</ul>
+    <ul class="slider">
+      {foreach $item in $items}
+         <li class="click-full" rel="/{$item.articul}">
+         	<div class="head">
+         		<h2 class="title">
+                    <a href="/{$item.articul}">{$item.name}</a>
+                    <a href="/{$item.grouplink}" class="group">( {$item.groupname} )</a>
+                </h2>
+         	</div>
+         	<div class="midd">
+         		<div class="image">
+         			<a href="/{$item.articul}">
+	         			{if $item.pic}
+	         				<img class="img" src="/pic/middle/{$item.articul}/{$item.pic}" alt="{$item.name}"/>
+	         			{else}
+	         				<img src="/img/temp/empty-foto.jpg" width="225" alt="Фото"/>
+	         			{/if}
+         			</a>
+         		</div>
+         		<div class="info">
+         			<div class="specs">
+						<ul>
+							{foreach $option in $item.options}
+
+									{if index($option)%2 == 0}
+									<li {if index($option) < 6} class="dotted"{/if}><span>{$option}</span>
+									{else}
+									<b>{$option}</b></li>
+									{/if}
+
+							{/foreach}
+						</ul>
+         			</div>
+         			<div class="foot">
+         				<div class="price">
+         					<span class="new"><b>{$item.showsiteprice}</b> руб.</span>
+         				</div>
+         				<div class="buy" rel="link">
+							{$item.buttonaddcart | noAutoescape}
+						</div>
+						<div class="clr"></div>
+         			</div>
+         		</div>
+         	</div>
+         </li>
+       {/foreach}
+    </ul>
+  </div>
+</div>
+{/template}
+
+
+/**
+ * блок Лучшие цены best
+ */
+{template best}
+<div id="best_items" class="full">
+	<div class="main_title">
+		<h2><span class="black">Лучшие цены</span> — на сайте дешевле, чем в магазинах</h2>
+	</div>
+	<div class="carousel_big carousel_outer">
+		<button class="carousel_left"></button>
+		<button class="carousel_right"></button>
+		<div class="carousel_wrap">
+			<ul>
+				{foreach $item in $items}
+				<li rel="/{$item.articul}" class="product">
+					<div class="bg">
+						<div class="head">
+							<div class="group" rel="link">
+								<a href="/{$item.grouplink}">{$item.groupname}</a>
+							</div>
+							<div class="area">
+								<div class="badge red">
+									<span>Лучшая цена</span>
+								</div>
+								<p class="rating rating5"><i></i></p>
+								<div class="clr"></div>
+							</div>
+						</div>
+						<div class="midd">
+							<div class="image">
+								<a href="/{$item.articul}">
+									{if $item.pic}
+				         				<img src="/pic/middle/{$item.articul}/{$item.pic}" alt="{$item.name}"/>
+				         			{else}
+				         				<img src="/img/temp/empty-foto.jpg" width="225" alt="Фото"/>
+				         			{/if}
+			         			</a>
+							</div>
+							<div class="title" class="link">
+								<h2>
+									<a href="/{$item.articul}">{$item.name}</a>
+								</h2>
+							</div>
+						</div>
+						<div class="foot">
+							<div class="price">
+								<span class="new"><b>{$item.showsiteprice}</b> руб.</span>
+								<span class="old">{$item.showprice} руб.</span>
+							</div>
+							<div class="buy" rel="link">
+								{$item.buttonaddcart | noAutoescape}
+							</div>
+							<div class="clr"></div>
+						</div>
+					</div>
+				</li>
+				{/foreach}
+			</ul>
+		</div><!-- carousel wrap -->
+	</div><!-- carousel -->
+</div>
+
+{/template}
+
+
+/**
+ * блок Хиты продаж hit
+ */
+{template hit}
+
+<div class="gradient" id="hits_item">
+	<div class="head">
+		<div class="title">
+			<span>Хиты продаж</span>
+		</div>
+		<p>Что чаще всего выбирают покупатели?</p>
+	</div><!-- header -->
+	<div class="wrap">
+		<ul>
+			 {foreach $item in $items}
+			<li>
+				<div class="item">
+					<h2>
+						<a href="/{$item.articul}">
+							{$item.name}
+						</a>
+					</h2>
+					<div class="view">
+						<div class="image br5">
+							<a href="/{$item.articul}">
+								{if $item.pic}
+			         				<img src="/pic/small/{$item.articul}/{$item.pic}" alt="{$item.name}">
+			         			{else}
+			         				<img src="/img/temp/empty-foto.jpg" width="225" alt="Фото"/>
+			         			{/if}
+		         			</a>
+						</div>
+						<div class="info">
+							<div class="rating">
+								<p class="rating rating5"><i></i></p>
+							</div>
+							<div class="price">
+								<span><b>{$item.showsiteprice}</b> руб.</span>
+							</div>
+							<div class="buy">
+								{$item.buttonaddcart | noAutoescape}
+							</div>
+						</div>
+						<div class="clr"></div>
+					</div>
+				</div><!-- item -->
+				<div class="comment br5">
+					<div class="image">
+						<img src="{$item.options.0}" alt=""/>
+					</div>
+					<div class="info">
+						<span class="name"><b>{$item.options.1}</b></span>
+						<p class="message">{$item.options.2}</p>
+						<!-- <a href="#">Еще 12 отзывов о ноутбуке →</a> -->
+					</div>
+					<div class="clr"></div>
+				</div><!-- comment -->
+			</li>
+			{/foreach}
+		</ul>
+	</div>
+</div>
+
+{/template}
+
+/**
+ * блок Новинки new
+ */
+{template new}
+<!-- новинки -->
+<div id="new_items">{\n}
+	<div class="main_title">
+		<h2>
+			<span class="black">Новинки</span>
+		</h2>
+	</div>
+	<table cellspacing="0" width="100%">
+		<tr>
+		{foreach $item in $items}
+			{if (index($item)%3==0)}
+				{if not isFirst($item)}
+					</tr><tr>
+				{/if}
+			{/if}
+			<td rel="/{$item.articul}" class="product">
+				<div class="bg">
+					<div class="head">
+						<div class="group" rel="link">
+							<a href="/{$item.grouplink}">{$item.groupname}</a>
+						</div>
+						<div class="area">
+							<div class="badge yellow">
+								<span>Новинка</span>
+							</div>
+							<p class="rating rating5"><i></i></p>
+							<div class="clr"></div>
+						</div>
+					</div>
+					<div class="midd">
+						<div class="image">
+							<a href="/{$item.articul}">
+								{if $item.pic}
+			         				<img src="/pic/middle/{$item.articul}/{$item.pic}" alt="{$item.name}"/>
+			         			{else}
+			         				<img src="/img/temp/empty-foto.jpg" width="225" alt="Фото"/>
+			         			{/if}
+		         			</a>
+						</div>
+						<div class="title" rel="link">
+							<h2>
+								<a href="/{$item.articul}">{$item.name}</a>
+							</h2>
+						</div>
+					</div>
+					<div class="foot">
+						<div class="price">
+							<span class="new black"><b>{$item.showsiteprice}</b> руб.</span>
+						</div>
+						<div class="buy" rel="link">
+							{$item.buttonaddcart | noAutoescape}
+						</div>
+						<div class="clr"></div>
+					</div>
+				</div>
+			</td>
+		{/foreach}
+    	</tr>
+	</table>
+	<div class="clr"></div>
+</div>
+{/template}
+
+
+/**
+ * блок баннер banner
+ */
+{template banner-center-png}
+<div id="stock_banner">
+  <div align="center">
+  <a href="{$url}"><img src="{$src}" alt="{$name}"></a>
+  </div>
+</div>
+{/template}
+
+{template banner}
+<div id="stock_banner" {if $url}rel="{$url}"{/if}>
+	<div class="link"></div>
+	<div class="flash">
+		<object classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000" width="474" height="162">
+			<param name="movie" value="{$src}" />
+			<param name="quality" value="high" />
+			<param name="bgcolor" value="#ffffff" />
+			<param name="wmode" value="opaque" />
+			<param name="swfversion" value="6.0.65.0" />
+			<!-- This param tag prompts users with Flash Player 6.0 r65 and higher to download the latest version of Flash Player. Delete it if you don’t want users to see the prompt. -->
+			<param name="expressinstall" value="http://la2dead.ru/templates/la2dead/Scripts/expressInstall.swf" />
+			<!-- Next object tag is for non-IE browsers. So hide it from IE using IECC. -->
+			<!--[if !IE]>-->
+			<object type="application/x-shockwave-flash" data="{$src}" width="474" height="162">
+				<!--<![endif]-->
+				<param name="quality" value="high" />
+				<param name="wmode" value="opaque" />
+				<param name="swfversion" value="6.0.65.0" />
+				<param name="expressinstall" value="http://la2dead.ru/templates/la2dead/Scripts/expressInstall.swf" />
+				<!-- The browser displays the following alternative content for users with Flash Player 6.0 and older. -->
+				<div>
+					<h4>У вас не установлен Adobe Flash Player, перейдите по ссылке ниже чтобы его установить.</h4>
+					<p><a href="http://www.adobe.com/go/getflashplayer"><img src="/img/flash_download.jpg" alt="Get Adobe Flash player" /></a></p>
+				</div>
+				<!--[if !IE]>-->
+			</object>
+			<!--<![endif]-->
+		</object>
+	</div>
+</div>
+
+{/template}
+
+/**
+ * блок наши преимущества
+ */
+{template olist}
+<div id="benefits">
+    <p class="h2">С 2002 года мы доставили клиентам более 359 000 заказов</p>
+    <div class="olist">
+      <ol>
+          <li>
+            <a href="/articles/Samsung_Galaxy_Tab_2"> Новинки</a>
+            <span class="text">Самые новые и эксклюзивные товары</span>
+          </li>
+    	<li class="pct">
+    	  <a href="/warranty">Гарантия на все товары</a>
+          <span class="text">Только 100% белые и сертифицированные товары</span>
+    	</li>
+    	<li>
+    	  <a href="/moneyback">Возврат без проблем</a>
+	      <span class="text">Вы можете вернуть товар в течение 7 дней с момента покупки, не объясняя причин</span>
+    	</li>
+      </ol>
+      <p class="more"><a href="/about">Подробнее о компании &rarr;</a></p>
+    </div>
+</div>
+{/template}
+
+
+/**
+ * блок Последний отзыв
+ */
+
+{template lastreview}
+
+<div id="last_reviews">
+    <div class="comment br5 gradient">
+        <div class="info main">
+            <img src="{$ico}" alt="" class="image">
+            <span class="name"><b>{$name},</b> <span class="city">{$city}</span></span>
+            <p class="message">{$review | noAutoescape}</p>
+        </div>
+        <div class="more">
+            <a href="/otzyvy">Еще 50 отзывов &rarr;</a>
+        </div>
+    </div><!-- comment -->
+</div>
+
+{/template}
+
+/**
+ * блок последние статьи обзоры
+ */
+/*{template post}
+<div class="posts" id="news">
+	<div class="main_title">
+		<h2>
+			<span class="black">Новости</span>
+			<a href="/articles/news">Все новости&nbsp;&rarr;</a>
+		</h2>
+	</div>
+	<ul class="news-list">
+		{foreach $item in $items}
+			<li class="item">
+				<var class="date">{$item.date}</var>
+				<p class="h2"><a href="/articles/{$item.key}">{$item.name | noAutoescape}</a></p>
+			</li>
+		{/foreach}
+	</ul>
+</div>
+
+<div class="posts">
+	<div class="main_title">
+		<h2 class="fl_l">
+			<span class="black">Цифровой обозреватель</span>
+			<a href="http://320-80-80.livejournal.com/">Архив обзоров&nbsp;&rarr;</a>
+		</h2>
+		<h2 class="fl_r">
+			<span class="black">В центре внимания</span>
+			<a href="/articles/papers">Другие статьи&nbsp;&rarr;</a>
+		</h2>
+	</div>
+	<ul class="news-list">
+		<li class="item">
+			<var class="date"> 13 марта</var>
+			<p class="h2"><a href="http://320-80-80.livejournal.com/219736.html">Уменьшенная модель iPad</a></p>
+			<p class="pic"><img src="/img/jan2012/apple_ipad.jpg" alt="Уменьшенная модель iPad."/></p>
+		</li>
+		<li class="item">
+			<var class="date"> 12 марта</var>
+			<p class="h2"><a href="http://320-80-80.livejournal.com/219459.html">Обзор Canon EOS 5D Mark III</a></p>
+			<p class="pic"><img src="/img/feb2012/C1.jpg" alt="Обзор Canon EOS 5D Mark III"/></p>
+		</li>
+		<li class="item">
+			<var class="date">21 марта</var>
+			<p class="h2"><a href="http://www.320-8080.ru/articles/New_IPad">Обзор нового iPad!</a></p>
+			<p class="pic"><img src="/img/feb2012/A1.jpg" alt="Обзор нового iPad!"/></p>
+		</li>
+	</ul>
+</div>
+{/template}*/
+
+{template post}
+	<div id="main_posts">
+		<table cellspacing="0" width="100%">
+			<tr>
+				<td>
+					<div class="main_title">
+						<h2>
+							<span class="black">Акции</span>
+							<a href="/articles/akcii">Все акции &rarr;</a>
+						</h2>
+					</div>
+					<div class="wrap">
+						<ul>
+							{foreach $event in $akcii}
+								{call article-preview}
+									{param article: $event /}
+								{/call}
+							{/foreach}
+						</ul>
+					</div>
+				</td>
+				<td>
+					<div class="main_title">
+						<h2>
+							<span class="black">Новости</span>
+							<a href="/articles/news">Все новости &rarr;</a>
+						</h2>
+					</div>
+					<div class="wrap">
+						<ul>
+							{foreach $event in $news}
+								{call article-preview}
+									{param article: $event /}
+								{/call}
+							{/foreach}
+						</ul>
+					</div>
+				</td>
+				<td>
+					<div class="main_title">
+						<h2>
+							<span class="black">Обзоры</span>
+							<a href="/articles/reviews">Все обзоры &rarr;</a>
+						</h2>
+					</div>
+					<div class="wrap">
+						<ul>
+							{foreach $event in $reviews}
+								{call article-preview}
+									{param article: $event /}
+								{/call}
+							{/foreach}
+						</ul>
+					</div>
+				</td>
+			</tr>
+		</table>
+	</div>
+{/template}
+
+
+/**
+ * блок дополнительная инaформация горизонтальной полосой внизу
+ */
+{template plus}
+<div class="pluses">
+  <p class="h2"><strong>&laquo;ЦиFры&raquo;</strong> &ndash; это сеть магазинов в Санкт-Петербурге , служба доставки, склад, технический сервис</p>
+  <ul class="pluses-list">
+	<li class="item">
+	  <div class="space">
+		<p class="pic"><img src="/img/plus/service.png" alt=""/></p>
+		<p class="title"><a href="warranty">Гарантия и сервис</a></p>
+		<p>Бесплатный гарантийный ремонт компьютеров, ремонт комплектующих и периферии</p>
+	  </div>
+	</li>
+	<li class="item">
+	  <div class="space">
+		<p class="pic"><img src="/img/plus/shops.png" alt=""/></p>
+		<p class="title"><a href="kakdobratsja">2 магазина в Петербурге</a></p>
+		<p> В наших магазинах вы можете проконсультироваться и посмотреть технику вживую</p>
+	  </div>
+	</li>
+	<li class="item">
+	  <div class="space">
+		<p class="pic"><img src="/img/plus/stocks.png" alt=""/></p>
+		<p class="title"><a href="bonus">Бонусы в F-клубе!</a></p>
+		<p>Вступив в F-клуб Вы сможете получать бонусы, которыми можно расплачиваться за товары или услуги</p>
+	  </div>
+	</li>
+	<li class="item">
+	  <div class="space">
+		<p class="pic"><img src="/img/plus/corporate.png" alt=""/></p>
+		<p class="title"><a href="corporate">Корпоративным клиентам</a></p>
+		<p>Значительные скидки лояльным клиентам, абонентское обслуживание</p>
+	  </div>
+	</li>
+  </ul>
+</div>
+{/template}
+
+{template article-preview}
+<li>
+	<div class="head">
+		<div class="image">
+			<a href="/articles/{$article.key}">
+				{if $article.pic}
+	 				<img src="{$article.pic}" alt="{$item.name}" width="100"/>
+	 			{else}
+	 				<img src="/img/temp/empty-foto100x100.jpg" width="100" alt="Фото"/>
+	 			{/if}
+			</a>
+		</div>
+		<div class="info">
+			<div class="date">{$article.date}</div>
+			<div class="title">
+				<a href="/articles/{$article.key}">{$article.name | noAutoescape}</a>
+			</div>
+			<p>{$article.descr | noAutoescape}</p>
+		</div>
+		<div class="clr"></div>
+	</div>
+</li>
+{/template}

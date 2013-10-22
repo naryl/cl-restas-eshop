@@ -1,0 +1,1028 @@
+{namespace soy.index}
+
+/* Итак у всех шаблонов есть namespace задаваемое в само начале - в
+фигурных скобках. В данном файле - 'soy.index'. В одном файле может быть
+несколько шаблонов, относящихся к одному namespace. Шаблоны
+укладываются в теги template - открывающий и закрывающий.
+
+Переменные шаблона так же как и директивы шаблонизатора задаются в
+круглых скобках, но при этом имеют префикс $. Более подробно о
+шаблонизаторе можно прочитать на гугле:
+
+http://code.google.com/closure/templates/
+
+Мы стараемся сделать наши шаблоны как можно более простыми и
+понятными, если это возможно, поэтому большая часть логики выносится в
+код.
+
+Для каждого шаблона здесь будет changelog, чтобы было проще
+синхронизировать изменения.
+
+10 Sep 10: добавил namespace и template.
+14 Sep 10: разрезал на куски
+
+... */
+
+{template content}
+	<div class="content" id="middle">
+		<div class="full">
+			<div class="left">
+	      {$menu |noAutoescape}
+			</div>
+			<div class="center">
+				{$dayly |noAutoescape}
+				{$banner |noAutoescape}
+			</div>
+			<div class="right">
+				{$olist |noAutoescape}
+				{$lastreview |noAutoescape}
+			</div>
+		</div>
+		{$best |noAutoescape}
+		<div class="full">
+			<div class="sidebar">
+				{$hit |noAutoescape}
+			</div><!-- sidebar -->
+			<div class="mainbar">
+				{$new |noAutoescape}
+			</div><!-- mainbar -->
+		</div>
+		<div class="full">
+			<div class="sidebar">
+			    <div class="main_title" id="social-groups-main-title">
+                    <h2>
+                        <span class="black">В центре внимания</span>
+                        <img src="/img/arr-right.png" alt="">
+                    </h2>
+                </div>
+                <div class="social-block-full">
+                    {call social-block /}
+                </div>
+			</div>
+			<div class="mainbar">
+				{$post |noAutoescape}
+			</div>
+		</div>
+		<div class="full">
+	    {$plus |noAutoescape}
+		</div>
+	</div>
+{/template}
+
+/* Google аналитика */
+{template google-analytics}
+	{literal}
+		<script type="text/javascript">
+			var _gaq = _gaq || [];
+			_gaq.push(['_setAccount', 'UA-8758024-4']);
+			_gaq.push(['_trackPageview']);
+			(function() {
+			var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+			})();
+		</script>
+	{/literal}
+{/template}
+
+{template gaTrakingEcommerce}
+    <script type="text/javascript">
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-8758024-4']);
+      _gaq.push(['_trackPageview']);
+      _gaq.push(['_addTrans',
+        '{$orderid}',           // order ID - required
+        'ЦиFры',  // affiliation or store name
+        '{$total}',          // total - required
+        '0',           // tax
+        '{$delivery}',              // shipping
+        'Saint-Petersburg',       // city
+        'Saint-Petersburg',     // state or province
+        'Russia'             // country
+      ]);{\n}
+
+       // add item might be called for every item in the shopping cart
+       // where your ecommerce engine loops through each item in the cart and
+       // prints out _addItem for each
+{foreach $item in $products}
+      _gaq.push(['_addItem',
+        '{$orderid}',           // order ID - required
+        '{$item.articul}',           // SKU/code - required
+        '{$item.name}',        // product name
+        '{$item.group}',   // category or variation
+        '{$item.siteprice}',          // unit price - required
+        '{$item.cnt}'               // quantity - required
+      ]);{\n}
+{/foreach}
+      _gaq.push(['_trackTrans']); //submits transaction to the Analytics servers
+{literal}
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+{/literal}
+    </script>
+{/template}
+
+/* Yandex метрика */
+{template yandex-metrika}
+	{literal}
+<!-- Yandex.Metrika counter -->
+<script type="text/javascript">
+(function (d, w, c) {
+    (w[c] = w[c] || []).push(function() {
+        try {
+            w.yaCounter3769609 = new Ya.Metrika({id:3769609,
+                    webvisor:true,
+                    clickmap:true});
+        } catch(e) { }
+    });
+
+    var n = d.getElementsByTagName("script")[0],
+        s = d.createElement("script"),
+        f = function () { n.parentNode.insertBefore(s, n); };
+    s.type = "text/javascript";
+    s.async = true;
+    s.src = (d.location.protocol == "https:" ? "https:" : "http:") + "//mc.yandex.ru/metrika/watch.js";
+
+    if (w.opera == "[object Opera]") {
+        d.addEventListener("DOMContentLoaded", f, false);
+    } else { f(); }
+})(document, window, "yandex_metrika_callbacks");
+</script>
+<noscript><div><img src="//mc.yandex.ru/watch/3769609" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+<!-- /Yandex.Metrika counter -->
+	{/literal}
+{/template}
+
+{template main}
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+	<head>
+	<title>{if $title}{$title|noAutoescape}{else}ЦиFры{/if}</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+	<!--[if lt IE 7]><meta http-equiv="refresh" content="0; URL=/badbrowser"><![endif]-->
+	<meta name='yandex-verification' content='46096f4a2b6678ca' />
+  <meta name='wmail-verification' content='d2b568b8747ee275' />
+  <meta name="google-site-verification" content="DLzcPenEQiGMh4ZhqmAOL6sZpTCRzDXB6QkAdA-sRXU" />
+	<meta name="keywords" content={if $keywords}"{$keywords}"{else}""{/if}/>
+	<meta name="description" content={if $description}"{$description}"{else}""{/if}/>
+
+	<link href="/css/plugins/fancybox/fancybox.css" rel="stylesheet" type="text/css" media="all" />
+	<link href="/css/plugins/fancybox/fancybox-thumbs.css" rel="stylesheet" type="text/css" media="all" />
+	<link rel='stylesheet' href='/css/screen.css' type='text/css' media='screen'/>
+  <link rel='stylesheet' href='/css/jquery-ui.css' type='text/css' media='screen'>
+	<!--[if IE]>
+	<link rel="stylesheet" href="/css/screen-ie.css" type="text/css" media="screen"/>
+	<![endif]-->
+
+	<script type="text/javascript" src="/js/jquery.js"></script>
+	<script type="text/javascript" src="/js/jquery-ui.js"></script>
+	<script type="text/javascript" src="/js/plugins/easing.js"></script>
+	<script type="text/javascript" src="/js/plugins/cookie.js"></script>
+	<script type="text/javascript" src="/js/plugins/mousewheel.js"></script>
+	<script type="text/javascript" src="/js/plugins/fancybox/fancybox.js"></script>
+	<script type="text/javascript" src="/js/plugins/fancybox/fancybox-thumbs.js"></script>
+	<script type="text/javascript" src="/js/plugins/jcarousel.js"></script>
+	<script type="text/javascript" src="/js/plugins/carousel.js"></script>
+	<script type="text/javascript" src="/js/plugins/readmore.js"></script>
+	<script type="text/javascript" src="/js/plugins/jquery.inputmask.js"></script>
+	<!--[if lte IE 7]>
+		<script type="text/javascript" src="/js/plugins/json2.js"></script>
+	<![endif]-->
+	<script type="text/javascript" src="/js/interface.js"></script>
+
+
+	{call google-analytics /}
+		{if $headext}
+			{$headext | noAutoescape}
+		{/if}
+	</head>
+	<body>
+		{call yandex-metrika /}
+		<div id="container" class="container">
+			{$header |noAutoescape}
+			{$content |noAutoescape}
+			{call soy.footer.footer /}
+		</div>
+		{call one-click-order-div /}
+		{call add-product-buy-div /}
+
+    /* {call livetex /} */
+    {call remarketing /}
+	</body>
+</html>
+{/template}
+
+{template livetex}
+	{literal}
+    <script type="text/javascript"><!-- /* build:::5 */ -->
+      var liveTex = true,
+      liveTexID = 10332,
+      liveTex_object = true;
+      (function() {
+      var lt = document.createElement('script');
+      lt.type ='text/javascript';
+      lt.async = true;
+      lt.src = 'http://cs15.livetex.ru/js/client.js';
+      var sc = document.getElementsByTagName('script')[0];
+      sc.parentNode.insertBefore(lt, sc);
+      })();
+
+    </script>
+  {/literal}
+{/template}
+
+
+/* Шаблон для посадочных статичных страниц */
+{template main-landscape}
+  <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+  <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+	  <head>
+	    <title>{if $title}{$title|noAutoescape}{else}ЦиFры{/if}</title>
+	    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+	    <meta name='yandex-verification' content='46096f4a2b6678ca' />
+      <meta name="google-site-verification" content="DLzcPenEQiGMh4ZhqmAOL6sZpTCRzDXB6QkAdA-sRXU" />
+
+			<script type="text/javascript" src="http://userapi.com/js/api/openapi.js"></script>
+			{literal}<script type="text/javascript">VK.init({apiId: 2638896/*2413396*/, onlyWidgets: true});</script>{/literal}
+			<script type="text/javascript" src="/js/jquery.js"></script>
+
+		  <!-- fancybox -->
+
+		  <link href="/css/plugins/fancybox/fancybox.css" rel="stylesheet" type="text/css" media="all" />
+		  <link href="/css/plugins/fancybox/fancybox-thumbs.css" rel="stylesheet" type="text/css" media="all" />
+
+		  <script type="text/javascript" src="/js/plugins/fancybox/fancybox.js"></script>
+		  <script type="text/javascript" src="/js/plugins/fancybox/fancybox-thumbs.js"></script>
+		  <meta name="keywords" content={if $keywords}"{$keywords}"{else}""{/if}/>{\n}
+		  <meta name="description" content={if $description}"{$description}"{else}""{/if}/>{\n}
+      {$headeraddition | noAutoescape}{\n}
+		  {call google-analytics /}{\n}
+	  </head>
+	  <body>
+	    {call yandex-metrika /}
+		  {$content |noAutoescape}
+      {call remarketing /}
+    </body>
+  </html>
+{/template}
+
+/* Счетчики*/
+{template liveinternet}
+	<noindex>
+		<!--LiveInternet counter-->
+		<script type="text/javascript">
+      {literal}
+        document.write("<a href='http://www.liveinternet.ru/click' target=_blank><img src='//counter.yadro.ru/hit?t45.7;r"+escape(document.referrer)+((typeof(screen)=="undefined")?"":";s"+screen.width+"*"+screen.height+"*"+(screen.colorDepth?screen.colorDepth:screen.pixelDepth))+";u"+escape(document.URL)+";"+Math.random()+"' alt='' title='LiveInternet' "+"border='0' width='31' height='31'></a>")
+      {/literal}
+      </script>
+			<!--/LiveInternet-->
+		</noindex>
+	{/template}
+
+  {template mailru}
+	  {literal}
+		  <noindex>
+			  <a href="http://torg.mail.ru/?prtnr=1&pid=2279&click=1"rel="nofollow">
+				  <img height="31" border="0" width="88" alt="Товары@Mail.ru" src="http://upload.torg.mail.ru/prtnr/?pid=2279"/>
+			  </a>
+		  </noindex>
+	  {/literal}
+  {/template}
+
+/* Яндекс маркет */
+  {template yandex-market}
+	  {literal}
+		  <noindex>
+			  <a href="http://clck.yandex.ru/redir/dtype=stred/pid=47/cid=2508/*http://grade.market.yandex.ru/?id=19790&action=link" rel="nofollow">
+				  <img src="http://clck.yandex.ru/redir/dtype=stred/pid=47/cid=2505/*http://grade.market.yandex.ru/?id=19790&action=image&size=0" border="0" width="88" height="31" alt="Читайте отзывы покупателей и оценивайте качество магазина 320-8080.ru на Яндекс.Маркете" />
+			  </a>
+		  </noindex>
+	  {/literal}
+  {/template}
+
+{template remarketing}
+{literal}
+<script type="text/javascript">
+/* <![CDATA[ */
+var google_conversion_id = 982000551;
+var google_custom_params = window.google_tag_params;
+var google_remarketing_only = true;
+/* ]]> */
+</script>
+<script type="text/javascript" src="//www.googleadservices.com/pagead/conversion.js">
+</script>
+<noscript>
+<div style="display:inline;">
+<img height="1" width="1" style="border-style:none;" alt="" src="//googleads.g.doubleclick.net/pagead/viewthroughconversion/982000551/?value=0&amp;guid=ON&amp;script=0"/>
+</div>
+</noscript>
+{/literal}
+{/template}
+
+/* one-click-order block */
+  {template one-click-order-div}
+	  <div id="oneClickBox" class="hide">
+		  <div class="fancybox-header">
+			  <h2 class="fancy-title">Купить в один клик</h2>
+			  <div class="fancy-close">
+				  <a href="#" onclick="$.fancybox.close(); return false;">Закрыть</a>
+			  </div>
+			  <div class="clr"></div>
+		  </div>
+		  <div class="fancybox-middle" id="one_click_form">
+			  <form action="#" id="quick_buy">
+				  <input type="hidden" value="" name="article" id="quick_article" />
+				  <div class="other_info">
+					  <div class="field">
+						  <label for="quick_name">Ваше имя</label>
+						  <input type="text" name="name" id="quick_name" class="clearField" />
+					  </div>
+					  <div class="field">
+						  <label for="quick_email">Ваш электронный адрес</label>
+						  <input type="text" name="email" id="quick_email" class="clearField" />
+					  </div>
+				  </div>
+				  <div class="main_info">
+					  <div class="mini_title">Введите ваш телефон <span class="red">*</span></div>
+						<input type="text" name="number" id="quick_phone" />
+					  <div class="quick_submit">
+						  <div class="quick_manager_info">
+							  <p>Наш менеджер с Вами свяжется и примет заказ. Желательно указывать мобильный телефон.</p>
+						  </div>
+						  <div class="quick_order on">
+							  <div class="button_border gold">
+								  <button type="submit" class="button green">Оформить заказ</button>
+							  </div>
+						  </div>
+						  <div class="clr"></div>
+					  </div>
+				  </div>
+			  </form>
+		  </div>
+		  <div class="fancybox-middle hide" id="one_click_success">
+			  <div class="other_info">
+				  <h3>Мы скоро свяжемся с вами.</h3>
+				  <div>Ваш телефон: <b id="ocs_phone"></b></div>
+				  <div>Номер заказа: <b id="ocs_orderid"></b></div>
+			  </div>
+		  </div>
+	  </div>
+  {/template}
+
+/* buy product block */
+  {template add-product-buy-div}
+    <div id="add_product_buy" class="hide">
+	    <div class="fancybox-header">
+		    <h2 class="fancy-title">Оформить заказ</h2>
+		    <div class="fancy-close">
+			    <a href="#" onclick="$.fancybox.close(); return false;">Закрыть</a>
+		    </div>
+		    <div class="clr"></div>
+	    </div>
+	    <div class="fancybox-middle">
+		    <div class="continue_shop">
+			    <a href="#" onclick="$.fancybox.close(); return false;">Продолжить покупки</a>
+		    </div>
+		    <div class="basket_order">
+			    <div class="button_border gold">
+				    <a href="/cart?innerLayer" class="button green">Оформить заказ</a>
+			    </div>
+		    </div>
+		    <div class="clr"></div>
+	    </div>
+    </div>
+  {/template}
+
+{template social-block}
+    <div id="social-groups-block" class="gradient">
+	    <ul class="sgb-menu">
+		    <li class="vk active">
+			    <a href="#">Вконтакте</a>
+		    </li>
+		    <li class="fb">
+			    <a href="#">Facebook</a>
+		    </li>
+		    <li class="tw">
+			    <a href="#">Twitter</a>
+		    </li>
+	    </ul>
+	    <div class="sgb-wrap">
+		    <div class="title">
+			    <img src="/img/sgb-logo.png" alt="" />
+		    </div>
+		    <ul>
+			    <li class="vk">
+            <script type="text/javascript" src="//vk.com/js/api/openapi.js?101"></script>
+				    <!-- VK Widget -->
+				    <div id="vk_groups"></div>
+            <script type="text/javascript">
+              {literal}
+                VK.Widgets.Group("vk_groups", {mode: 0, height: "290", width: "240"}, 27979099);
+              {/literal}
+            </script>
+			    </li>
+			    <li class="fb hide">
+				    <div id="fb-root"></div>
+				    {literal}
+<iframe src="//www.facebook.com/plugins/likebox.php?href=https%3A%2F%2Fwww.facebook.com%2F3208080.ru&amp;width=240&amp;height=245&amp;show_faces=true&amp;colorscheme=light&amp;stream=false&amp;show_border=true&amp;header=true" scrolling="no" frameborder="0" style="background: white; border:none; overflow:hidden; width:240px; height:290px;" allowTransparency="true"></iframe>
+				    {/literal}
+			    </li>
+			    <li class="tw hide">
+
+				    {literal}
+				      <a class="twitter-timeline" href="https://twitter.com/3208080_ru" data-widget-id="336439707447738368">Твиты пользователя @3208080_ru</a>
+					<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+"://platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+				    {/literal}
+			    </li>
+		    </ul>
+	    </div>
+    </div>
+{/template}
+
+{template cart}
+<div id="checkout">
+	<div id="checkout-blank" class="checkout-block">
+		<div class="title">Корзина пуста</div>
+		<p class="text">Посоветовать вам что-нибудь?</p>
+		<div class="more">
+			<a href="/noutbuki">Ноутбуки</a>,
+			<a href="/cifrovye-fotoapparaty">Фото</a> и
+			<a href="/lcd-televizory">ТВ</a>
+			<br>
+			<a href="#phone_next_form" class="phone_next_a phone_next_a_checkout fancybox-one-click fancybox.inline ">
+	   			<img class="phone_next_img" src="/img/pict_mobile_black.png" alt="Заказать звонок">
+	  			Заказать звонок
+	   		</a>
+
+		</div>
+	</div>
+	<div id="checkout-has" class="checkout-block hide">
+		<div class="head">
+			<div class="title">В корзине:</div>
+			<a href="#" id="checkout-open">
+				<span class="count-has">
+					<span id="basket-count"></span>&nbsp;
+					<span id="basket-count-text">товар</span> на
+					<span id="basket-sum"></span>&nbsp;руб.
+				</span>
+				<span class="count-blank">Товаров нет</span>
+			</a>
+		</div>
+		<div class="more">
+			<a href="/cart">Оформить или изменить заказ</a>
+			<br>
+			<a href="#phone_next_form" class="phone_next_a phone_next_a_checkout fancybox-one-click fancybox.inline ">
+	   			<img class="phone_next_img" src="/img/pict_mobile_black.png" alt="Заказать звонок">
+	  			Заказать звонок
+	   		</a>
+		</div>
+	</div>
+	<div id="checkout-wrap" class="hide">
+		<div class="checkout-block"></div>
+		<div class="checkout-list-bg">
+			<ul id="checkout-list"></ul>
+		</div>
+		<div class="issue">
+			<a href="/cart">Оформить заказ</a>
+		</div>
+	</div>
+</div><!-- checkout -->
+{/template}
+
+
+
+
+{template location}
+		<div class="pozit mesto" id="mesto">
+			<div class="pozit-header">Позиционирование<img class="closebox" src="img/dev/close.png"></div>
+			<div class="pozit-content">
+				<p class="">Вы здесь:<span class="city">Выберите город</span></p>
+				<img src="img/dev/place.png"><a href="#specify" class="pozit-content_dekor fancyboxnews">Уточнить местоположение</a><br>
+				<button class="button_basket"><span class="button_text closebox_button">Уточнить</span><img class="arrow_poz" src="img/dev/arrow_button.png"></button>
+			</div>
+		</div>
+{/template}
+
+{template specify}
+		<div class="pozit" id="specify">
+			<div class="pozit-header">Укажите ваш город<img class="closebox" src="img/dev/close.png"></div>
+			<div class="pozit-content" id="specify-content">
+
+
+    <ul>
+
+        <li>
+        <div><a class="g-underline tower SPE" href="#mesto" >Санкт-Петербург
+        </a></div>
+
+
+        <ul>
+
+        <li>
+        <div><a class="g-underline SPE" href="#mesto" >Волхов
+        </a></div>
+
+    </li>
+
+        <li>
+        <div><a class="g-underline SPE" href="#mesto" >Всеволожск
+        </a></div>
+
+    </li>
+
+        <li><div><a class="g-underline SPE">Выборг
+        </a></div>
+
+    </li>
+
+        <li>
+        <div><a class="g-underline SPE" href="#mesto" >Гатчина
+        </a></div>
+
+    </li>
+
+        <li>
+        <div><a class="g-underline SPE" href="#mesto" >Ивангород
+        </a></div>
+
+    </li>
+
+        <li>
+        <div><a class="g-underline SPE" href="#mesto" >Кингисепп
+        </a></div>
+
+    </li>
+
+        <li>
+        <div><a class="g-underline SPE" href="#mesto" >Кириши
+        </a></div>
+
+    </li>
+
+        <li>
+        <div><a class="g-underline SPE" href="#mesto" >Кировск
+        </a></div>
+
+    </li>
+
+        <li>
+        <div><a class="g-underline SPE" href="#mesto" >Колпино
+        </a></div>
+
+    </li>
+
+        <li>
+        <div><a class="g-underline SPE" href="#mesto" >Красное Село
+        </a></div>
+
+    </li>
+
+        <li>
+        <div><a class="g-underline SPE" href="#mesto" >Кронштадт
+        </a></div>
+
+    </li>
+
+        <li>
+        <div><a class="g-underline SPE" href="#mesto" >Лодейное Поле
+        </a></div>
+
+    </li>
+
+        </ul><ul>
+
+        <li>
+        <div><a class="g-underline SPE" href="#mesto" >Ломоносов
+        </a></div>
+
+    </li>
+
+        <li>
+        <div><a class="g-underline SPE" href="#mesto" >Луга
+        </a></div>
+
+    </li>
+
+        <li>
+        <div><a class="g-underline SPE" href="#mesto"  >Петергоф
+        </a></div>
+
+    </li>
+
+        <li>
+        <div><a class="g-underline SPE" href="#mesto" >Подпорожье
+        </a></div>
+
+    </li>
+
+        <li>
+        <div><a class="g-underline SPE" href="#mesto" >Приозерск
+        </a></div>
+
+    </li>
+
+        <li>
+        <div><a class="g-underline SPE" href="#mesto" >Пушкин
+        </a></div>
+
+    </li>
+
+        <li>
+        <div><a class="g-underline SPE" href="#mesto" >Светогорск
+        </a></div>
+
+    </li>
+
+        <li>
+        <div><a class="g-underline SPE" href="#mesto" >Сертолово
+        </a></div>
+
+    </li>
+
+        <li>
+        <div><a class="g-underline SPE" href="#mesto" >Сестрорецк
+        </a></div>
+
+    </li>
+
+        <li>
+        <div><a class="g-underline SPE" href="#mesto" >Сланцы
+        </a></div>
+
+    </li>
+
+        <li>
+        <div><a class="g-underline SPE" href="#mesto" >Сосновый Бор
+        </a></div>
+
+    </li>
+
+        <li>
+        <div><a class="g-underline SPE" href="#mesto" >Тихвин
+        </a></div>
+
+    </li>
+
+        <li>
+        <div><a class="g-underline SPE" href="#mesto" >Тосно
+        </a></div>
+
+    </li>
+
+    </ul>
+
+    </li>
+
+    </ul>
+
+    <ul>
+
+        <li>
+        <div><a class="g-underline tower" href="#mesto" >Москва
+        </a></div>
+
+
+        <ul>
+
+        <li>
+        <div><a class="g-underline" href="#mesto" >Балашиха
+        </a></div>
+
+    </li>
+
+        <li>
+        <div><a class="g-underline" href="#mesto" >Жуковский
+        </a></div>
+
+    </li>
+
+        <li>
+        <div><a class="g-underline" href="#mesto" >Зеленоград
+        </a></div>
+
+    </li>
+
+        <li>
+        <div><a class="g-underline" href="#mesto" >Коломна
+        </a></div>
+
+    </li>
+
+        <li>
+        <div><a class="g-underline" href="#mesto" >Люберцы
+        </a></div>
+
+    </li>
+
+        <li>
+        <div><a class="g-underline" href="#mesto" >Одинцово
+        </a></div>
+
+    </li>
+
+        <li>
+        <div><a class="g-underline" href="#mesto" >Подольск
+        </a></div>
+
+    </li>
+
+        <li>
+        <div><a class="g-underline" href="#mesto" >Раменское
+        </a></div>
+
+    </li>
+
+        <li>
+        <div><a class="g-underline" href="#mesto" >Реутов
+        </a></div>
+
+    </li>
+
+        <li>
+        <div><a class="g-underline" href="#mesto" >Химки
+        </a></div>
+
+    </li>
+
+    </ul>
+
+    </li>
+
+    </ul>
+
+    <ul>
+
+        <li>
+        <div><a class="g-underline tower" href="#mesto" >Великий Новгород
+        </a></div>
+
+
+    </li>
+
+        <li>
+        <div><a class="g-underline tower" href="#mesto" >Владимир
+        </a></div>
+
+
+    </li>
+
+        <li>
+        <div><a class="g-underline tower" href="#mesto" >Воронеж
+        </a></div>
+
+
+    </li>
+
+        <li>
+        <div><a class="g-underline tower" href="#mesto" >Иваново
+        </a></div>
+
+
+    </li>
+
+        <li>
+        <div><a class="g-underline tower" href="#mesto" >Казань
+        </a></div>
+
+
+        <ul>
+
+        <li>
+        <div><a class="g-underline" href="#mesto" >Альметьевск
+        </a></div>
+
+    </li>
+
+        <li>
+        <div><a class="g-underline" href="#mesto" >Зеленодольск
+        </a></div>
+
+    </li>
+
+        <li>
+        <div><a class="g-underline" href="#mesto" >Лениногорск
+        </a></div>
+
+    </li>
+
+        <li>
+        <div><a class="g-underline" href="#mesto" >Набережные Челны
+        </a></div>
+
+    </li>
+
+        <li>
+        <div><a class="g-underline" href="#mesto" >Нижнекамск
+        </a></div>
+
+    </li>
+
+        <li>
+        <div><a class="g-underline" href="#mesto" >Чистополь
+        </a></div>
+
+    </li>
+
+    </ul>
+
+    </li>
+
+        <li>
+        <div><a class="g-underline tower" href="#mesto" >Калуга
+        </a></div>
+
+
+    </li>
+
+        <li>
+        <div><a class="g-underline tower" href="#mesto" >Краснодар
+        </a></div>
+
+
+        <ul>
+
+        <li>
+        <div><a class="g-underline" href="#mesto" >Анапа
+        </a></div>
+
+    </li>
+
+        <li>
+        <div><a class="g-underline" href="#mesto"  >Кропоткин
+        </a></div>
+
+    </li>
+
+        <li>
+        <div><a class="g-underline" href="#mesto" >Новороссийск
+        </a></div>
+
+    </li>
+
+        <li>
+        <div><a class="g-underline" href="#mesto" >Славянск-на-Кубани
+        </a></div>
+
+    </li>
+
+        <li>
+        <div><a class="g-underline" href="#mesto" >Туапсе
+        </a></div>
+
+    </li>
+
+        <li>
+        <div><a class="g-underline" href="#mesto" >Усть-Лабинск
+        </a></div>
+
+    </li>
+
+    </ul>
+
+    </li>
+
+    </ul>
+
+    <ul>
+
+        <li>
+        <div><a class="g-underline tower" href="#mesto" >Нижний Новгород
+        </a></div>
+
+
+        <ul>
+
+        <li>
+        <div><a class="g-underline" href="#mesto" >Бор
+        </a></div>
+
+    </li>
+
+        <li>
+        <div><a class="g-underline" href="#mesto" >Дзержинск
+        </a></div>
+
+    </li>
+
+        <li>
+        <div><a class="g-underline" href="#mesto" >Кстово
+        </a></div>
+
+    </li>
+
+        <li>
+        <div><a class="g-underline" href="#mesto" >Павлово
+        </a></div>
+
+    </li>
+
+    </ul>
+
+    </li>
+
+        <li>
+        <div><a class="g-underline tower" href="#mesto" >Петрозаводск
+        </a></div>
+
+
+        <ul>
+
+        <li>
+        <div><a class="g-underline" href="#mesto" >Кондопога
+        </a></div>
+
+    </li>
+
+        <li>
+        <div><a class="g-underline" href="#mesto" >Олонец
+        </a></div>
+
+    </li>
+
+    </ul>
+
+    </li>
+
+        <li>
+        <div><a class="g-underline tower" href="#mesto" >Псков
+        </a></div>
+
+
+    </li>
+
+        <li>
+        <div><a class="g-underline tower" href="#mesto" >Ростов-на-Дону
+        </a></div>
+
+
+    </li>
+
+        <li>
+        <div><a class="g-underline tower" href="#mesto" >Рязань
+        </a></div>
+
+
+    </li>
+
+        <li>
+        <div><a class="g-underline tower" href="#mesto" >Самара
+        </a></div>
+
+
+        <ul>
+
+        <li>
+        <div><a class="g-underline" href="#mesto" >Тольятти
+        </a></div>
+
+    </li>
+
+    </ul>
+
+    </li>
+
+        <li>
+        <div><a class="g-underline tower" href="#mesto" >Саратов
+        </a></div>
+
+
+    </li>
+
+        <li>
+        <div><a class="g-underline tower" href="#mesto" >Тамбов
+        </a></div>
+
+
+    </li>
+
+        <li>
+        <div><a class="g-underline tower" href="#mesto" >Тверь
+        </a></div>
+
+
+    </li>
+
+        <li>
+        <div><a class="g-underline tower" href="#mesto" >Тула
+        </a></div>
+
+
+    </li>
+
+        <li>
+        <div><a class="g-underline tower" href="#mesto" >Ярославль
+        </a></div>
+
+
+    </li>
+
+    </ul>
+
+
+			</div>
+			<div class="clear"></div>
+		</div>
+{/template}

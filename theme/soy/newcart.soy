@@ -1,0 +1,998 @@
+{namespace soy.newcart}
+
+{template map-levashovskii-img}
+  <a target="_blank" href="http://maps.google.ru/maps/ms?ie=UTF8&amp;hl=ru&amp;msa=0&amp;msid=204535711443730096877.0004a50b1096789db9fff&amp;ll=59.968179,30.287976&amp;spn=0.003759,0.00912&amp;z=16&amp;source=embed"><img src="/img/map/levashovskii.jpg" alt="Карта Левашовский пр., д.12"></a>
+{/template}
+
+{template map-botanicheskaya-img}
+  <a target="_blank" href="http://maps.google.ru/maps/ms?ie=UTF8&amp;hl=ru&amp;msa=0&amp;msid=208039224828410786056.00049992cae7aa9de3fd8&amp;source=embed&amp;ll=59.872893,29.846635&amp;spn=0.007539,0.018239&amp;z=15"><img src="/img/map/botanicheskya.jpg" alt="Карта Петергоф, ул. Ботаническая, д.18, к.3"></a>
+{/template}
+
+{template map-levashovskii}
+  <input type="radio" id="pickup-1" name="pickup" CHECKED />
+  <label for='pickup-1' class='for' style='float:none'><b>Левашовский пр., д.12</b><br/>
+    <small>10:00 - 22:00</small></label><br/>
+  <a href="#" class="show_hidden">Карта проезда</a>
+  <div class="hide">
+    {call map-levashovskii-img /}
+  </div>
+{/template}
+
+{template map-botanicheskaya}
+  <input type="radio" id="pickup-2" name="pickup" />
+  <label for='pickup-2' class='for' style='float:none'><b>Петергоф, ул. Ботаническая, д.18, к.3</b><br />
+    <small>11:00 - 21:00, перерыв 14:00 - 15:00</small></label><br />
+  <a href="#" class="show_hidden">Карта проезда</a>
+  <div class="hide">
+    {call map-botanicheskaya-img /}
+  </div>
+{/template}
+
+{template head}
+  <head>
+	<title>Интернет магазин ЦиFры оформление заказа 320-8080</title>
+
+	<!-- Meta -->
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<meta name="keywords" content=" " />
+	<meta name="description" content=" " />
+    <meta name='yandex-verification' content='46096f4a2b6678ca' />
+<meta name="google-site-verification" content="DLzcPenEQiGMh4ZhqmAOL6sZpTCRzDXB6QkAdA-sRXU" />
+
+	<!-- Favicon -->
+	<link rel="Shortcut Icon" type="image/x-icon" href="/favicon.ico" />
+
+
+	<!-- Styles -->
+ 	<link rel="stylesheet" type="text/css" media="screen, projection" href="/css/cart.css" />
+ 	<link href="/css/plugins/fancybox/fancybox.css" rel="stylesheet" type="text/css" media="all" />
+	<link href="/css/plugins/fancybox/fancybox-thumbs.css" rel="stylesheet" type="text/css" media="all" />
+	<!--[if lte IE 6]><link href="/css/cart-ie.css" rel="stylesheet" media="all" /><![endif]-->
+
+	<!-- Scripts -->
+	<script type="text/javascript" src="/js/jquery.js"></script>
+	<script type="text/javascript" src="/js/plugins/fancybox/fancybox.js"></script>
+	<script type="text/javascript" src="/js/plugins/fancybox/fancybox-thumbs.js"></script>
+ 	<script type="text/javascript" src="/js/function.js"></script>
+ 	<script type="text/javascript" src="/js/plugins/cookie.js"></script>
+ 	<script type="text/javascript" src="/js/plugins/jquery.inputmask.js"></script>
+
+<!-- pickpoint -->
+  <script type="text/javascript" src="http://pickpoint.ru/select/postamat.js" /></script>
+
+<!-- GeoIP -->
+<script src="http://j.maxmind.com/js/geoip.js" charset="ISO-8859-1" type="text/javascript" ></script>
+  </head>
+{/template}
+
+{template header}
+	<div id="top_cells">
+		<div class="logo"><img src="/img/logo.png" alt=" " width="141" height="58" /></div>
+		<div class="phone"><img src="/img/phone.png" alt=" " width="158" height="17" /></div>
+		/* <div class="places"> <img src="/img/dev/mesto.png">Вы здесь: <a href="#specify" class="city_hd fancyboxnews">Выберите город</a> </div> */
+	</div><!-- top_cells:end -->
+{/template}
+
+{template header1}
+	<div id="top_cells">
+		<div class="logo"><img src="/img/logo.png" alt=" " width="141" height="58" /></div>
+		<div class="phone"><img src="/img/phone.png" alt=" " width="158" height="17" /></div>
+		<div class="places"> <img src="/img/dev/mesto.png">Вы здесь: <a href="#specify" class="city_hd fancyboxnews">Выберите город</a> </div>
+	</div><!-- top_cells:end -->
+{/template}
+
+
+{template header-linked}
+	<div id="top_cells">
+		<div class="logo"><a href="/"><img src="/img/logo.png" alt=" " width="141" height="58" /></a></div>
+		<div class="phone"><img src="/img/phone.png" alt=" " width="158" height="17" /></div>
+	</div><!-- top_cells:end -->
+{/template}
+
+
+
+{template leftcells}
+  <div id="left_cells">
+
+	<div class="page_title">
+	  <h1>Оформление заказа</h1>
+	  <div>Для оформления покупки заполните краткую форму:</div>
+<div id="ptt">или используйте</div><div> <a href="http://market.yandex.ru/addresses.xml?callback=http%3A%2F%2Fwww.320-8080.ru%2Fcheckout"><img id="yabut" src="/img/jan2012/3.png" border="0" /></a></div>
+	</div>
+
+	<div class="checkout cognomen">
+	  <div class="take_discount">
+		<div class="title">
+		  <span class="name">Хотите получить бонус?</span>
+		  <span class="count">%</span>
+		</div>
+		<div class="content">
+
+		  <div class="bg_left"></div>
+		  <div class="bg_right"></div>
+		  <div>Просто укажите свои имя, фамилию и электронную почту!</div>
+		  <div>После этого Вы получите нашу бонусную карту. Она позволяет расплачиваться за товар с помощью бонусов, начисляемых за каждую совершенную покупку. Это очень просто и выгодно!</div>
+		</div>
+	  </div><!-- take_discount:end -->
+
+	  <div class="empty">
+		<div class="row">
+		  <div class="name"><span class="red">*</span>Телефон:</div>
+
+          <div class="field">
+          	<input id="phone" type="text" class="step_field focus.inputmask required"/>
+          </div>
+		  <div class="desc">в формате 8 (812) 320-80-80</div>
+		</div>
+		<div class="row">
+		  <div class="name">Имя:</div>
+		  <div class="field"><input id="name" type="text" class="step_field"/></div>
+		</div>
+        <div class="row">
+		  <div class="name">Фамилия:</div>
+		  <div class="field"><input id="family" type="text" class="step_field"/></div>
+		</div>
+
+		<div class="row">
+
+		  <div class="name">Электронная почта (e-mail):</div>
+		  <div class="field"><input id="email" type="text" class="step_field"/></div>
+		</div>
+	  </div><!-- empty:end -->
+	</div><!-- cognomen:end -->
+
+	<div class="checkout delivery">
+	  <div class="title"><h2><a href="#show_pickup" id="show_pickup" class="none geo_lock_off">Забрать самостоятельно</a> <span class="geo_lock_off"></span><span class="geo_lock_off">или</span> <a href="#show_express" id="show_express"><span class="geo_lock_off">д</span><span class="geo_lock_on">Д</span>оставить курьером</a></h2></div>
+
+
+	  <div class="express">
+		<div class="desc">Укажите адрес, по которому вам необходимо будет доставить заказ:</div>
+		<div class="more_info">
+		  <div class="bg_left"></div>
+		  <div class="bg_right"></div>
+          <div class="content">
+            <div class="when geo_lock_off"><span class="grey">Привезем</span> завтра в течение дня!</div>
+            <div class="when geo_lock_on"><span class="grey">Отправим</span> сегодня!</div>
+            <div class="how">
+			/*дляакции*/
+			<p><strong>АКЦИЯ:</strong> Бесплатная доставка!</p>
+			/* <p><strong>АКЦИЯ:</strong> Доставка курьером 100 рублей!</p> */
+			/*   <p>Весь апрель при покупке любого товара из ряда групп, представленных в нашем магазине, вы можете заказать доставку до квартиры всего за 100 рублей!</p> */
+			<div class="geo_lock_off">
+		             Стоимость <b>стандартной доставки составляет <span class="big">300</span> рублей</b> для некрупногабаритных товаров по Санкт-Петербургу.
+		     </div>
+		     <div class="geo_lock_on">
+		             Стоимость <b>стандартной доставки</b> пропорциональна расстоянию, на которое осуществляется доставка (от <b>500 рублей</b>)
+		     </div>
+             <br>
+            <div class="more">
+              <a href="#" class="show_hidden">Подробнее о доставке</a>
+              <div class="hide">
+				<p>Время доставки: ежедневно с 11-00 до 19-00 часов. С Вами обязательно свяжется диспетчер для согласования более точного интервала доставки (2-3 часа).</p>
+                <b class="geo_lock_off">Дополнительные тарифы на доставку</b><span class="geo_lock_off"><br>(только для некрупногабаритных товаров)<br><br></span>
+
+                <ul>
+                   /* <li> «День в день» (400 рублей) – Вы получаете товар в тот же день, в какой его и заказали</li>*/
+                    /*<li> «Точное время» (500 рублей) – Вы получаете товар на следующий день в указанном Вами интервале в 15 минут</li>
+                    <li>«F-экспресс» (600 рублей) – Вы получаете товар в тот же день в течение 3 часов</li>*/
+                </ul>
+                <b class="geo_lock_off">Доставка крупногабаритных товаров<br></b>
+                <p class="geo_lock_off">Доставка крупногабаритной бытовой техники составляет 500 рублей по Санкт-Петербургу. Кроме того, при доставке крупногабаритных товаров оплачивается также работа грузчика в соответствии с габаритами заказа:</p>
+                 <ul class="geo_lock_off">
+                     <li> КБТ до 60 кг - 200 рублей к стоимости доставки при наличии лифта и 100 рублей за этаж к стоимости доставки в отсутствие лифта</li>
+                     <li>КБТ от 60 до 90 кг - 300 рублей к стоимости доставки при наличии лифта и 150 рублей за этаж к стоимости доставки в отсутствие лифта</li>
+					 <li>КБТ более 90 кг - 400 рублей к стоимости доставки при наличии лифта и подъем без лифта не осуществляется</li>
+					</ul>
+				<p>Стоимость доставки телевизора с диагональю больше 51 дюйма составляет 500 рублей.</p>
+                 <b class="geo_lock_off">Доставка по Ленинградской области<br></b>
+                 <p class="geo_lock_off">Стоимость доставки за пределы Санкт-Петербурга пропорциональна расстоянию, на которое осуществляется доставка (от 500 рублей).</p>
+                 <a href="/delivery" target="_blank">Вся информация о доставке →</a>
+              </div>
+            </div>
+            </div>
+          </div>
+        </div><!-- more_info:end -->
+
+		<div class="empty">
+                                      /*
+									  <div class="row">
+										<div class="name">Город</div>
+										<div class="field">
+										  <select name="" id="" class="select_field">
+											<option value="">Санкт-Петербург</option>
+
+											<option value="">Москва</option>
+											<option value="">Ярославль</option>
+										  </select>
+										</div>
+									  </div>
+                                        */
+									  <div class="row">
+										<div class="name">Адрес:</div>
+
+										<div class="field"><input id="addr" type="text" class="step_field"/></div>
+									  </div>
+									  <div class="row">
+										<div class="name">Комментарий:</div>
+										<div class="field"><input id="courier_comment" type="text" class="step_field"/></div>
+										<div class="desc">Удобное время доставки или другие примечания</div>
+									  </div>
+		</div><!-- empty:end -->
+	  </div><!-- express:end -->
+
+
+	  <div class="pickup">
+		<div class="desc">Вы можете сами забрать заказ в одном из удобных для вас магазинов, как только он будет сформирован.<br /><span class="big">Выберите наиболее удобный для вас магазин:</span></div>
+		<div class="more_info">
+		  <div class="bg_left"></div>
+		  <div class="bg_right"></div>
+		  <div class="content">
+        <div class="when">
+          <span class="grey">Из пункта выдачи можно забрать </span> с завтрашнего дня</div>
+        /* <div class="when"> */
+        /*   <span class="grey">Забрать через постамат</span></div> */ /* pickpoint */
+        /* <div class="how"> */
+        /*   - стоимость 100 рублей <br/> */
+        /*   - выберите удобный для Вас постамат <br/> */
+        /*   - заберите заказ в любое время <br/> */
+        /*   - SMS - оповещение <br/> */
+        /*   - максимальные габариты 36х36х60</div> */
+			  <div class="how">Или <a href="#" id="express">доставим</a> за 300 рублей</div>
+			</div>
+		</div><!-- more_info:end -->
+
+		<div class="empty">
+		  <div class="row">
+            {call map-levashovskii /}
+		  </div>
+
+		  <div class="row">
+            {call map-botanicheskaya /}
+		  </div>
+      /* pickpoint */
+      <div class="row">
+        <input type="radio" id="pickup-3" name="pickup" />
+        <label for='pickup-3' class='for' style='float:none'><b>Забрать из постамата (100р)</b><br />
+          <small> <b>ограничения:</b>  максимальные габариты составляют 36х36х60</small></label><br />
+
+		     <label for='div-pickpoint-address' class='for' style='float:none'>
+           /* <div class="when"> */
+             {literal}<a href="#" onclick="PickPoint.open(pickpointCallback,{city:'petersburg',numbers:new Array('7801-001','7801-003','7801-004','7801-005','7801-006','7801-007','7801-008','7801-009','7801-011','7801-012','7801-013','7801-014','7801-015','7801-016','7801-017','7801-018','7801-019','7801-020','7801-021','7801-023','7801-024','7801-025','7801-026','7801-027','7801-028','7801-029','7801-030','7801-031','7802-018','7802-019','7802-020','7802-022','7802-023','7802-024','7802-025','4701-001','4702-001'),cities:new Array('petersburg')});return false">Выберите адрес постамата:</a>
+           {/literal}
+         /* </div> */
+         </label>
+         <div class="hide" id="div-pickpoint-address">
+          <div class="row">
+            <div class="field"><input type="text" id="pickpoint-address" class="step_field" DISABLED></div>
+            </div>
+        </div>
+      </div>
+
+		  <div class="row">
+			<div class="name">Комментарий:</div>
+			<div class="field"><input id="pickup_comment" type="text" class="step_field"/></div>
+			<div class="desc">Ваши примечания</div>
+		  </div>
+		</div><!-- empty:end -->
+	  </div><!-- pickup:end -->
+
+	</div><!-- delivery:end -->
+
+
+	<div class="checkout payments">
+	  <div class="title"><h2>Оплата заказа</h2></div>
+	  <div class="payment_method">
+		<div class="bg_left"></div>
+		<div class="bg_right"></div>
+		<div class="item active border5"><input type="radio" checked="checked" name="payment" id="payment_method-1"/> Наличные</div>
+		<div class="item"><input type="radio" name="payment" id="payment_method-2"/> Кредитная карта</div>
+
+									/*<div class="item"><input type="radio" name="payment" id="payment_method-3"/> В Кредит</div>*/
+		<div class="item"><input type="radio" name="payment" id="payment_method-4"/> По безналичному расчету</div>
+	  </div>
+	  <div class="method_desc">
+		<div class="payment_method-1">Самый простой и удобный способ оплаты. После оплаты вы получите кассовый и при необходимости товарный чеки у нас в магазине и заберете ваш заказ.</div>
+		<div class="payment_method-2 hide">Вы можете оплатить товар кредитной картой при доставке курьером или самостоятельно в одном из наших магазинов.</div>
+
+		<div class="payment_method-3 hide">Описание процесса покупки в 2 строки. Дать общее представление о том как происходит и что требуется от жертвы.</div>
+		<div class="payment_method-4 hide">
+		  Для организаций имеется возможность оплаты банковским переводом. <strong>Обратите внимание!</strong> При безналичном платеже возможен самовывоз с Левашовского пр. 12 или доставка по адресу. Нет доставки из Петергофа и через пастоматы.
+		  <div class="more">
+			<span class="red">*</span>Реквизиты юридического лица:<br />
+            <table><tr><td>
+				  <textarea name="" id="bankaccount" cols="30" rows="10" class="step_area required"></textarea></td>
+                <td><p id="rekvizitu-urlic">
+                    <b>Необходимые реквизиты: </b><br/>
+                    ИНН\КПП</br>
+                  Название организации<br/>
+                  Телефон\факс <br/>
+                  Фактический адрес <br/>
+                  Юридический адрес</div></td></tr></table>
+		</div>
+
+	  </div>
+
+	</div>
+
+	<div class="content">
+	  <div class="bg_left"></div>
+	  <div class="bg_right"></div>
+	  <div class="have_disc">
+		<div class="btn">
+			<input id="discount-card" type="checkbox" name="val" />
+			<label for="discount-card">У меня есть бонусная карта</label>
+		</div>
+		<div class="hide">
+
+		  <p>Бонусная карта (карта участника F-клуба) позволяет расплачиваться за товар с помощью бонусов, начисляемых за каждую совершенную покупку. Если у вас она есть – укажите ее номер. Если пока нет – укажите свое имя, фамилию и электронную почту и вы получите ее бесплатно. {if $bonuscount}Если ваша карта активна, вы получите <b>{$bonuscount} F-{$bonusname}</b>{/if}</p>
+		  <p>Номер бонусной карты: <br /><input id="discount-card-number" type="text" class="step_field_short"/></p>
+		</div>
+	  </div><!-- have_disc:end -->
+	</div>
+
+	<div class="order_now"><a href="/thanks" rel="submit-cookie"><img src="/img/cart-images/right/shopcart_order_now.jpg" alt=" " width="293" height="88" /></a></div>
+  </div><!-- step_3:end -->
+
+  </div><!-- left_cells:end -->
+{/template}
+
+
+
+{template product-item}
+  <div class="item">
+	<div class="number">{$numpos}.</div>   //номер в списке |  1.
+	<div class="count">{$count} шт.</div>  // количество |  12шт.
+	<div class="name">{$name}</div>   // наименование
+	<div class="price">{$price} рублей</div> //цена |  57 550 рублей
+  </div>
+{/template}
+
+{template rightcells}
+  <div id="right_cells">
+	<div class="shopcart">
+	  <div class="top">
+		<div class="count_item">{$productscount}</div>
+		<div class="title">Ваш заказ</div>
+		<div class="info">Всего {$productscount} {$tovar} на сумму <span class="price">{$pricesum}</span> руб.</div>
+	  </div>
+
+	  <div class="content">
+        {foreach $product in $products}
+	      {$product | noAutoescape}
+	    {/foreach}
+        <div class="item" id="dostavka"
+             {if not $dostavka}style="display:none"{/if}>
+	      <div class="number">&nbsp;</div>
+	      <div class="count">&nbsp;</div>
+	      <div class="name">Доставка</div>
+	      <div class="price">{$deliverysum} рублей</div>
+        </div>
+
+		<div class="change">
+          {if $notfinished}<a href="/cart">Изменить заказ</a>{else}ваш заказ{/if}
+        </div>
+
+	  </div>
+
+      {if $notfinished}
+		<div class="order_now"><a href="/thanks" rel="submit-cookie"><img src="/img/cart-images/right/shopcart_order_now.jpg" alt=" " width="293" height="88" /></a></div>
+      {/if}
+
+	</div><!-- shopcart:end -->
+
+  </div><!-- right_cells:end -->
+{/template}
+
+
+
+{template fullpage}
+  <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+    <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ru">
+      {$head | noAutoescape}
+      <body>
+        {literal}
+          <!-- Yandex.Metrika counter -->
+          <div style="display:none;"><script type="text/javascript">
+              (function(w, c) {
+              (w[c] = w[c] || []).push(function() {
+              try {
+              w.yaCounter3769609 = new Ya.Metrika({id:3769609,
+              clickmap:true});
+              }
+              catch(e) { }
+              });
+              })(window, 'yandex_metrika_callbacks');
+          </script></div>
+          <script src="//mc.yandex.ru/metrika/watch_visor.js" type="text/javascript" defer="defer"></script>
+          <noscript><div><img src="//mc.yandex.ru/watch/3769609" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+          <!-- /Yandex.Metrika counter -->
+        {/literal}
+        <div id="style-nes" class="wraper">
+          {call header /}
+	      <div id="main_cells">
+			<table width="100%" class="clear_table">
+				<tr>
+				  <td>
+	                {$leftcells | noAutoescape}
+				  </td>
+	              {if $rightcells}
+					<td width="30%">
+	                  {$rightcells | noAutoescape}
+					</td>
+	              {/if}
+				</tr>
+			  </table>
+		  </div><!-- main_cells:end -->
+
+        {call footer /}
+        {call soy.index.specify /}
+        </div><!-- style-nes:end -->
+
+        /* {call soy.index.livetex /} */
+        {call soy.index.remarketing /}
+      </body>
+
+    </html>
+  {/template}
+
+
+
+{template fullpage1}
+  <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+    <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ru">
+      {$head | noAutoescape}
+      	<script type="text/javascript" src="/js/plugins/fancybox/fancybox.js"></script>
+	<script type="text/javascript" src="/js/plugins/fancybox/fancybox-thumbs.js"></script>
+	<script type="text/javascript" src="/js/test.js"></script>
+		<link href="/css/plugins/fancybox/fancybox.css" rel="stylesheet" type="text/css" media="all" />
+	<link href="/css/plugins/fancybox/fancybox-thumbs.css" rel="stylesheet" type="text/css" media="all" />
+      <body>
+        {literal}
+          <!-- Yandex.Metrika counter -->
+          <div style="display:none;"><script type="text/javascript">
+              (function(w, c) {
+              (w[c] = w[c] || []).push(function() {
+              try {
+              w.yaCounter3769609 = new Ya.Metrika({id:3769609,
+              clickmap:true});
+              }
+              catch(e) { }
+              });
+              })(window, 'yandex_metrika_callbacks');
+          </script></div>
+          <script src="//mc.yandex.ru/metrika/watch_visor.js" type="text/javascript" defer="defer"></script>
+          <noscript><div><img src="//mc.yandex.ru/watch/3769609" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+          <!-- /Yandex.Metrika counter -->
+        {/literal}
+        <div id="style-nes" class="wraper">
+          {call header1 /}
+	      <div id="main_cells">
+			<table width="100%" class="clear_table">
+				<tr>
+				  <td>
+	                {$leftcells | noAutoescape}
+				  </td>
+	              {if $rightcells}
+					<td width="30%">
+	                  {$rightcells | noAutoescape}
+					</td>
+	              {/if}
+				</tr>
+			  </table>
+		  </div><!-- main_cells:end -->
+
+        {call footer /}
+        {call soy.index.specify /}
+        </div><!-- style-nes:end -->
+
+        /* {call soy.index.livetex /} */
+        {call soy.index.remarketing /}
+      </body>
+
+    </html>
+  {/template}
+
+
+//
+
+  {template head-redirect}
+    <head>
+	  <title>Интернет магазин ЦиFры оформление заказа 320-8080</title>
+
+	  <!-- Meta -->
+	  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	  <meta name="keywords" content=" " />
+	  <meta name="description" content=" " />
+      <meta name='yandex-verification' content='46096f4a2b6678ca' />
+<meta name="google-site-verification" content="DLzcPenEQiGMh4ZhqmAOL6sZpTCRzDXB6QkAdA-sRXU" />
+    <meta http-equiv="refresh" content="{$timeout};url={$url}">
+
+	    <!-- Favicon -->
+	    <link rel="Shortcut Icon" type="image/x-icon" href="/favicon.ico" />
+	    <link href="/css/plugins/fancybox/fancybox.css" rel="stylesheet" type="text/css" media="all" />
+		<link href="/css/plugins/fancybox/fancybox-thumbs.css" rel="stylesheet" type="text/css" media="all" />
+
+	    <!-- Styles -->
+	    <link rel="stylesheet" type="text/css" media="screen, projection" href="/css/cart.css" />
+	    <!--[if lte IE 6]><link href="/css/cart-ie.css" rel="stylesheet" media="all" /><![endif]-->
+
+
+	    <script type="text/javascript" src="/js/plugins/fancybox/fancybox.js"></script>
+		<script type="text/javascript" src="/js/plugins/fancybox/fancybox-thumbs.js"></script>
+      </head>
+    {/template}
+
+    {template leftcells-empty}
+      <div id="left_cells">
+	    <div class="page_title">
+	      <h1>Ваша корзина пуста</h1>
+	      <div>Через несколько секунд вы будете перемещены на главную страницу. Если этого не происходит — нажмите на ссылку <a href="/">Интернет магазин ЦиFры</a>.</div>
+	    </div>
+      </div>
+    {/template}
+
+    {template thanks}
+
+<script language="javascript" src="http://www.everestjs.net/static/st.v2.js"></script>
+<script language="javascript">
+var ef_event_type="transaction";
+var ef_transaction_properties = "ev_Orders=1&ev_Revenue={$sum}&ev_transid={$order_id}";
+var ef_segment = "";
+var ef_search_segment = "";
+var ef_userid="3911";
+var ef_pixel_host="pixel.everesttech.net";
+var ef_fb_is_app = 0;
+var ef_allow_3rd_party_pixels = 1;
+effp();
+</script>
+<noscript>
+<img src="http://pixel.everesttech.net/3911/t?ev_Orders=1&ev_Revenue={$sum}&ev_transid={$order_id}" width="1" height="1"/>
+</noscript>
+
+      <div id="left_cells">
+        <p><a href="/">&larr; Вернуться на главную страницу</a></p>
+        <hr>
+          <div class="page_title">
+	        <h1>Спасибо за покупку!</h1>
+          </div>
+
+          <div class="checkout-thanks">
+            <p class="h2">Номер заказа &mdash; №{$order_id}</p>
+            <p>Этот номер пригодится вам, если вы захотите сами позвонить в службу доставки. Вы сможете сделать это по телефону <big>(812) 320-80-80</big></p>
+            <div class="checkout-green">
+              {if $name}
+                <p class="h2">{$name}, мы получили ваш заказ.</p>
+                {else}
+              <p class="h2">Мы получили ваш заказ.</p>
+            {/if}
+            <p>В течение часа с вами свяжется наш менеджер и уточнит детали заказа.</p>
+            {if $email}
+              <p>На ваш адрес <b>{$email}</b> отправлено письмо с информацией о заказе.</p>
+            {/if}
+            </div>
+            {if $courier}
+			  /*дляакции*/
+			  <strong>АКЦИЯ:</strong><a href="http://www.320-8080.ru/articles/besplatnaja_dostavka_2013"> Бесплатная доставка!</a>
+/* <strong>АКЦИЯ:</strong><a href="http://www.320-8080.ru/articles/delivery2"> Доставка курьером 100 рублей!</a> */
+
+
+              {else}
+              <div class="delivery">
+                <p class="h2">Забрать самостоятельно</p><p class="addr">{$addr}</p>
+                {if $pickup != 'pickup-3'}
+                  <a href="#" class="show_hidden">Карта проезда</a>
+	                <div class="hide">
+                    {$map | noAutoescape}
+                  </div>
+                  {/if}
+              </div>
+                <br>
+            {/if}
+            {if $ekk}
+              <p>Номер карты F-клуба: {$ekk}<br/>
+                {if $bonuscount}Если ваша карта активна, вы получите <b>{$bonuscount} F-{$bonusname}</b>{/if}
+              </p>
+            {/if}
+            {if $comment}
+              <p>Комменарий к заказу: {$comment}</p>
+            {/if}
+            {$oplata | noAutoescape}
+            <p class="price"><big>{$sum}</big> руб.{if $courier or ($deliverysum > 0)} + доставка <big>{$deliverysum}</big> руб.</p>{/if}</div>
+	      <div>
+
+	        <hr/>
+	        <p><a href="/">&larr; Вернуться на главную страницу</a></p>
+          </div>
+			<div class="invite_to_vk_group">
+				<a href="http://vk.com/zifry3208080">
+			  		<span>Не забудьте подписаться на нашу группу</span>
+			  		<span class="logo_vk">В</span>
+			  		<span>контакте!</span>
+			  	</a>
+				<p>На ней мы проводим интересные акции и дарим ценные призы участникам. <br>Помимо этого Вас ждут самые актуальные новости IT-мира и гарантированный заряд творческого вдохновения!</p>
+			</div><!-- invite to vk group -->
+        </div>
+      {/template}
+
+      {template cart-content}
+
+        <div class="content">
+          <div class="full">
+	        <div class="full2">
+	          <div style="float:left; margin-right: 50px;">
+	            <p class="breadcrumbs"><a href="/">&larr; Продолжить покупки</a></p>
+              </div>
+              <div>
+                <p class="h1">Корзина</p>
+              </div>
+	        </div>
+
+			<div class="bonus-outer">
+	        	<p class="discount-show"><a class="full-link" href="#">Как получить бонусы?</a></p>
+				<div class="full grayblock discount-block discount-block-hidden full-wrap">
+					<p class="discount-hide"><a class="full-link" href="#">Больше не показывать</a></p>
+					<p class="h2">Как получить бонусы?</p>
+					<ol class="list-4">
+				        <li class="st">
+				          <p class="title">Как получить<br> бонусную карту?</p>
+				          <em class="percent"></em>
+				          <p>Если Вы являетесь нашим постоянным клиентом, Вы можете получить бонусную карту участника F-клуба. Каждый раз, когда Вы совершаете покупку в нашем магазине, на Ваш счет записываются бонусы. Их количество указывается на сайте рядом с ценой товара. Если у Вас есть карта F-клуба, Вы можете расплачиваться за товары не деньгами, а бонусами, то есть получаете реальную возможность купить понравившийся Вам товар с <b>сумасшедшей</b> скидкой!</p>
+				      </li>
+				      <li class="st">
+				        <p class="title">Как получить<br>больше бонусов?</p>
+				        <em class="percent"></em>
+				        <p>Если Вы являетесь участником F-клуба, Вы можете получить дополнительные бонусы, принимая участие в наших акциях и конкурсах, которые мы регулярно проводим, например, на нашей странице ВКонтакте. Подписывайтесь, следите за новостями, выигрывайте <b>дорогие</b> призы и получайте еще больше бонусов на свой счет в F-клубе!</p>
+				    </li>
+				    <li class="st">
+				        <p class="title">А какие еще есть <br>бонусы?</p>
+				        <em class="percent"></em>
+				    	<p>Помимо всего прочего, Вы <b>гарантировано</b> получаете небольшой подарок при покупке в нашем интернет-магазине в случае, если рассказываете о нас своим друзьям ВКонтакте или оставляете отзыв в торговой системе Яндекс-Маркет. Таким подарком может быть флешка, SD-карта, наушники и множество других полезных и красивых гаджетов!</p>
+				    </li>
+			      </ol>
+				</div>
+			</div>
+
+        <div class="go-checkout">
+    <p class="h2 shipping" style="width:20%; padding-left:30px;padding-right:20px">Доставим завтра в течение дня</p>
+
+    <p class="go2"><a href="/checkout?button2"><img src="/img/checkout.png" alt="Оформить заказ"/></a></p>
+    <p class="price"><big></big> <span>руб.</span></p>
+    <p class="h2 total" style="padding-right:7px; padding-top:7px; float:right;">Всего <span></span> <var>товара</var> на сумму:</p>
+
+    <!--<p class="price gray"><big class="strike"></big> <span class="strike">руб.</span></p> -->
+    <p class="questions"><strong>Остались вопросы?</strong> Узнайте как происходят: <span class="more-link more-link-full"><a class="animate_scroll" href="#cart-pay" rel="switch">Оплата&nbsp;&darr;</a></span> &nbsp;&nbsp; <span class="more-link more-link-full"><a class="animate_scroll" href="#cart-shipping" rel="switch">Доставка&nbsp;&darr;</a></span> &nbsp;&nbsp; <span class="more-link more-link-full"><a class="animate_scroll" href="#cart-warranty" rel="switch">Гарантии&nbsp;&darr;</a></span> &nbsp;&nbsp; <span class="more-link more-link-full"><a class="animate_scroll" href="#cart-return" rel="switch">Возврат товара&nbsp;&darr;</a></span></p>
+        </div>
+
+	    <div>
+	      <ul id="checkout-catalog" class="catalog">
+
+            {$products |noAutoescape}
+
+	      </ul>
+	    </div>
+      <div class="go-checkout">
+    <p class="h2 shipping" style="width:20%; padding-left:30px;padding-right:20px">Доставим завтра в течение дня</p>
+
+    <p class="go2"><a href="/checkout?button4"><img src="/img/checkout.png" alt="Оформить заказ"/></a></p>
+    <p class="price"><big></big> <span>руб.</span></p>
+    <p class="h2 total" style="padding-right:7px; padding-top:7px; float:right;">Всего <span></span> <var>товара</var> на сумму:</p>
+
+    <!--
+
+	   <p class="buy-credit">
+		 <label for="buy-credit"><input id="buy-credit" class="checkbox" type="checkbox"/>Купить в кредит</label>
+		 <span class="hidden">Вы можете оформить кредит в нашемцентральном магазине на Левашовский пр., д.12</span>
+	   </p>
+
+       -->
+
+    <!--
+	   <p class="rules">*В пределах Санкт-Петербурга. <a href="article.html">Условия доставки в другие регионы</a></p>
+       -->
+	    </div>
+
+	    <div class="full grayblock">
+	      <p class="h2">Что важно знать перед покупкой</p>
+	      <ol class="list-4">
+		    <li id="cart-pay" class="st">
+		      <p class="title h2-title">Оплата</p>
+		      <p>Вы можете оплатить товар наличными, кредитной картой или по безналичному расчету. Деньги вы сможете передать курьеру или заплатить в магазине самостоятельно.</p>
+
+              <!--
+
+		         <p class="cards"><img src="/img/temp/card1.jpg"
+		                               alt=""/><img src="/img/temp/card2.jpg"
+		                                            alt=""/><img src="/img/temp/card3.jpg"
+		                                                         alt=""/><img src="/img/temp/card4.jpg" alt=""/></p>
+
+                 -->
+				<div class="bonus-outer">
+		      <div class="collapsed full-wrap">
+			    <p>Оплатить товар можно следующими способами:
+                  <ul>
+                    <li>Наличными деньгами - расплатившись в магазине или
+                      нашему курьеру. При оплате вы получите все необходимые
+                      документы, подтверждающие факт оплаты заказа (чек,
+                      гарантия и т.д.).</li>
+                    <li>Кредитной картой (VISA, Mastercard). Оплатить можно
+                      как курьеру, так и в наших магазинах. Мы принимаем к
+                      оплате любые карты VISA и Mastercard.</li>
+                    <li>Безналичным расчетом (перевод денежных средств на
+                      счет нашей компании). По вопросам оплаты по безналичному расчету вам необходимо будет позвонить по телефону (812) 320-8080. Наш оператор с радостью передаст вам информацию о нашем счете любым удобным для вас способом. Обращаем ваше внимание на то, что  при оплате по безналичному расчету доставка возможна лишь на следующий день после поступления денег (при условии наличия товара на складе).</li>
+                  </ul>
+                </p>
+		      </div>
+		      <p class="more-link more-link-full"><a class="full-link" href="#"><span>Подробнее</span><span class="hide">Кратко</span> об оплате</a></p>
+		      </div>
+		    </li>
+		    <li id="cart-shipping" class="st">
+		      <p class="title h2-title">Доставка</p>
+			  <p class="h3">Курьерская доставка</p>
+              /*дляакции*/
+			  <p><strong>АКЦИЯ:</strong> Бесплатная доставка!</p>
+			  /* <p><strong>АКЦИЯ:</strong> Доставка курьером 100 рублей!</p> */
+			  /* <p>Весь апрель при покупке любого товара из ряда групп, представленных в нашем магазине, вы можете заказать доставку до квартиры всего за 100 рублей!</p> */
+
+/* 			  <b>Доставка в пункты выдачи</b><br/> */ /* pickpoint */
+/* <p>Товар доставляется в специализированную точку выдачи, откуда Вы забиратее его в удобное для Вас время. Стоимость доставки до пункта самовывоза составляет 100 рублей. Доставка осуществляется на следующий день после заказа. При наличии заказанного Вами товара менеджер нашего контакт-центра позвонит Вам и подтвердит доставку. По прибытии Вашего товара на пункт выдачи Вы получаете SMS. Оплата товара осуществляется на месте. */
+/* Так же, при выборе этой опции доставки на товар действуют ограничения: максимальные габариты составляют 36х36х60, а максимальная стоиость до 15 тысяч рублей. */
+/* Подробнее про удаленные пункты выдачи Вы можете прочитать <a href="/articles/PickPoint_news">здесь</a></p> */
+              <p>Стоимость доставки в пределах логистических границ Санкт-Петербурга составляет 300 рублей для мелкогабаритного товара.</p>
+
+
+
+			  <p>Доставка осуществляется <strong>с 11:00 до 21:00.</strong></p>
+				<div class="bonus-outer">
+			  <div class="collapsed full-wrap">
+			    <p class="h3">Самовывоз</p>
+			    <p>Для подготовки заказа к самовывозу нам <strong>потребуется 1 час</strong>, при условии наличия товара в интересующем вас магазине.</p>
+			    <p>Самовывоз доступен из центрального магазина "ЦиFры",
+			      расположенного по адресу:</p>
+			    <p><strong>Левашовский пр., д.12</strong><br/>24
+			      часа <a href="http://maps.google.ru/maps?f=d&source=embed&saddr=%D0%A1%D0%B0%D0%BD%D0%BA%D1%82-%D0%9F%D0%B5%D1%82%D0%B5%D1%80%D0%B1%D1%83%D1%80%D0%B3,+%D0%9C%D0%B5%D1%82%D1%80%D0%BE+%D0%A7%D0%BA%D0%B0%D0%BB%D0%BE%D0%B2%D1%81%D0%BA%D0%B0%D1%8F&daddr=%D0%A1%D0%B0%D0%BD%D0%BA%D1%82-%D0%9F%D0%B5%D1%82%D0%B5%D1%80%D0%B1%D1%83%D1%80%D0%B3,+%D0%9B%D0%B5%D0%B2%D0%B0%D1%88%D0%BE%D0%B2%D1%81%D0%BA%D0%B8%D0%B9+%D0%BF%D1%80%D0%BE%D1%81%D0%BF%D0%B5%D0%BA%D1%82,+%D0%B4%D0%BE%D0%BC+12&geocode=FcjukgMdJjjOASkvb8IeSTGWRjFIXDhy0zXy-w%3BFYcAkwMdYz_OASnV5vyHTjGWRjGhbN_dJmQi5w&hl=ru&mra=ls&dirflg=w&sll=59.96377,30.29364&sspn=0.007142,0.022724&ie=UTF8&t=h&ll=59.963937,30.294435&spn=0.00537,0.013733&z=16"
+			              target="_blank" class="map-link">Карта проезда</a></p>
+			    <p><strong>Петергоф, ул. Ботаническая, д.18, к.3</strong><br/>11:00 - 21:00 (кроме ВСК) <a href="http://maps.google.ru/maps/ms?ie=UTF8&hl=ru&source=embed&msa=0&msid=208039224828410786056.00049992cae7aa9de3fd8&ll=59.871321,29.852192&spn=0.009112,0.038581&z=15"
+			                                                                                               target="_blank" class="map-link">Карта проезда</a></p>
+        </div>
+
+		     <p class="more-link more-link-full"><a class="full-link" href="#"><span>Подробнее</span><span class="hide">Кратко</span> о доставке</a></p>
+		     </div>
+		    </li>
+		    <li id="cart-warranty" class="st">
+		      <p class="title h2-title">Гарантия</p>
+		      <p>Мы продаем только 100% "белые" и сертифицированные
+		        товары. Это значит, что на каждый из них распространяется
+		        официальная гарантия производителя. Если с вашем товаром
+		        что-то произойдет - смело набирайте наш телефонный номер
+		        (812) 320-8080 и наши консультанты вам помогут. </p>
+		      <p><img src="/img/pct.png" alt=""/></p>
+		      <div class="bonus-outer">
+              <div class="collapsed full-wrap">
+		        <p>Кроме этого, у компании "ЦиFры" есть собственный сервисный центр, который быстро и качественно произведет диагностику и гарантийный ремонт.</p>
+		      </div>
+		      <p class="more-link more-link-full"><a class="full-link" href="#"><span>Подробнее</span><span class="hide">Кратко</span> о гарантии</a></p>
+		      </div>
+		    </li>
+		    <li id="cart-return" class="st">
+		      <p class="title h2-title">Возврат товара</p>
+		      <p>При покупке в интернет-магазине, Вы можете отказаться
+		        от товара надлежащего качества в любое время до его передачи,
+		        а после передачи товара - в течение 7 календарных дней. Однако есть условия:
+              </p>
+              <div class="bonus-outer">
+		      <div class="collapsed full-wrap">
+                <p>
+                  <ul>
+                    <li>Возврат товара надлежащего качества возможен в случае,
+			          если сохранены его товарный вид (ярлыки, пломбы, упаковка и т.п.),
+			          потребительские свойства, а также кассовый и товарный чеки.</li>
+                    <li>При отказе от переданного Вам товара надлежащего качества
+			          в течение указанного выше срока мы не возвращаем стоимость
+			          доставки товара от магазина к Вам.</li>
+                  </ul>
+                </p>
+			    <p>
+			      Возврат товара производится в соответствии с правилами продажи
+			      товаров дистанционным способом, утвержденными Постановлением
+			      Правительства РФ № 612 от 27.09.2007 года.</p>
+		      </div>
+		      <p class="more-link more-link-full"><a class="full-link" href="#"><span>Подробнее</span><span class="hide">Кратко</span> о возврате</a></p>
+		      </div>
+		    </li>
+	      </ol>
+	    </div>
+      </div>
+    </div>
+
+
+
+
+
+
+
+    <div class="overlay"></div>
+    <div id="accReplace" class="popup popup-accReplace">
+      <p class="close"><a href="#close" rel="popup-close"><img src="/img/close.png" alt="*"/>Закрыть</a></p>
+      <div class="yellow">
+	    <p class="h2">Выбрать другую сумку в комплекте</p>
+	    <p>В этот комплект можно включить одну из 25 сумок:</p>
+      </div>
+      <div class="acc-scroll">
+	    <ul class="catalog catalog-acc">
+	      <li class="item item-active">
+		    <div class="pic block"><a href="item.html"><img src="/img/temp/s8.jpg" alt="Фото"/></a></div>
+		    <div class="info">
+		      <p class="h2"><a href="item.html">Belkin F8N051eaBR</a></p>
+		      <big class="price"><span class="price-1">2 520</span> <var>руб.</var></big>
+		      <small class="price-old"><span class="price-2">3 190</span> <var>руб.</var></small>
+		    </div>
+		    <p class="desc"><a href="item.html" onclick="window.open(this.href);return false;">Описание товара</a></p>
+	      </li>
+	      <li class="item">
+		    <div class="pic block"><a href="item.html"><img src="/img/temp/s11.jpg" alt="Фото"/></a></div>
+		    <div class="info">
+		      <p class="h2"><a href="item.html">Targus Slim-line Mini Notebook Case</a></p>
+		      <big class="price"><span class="price-1">1 960</span> <var>руб.</var></big>
+		      <small class="price-old"><span class="price-2">2 190</span> <var>руб.</var></small>
+		    </div>
+		    <p class="desc"><a href="item.html" onclick="window.open(this.href);return false;">Описание товара</a></p>
+	      </li>
+	      <li class="item">
+		    <div class="pic block"><a href="item.html"><img src="/img/temp/s12.jpg" alt="Фото"/></a></div>
+		    <div class="info">
+		      <p class="h2"><a href="item.html">Sumdex NTN-712BK</a></p>
+		      <big class="price"><span class="price-1">890</span> <var>руб.</var></big>
+		      <small class="price-old"><span class="price-2">990</span> <var>руб.</var></small>
+		    </div>
+		    <p class="desc"><a href="item.html" onclick="window.open(this.href);return false;">Описание товара</a></p>
+	      </li>
+	      <li class="item">
+		    <div class="pic block"><a href="item.html"><img src="/img/temp/s13.jpg" alt="Фото"/></a></div>
+		    <div class="info">
+		      <p class="h2"><a href="item.html">Sumdex PON-358</a></p>
+		      <big class="price"><span class="price-1">4 140</span> <var>руб.</var></big>
+		      <small class="price-old"><span class="price-2">5 190</span> <var>руб.</var></small>
+		    </div>
+		    <p class="desc"><a href="item.html" onclick="window.open(this.href);return false;">Описание товара</a></p>
+	      </li>
+	    </ul>
+	    <ul class="catalog catalog-acc">
+	      <li class="item">
+		    <div class="pic block"><a href="item.html"><img src="/img/temp/s14.jpg" alt="Фото"/></a></div>
+		    <div class="info">
+		      <p class="h2"><a href="item.html">RIVA 8037</a></p>
+		      <big class="price"><span class="price-1">1 590</span> <var>руб.</var></big>
+		      <small class="price-old"><span class="price-2">2 290</span> <var>руб.</var></small>
+		    </div>
+		    <p class="desc"><a href="item.html" onclick="window.open(this.href);return false;">Описание товара</a></p>
+	      </li>
+	      <li class="item">
+		    <div class="pic block"><a href="item.html"><img src="/img/temp/s15.jpg" alt="Фото"/></a></div>
+		    <div class="info">
+		      <p class="h2"><a href="item.html">HAMA 23950</a></p>
+		      <big class="price"><span class="price-1">1 660</span> <var>руб.</var></big>
+		      <small class="price-old"><span class="price-2">1 990</span> <var>руб.</var></small>
+		    </div>
+		    <p class="desc"><a href="item.html" onclick="window.open(this.href);return false;">Описание товара</a></p>
+	      </li>
+	      <li class="item">
+		    <div class="pic block"><a href="item.html"><img src="/img/temp/s16.jpg" alt="Фото"/></a></div>
+		    <div class="info">
+		      <p class="h2"><a href="item.html">HAMA Notebook Bag Napoli C4 17</a></p>
+		      <big class="price"><span class="price-1">1 890</span> <var>руб.</var></big>
+		      <small class="price-old"><span class="price-2">1 990</span> <var>руб.</var></small>
+		    </div>
+		    <p class="desc"><a href="item.html" onclick="window.open(this.href);return false;">Описание товара</a></p>
+	      </li>
+	      <li class="item">
+		    <div class="pic block"><a href="item.html"><img src="/img/temp/s17.jpg" alt="Фото"/></a></div>
+		    <div class="info">
+		      <p class="h2"><a href="item.html">PORT Designs Apollo 13.3</a></p>
+		      <big class="price"><span class="price-1">390</span> <var>руб.</var></big>
+		      <small class="price-old"><span class="price-2">590</span> <var>руб.</var></small>
+		    </div>
+		    <p class="desc"><a href="item.html" onclick="window.open(this.href);return false;">Описание товара</a></p>
+	      </li>
+	    </ul>
+      </div>
+      <p class="yellow-cancel"><a href="#cancel" rel="popup-close">Не менять сумку в комплекте</a></p>
+    </div>
+
+  {/template}
+
+{template footer}
+	<div id="footer_cells">
+		<div class="pay">
+			<a href="/delivery">
+				<img src="/img/visa.png" alt="" height="30" />
+			</a>
+			<a href="/delivery">
+				<img src="/img/mastercard.png" alt="" height="30" />
+			</a>
+		</div>
+		<div class="copy">© 1997—2013 «ЦиFры 320-8080»<br />Санкт-Петербург
+	      /* <a href="/kakdobratsja">Адрес Магазина</a> */
+	  </div>
+		<div class="contacts">Телефон: (812) 320-80-80<br />Электронная почта: <a href="mailto:info@320-8080.ru">info@320-8080.ru</a></div>
+	  <div class="metrika">
+	    {call soy.index.liveinternet /}
+	    {call soy.index.mailru /}
+	    {call soy.index.yandex-market /}
+	  </div>
+	</div><!-- footer_cells:end -->
+{/template}
+
+
+{template newcart-head}
+  <head>
+	  <title>Интернет магазин ЦиFры оформление заказа 320-8080</title>
+
+	  <!-- Meta -->
+	  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	  <meta name="keywords" content=" " />
+	  <meta name="description" content=" " />
+    <meta name='yandex-verification' content='46096f4a2b6678ca' />
+    <meta name="google-site-verification" content="DLzcPenEQiGMh4ZhqmAOL6sZpTCRzDXB6QkAdA-sRXU" />
+
+	  <!-- Favicon -->
+	  <link rel="Shortcut Icon" type="image/x-icon" href="/favicon.ico" />
+
+
+	  <!-- Styles -->
+	  <link rel="stylesheet" type="text/css" media="screen, projection" href="/css/cart.css" />
+	  <!--[if lte IE 6]><link href="/css/cart-ie.css" rel="stylesheet" media="all" /><![endif]-->
+
+	  <!-- Scripts -->
+	  <script type="text/javascript" src="/js/jquery.js"></script>
+ 	  <script type="text/javascript" src="/js/function.js"></script>
+ 	  <script type="text/javascript" src="/js/plugins/cookie.js"></script>
+      {if $thanks}
+          {call soy.index.gaTrakingEcommerce data="$thanks" /}
+      {else}
+          {call soy.index.google-analytics /}
+      {/if}
+  </head>
+{/template}
+
+{template cart-product}
+	<li id="{$articul}">
+		<div class="bg">
+			<div class="image">
+				<span class="num"></span>
+				<a href="{$url}">
+					{if $firstpic}
+						<img src="/pic/middle/{$articul}/{$firstpic}" alt="Фото {$name}"/>
+					{else}
+						<img src="/img/temp/empty-foto.jpg" width="225" alt="Фото"/>
+					{/if}
+				</a>
+			</div>
+			<div class="info">
+				<div class="title">
+					<a href="{$url}">{$name}</a>
+				</div>
+	    		<div class="price">
+					<span class="new black"><b>{$siteprice}</b> руб.</span>
+				</div>
+			</div>
+			<div class="action">
+				<div class="field-count">
+					<input class="count" value="{$count}" onkeypress="validNumbers(99, this, event);" onkeyup="maxLengthField(99, this);" onkeydown="maxLengthField(99, this);" onchange="$.updateCount({$articul}, this); return false;" type="text" />
+					<span>шт.</span>
+				</div>
+				<a href="#" onclick="$.removeProduct({$articul}); return false;" class="checkout-remove"><span>Убрать</span></a>
+			</div>
+			<div class="price-info">
+				<span class="new sum-price"><b>{$siteprice}</b> руб.</span>
+				<span class="count">
+					за <span>{$count}</span> шт.
+				</span>
+			</div>
+			<div class="return">
+				<span>Удалено из карзины</span>
+				<a href="#" onclick="$.returnProduct({$articul}); return false;" class="checkout-return"><span>Вернуть</span></a>
+			</div>
+			<div class="clr"></div>
+		</div>
+	</li>
+{/template}

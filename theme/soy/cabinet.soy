@@ -1,0 +1,2473 @@
+{namespace soy.cabinet}
+
+{template head}
+<!DOCTYPE html>
+<html>
+
+<head>
+<!--meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+	<link href="/css/new/kartochka.css" rel="stylesheet" type="text/css">
+	<link href="/css/new/reset.css" rel="stylesheet" type="text/css">
+	<script src="/js/new/jquery/jquery-1.9.1.min.js" type="text/javascript"></script>
+	<script src="/js/new/jquery/jqueryrotate.2.1.js" type="text/javascript"></script>
+	<script src="/js/new/jquery/jquery-ui-1.10.1.custom.min.js"></script>
+	<script src="/js/new/kartochka.js" type="text/javascript"></script>
+	<script src="/js/new/base.js" type="text/javascript"></script-->
+
+	<title>{if $title}{$title|noAutoescape}{else}ЦиFры{/if}</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+	<!--[if lt IE 7]><meta http-equiv="refresh" content="0; URL=/badbrowser"><![endif]-->
+	<meta name='yandex-verification' content='46096f4a2b6678ca' />
+	<meta name='wmail-verification' content='d2b568b8747ee275' />
+	<meta name="google-site-verification" content="DLzcPenEQiGMh4ZhqmAOL6sZpTCRzDXB6QkAdA-sRXU" />
+	<meta name="keywords" content={if $keywords}"{$keywords}"{else}""{/if}/>
+	<meta name="description" content={if $description}"{$description}"{else}""{/if}/>
+
+	<link href="/css/plugins/fancybox/fancybox.css" rel="stylesheet" type="text/css" media="all" />
+	<link href="/css/plugins/fancybox/fancybox-thumbs.css" rel="stylesheet" type="text/css" media="all" />
+	<link rel='stylesheet' href='/css/screen.css' type='text/css' media='screen'/>
+	<link rel='stylesheet' href='/css/jquery-ui.css' type='text/css' media='screen'>
+	<!--[if IE]>
+	<link rel="stylesheet" href="/css/screen-ie.css" type="text/css" media="screen"/>
+	<![endif]-->
+
+	<script type="text/javascript" src="/js/jquery.js"></script>
+	<script type="text/javascript" src="/js/jquery-ui.js"></script>
+	<script type="text/javascript" src="/js/plugins/easing.js"></script>
+	<script type="text/javascript" src="/js/plugins/cookie.js"></script>
+	<script type="text/javascript" src="/js/plugins/mousewheel.js"></script>
+	<script type="text/javascript" src="/js/plugins/fancybox/fancybox.js"></script>
+	<script type="text/javascript" src="/js/plugins/fancybox/fancybox-thumbs.js"></script>
+	<script type="text/javascript" src="/js/plugins/jcarousel.js"></script>
+	<script type="text/javascript" src="/js/plugins/carousel.js"></script>
+	<script type="text/javascript" src="/js/plugins/readmore.js"></script>
+	<script type="text/javascript" src="/js/plugins/jquery.inputmask.js"></script>
+	<!--[if lte IE 7]>
+	<script type="text/javascript" src="/js/plugins/json2.js"></script>
+	<![endif]-->
+	<script type="text/javascript" src="/js/interface.js"></script>
+
+</head>
+<body>
+
+{/template}
+
+{template header}
+
+<div class="podlojka"></div>
+<div class="wrapper">
+<style>
+	{literal}
+	*{margin:0;padding:0;}
+	#login-popup {
+	width:380px;
+	position:absolute;
+	background:#fbfbfb;
+	padding-bottom:55px;
+	font-size:14px;
+	font-family:tahoma,sans-serif;
+	height:auto;
+	text-align:left;
+
+	}
+	#login-popup-title {
+	display:block;
+	height:33px;
+	background:url(/img/images/bg.png) top left repeat-x;
+	padding-left:9px;
+	line-height:28px;
+	color:#48484a;
+	text-shadow:0 1px 0 #fff;
+	margin-bottom:30px;
+	}
+	#popup-messenger {
+	margin-bottom:30px;
+	}
+	.popup-close {
+	position:absolute;
+	top:2px;
+	right:11px;
+	cursor:pointer;
+	display:block;
+	width:25px;
+	height:25px;
+	background:url(/img/images/close.png) left top no-repeat;
+	}
+	.popup-close:hover {
+	opacity:0.7;
+	-moz-opacity:0.7;
+	filter:progid:DXImageTransform.Microsoft.Alpha(opacity=70);
+	zoom:1;
+	}
+	.popup-label {
+	display:inline-block;
+	width:70px;
+	padding-right:17px;
+	text-align:right;
+	color:#484848;
+	vertical-align:middle;
+	height:28px;
+	}
+	#login-popup input[type="text"],
+	#login-popup input[type="password"] {
+	height:26px;
+	line-height:26px;
+	line-height:26px;
+	background:#fff;
+	border:1px solid #d1d1d1;
+	border-radius:4px;
+	-moz-border-radius:4px;
+	-webkit-border-radius:4px;
+	padding:0;
+	padding-left:7px;
+	width:220px;
+	display:inline-block;
+	box-shadow:0 1px 1px #e5e5e5;
+	-moz-box-shadow:0 1px 1px #e5e5e5;
+	-webkit-box-shadow:0 1px 1px #e5e5e5;
+	margin-bottom:17px;
+	vertical-align:middle;
+	}
+	.popup-check {
+	padding-left:110px;
+	font-size:10px;
+	color:#484848;
+	}
+	.popup-check span {
+	display:inline-block;
+	line-height:14px;
+	vertical-align:middle;
+	padding-left:3px;
+	}
+	#login-popup input[type="submit"] {
+	display:inline-block;
+	border:0;
+	font-family:tahoma,sans-serif;
+	font-size:14px;
+	color:#48484a;
+	text-shadow:0 1px 0 #fff;
+	line-height:28px;
+	height:28px;
+	vertical-align:middle;
+	padding:0 25px;
+	cursor:pointer;
+	margin:10px 7px 0;
+	border-radius:4px;
+	-moz-border-radius:4px;
+	-webkit-border-radius:4px;
+	background:#fbdf58;
+	background:-moz-linear-gradient(#fbdf58,#fbc547);
+	background:-webkit-linear-gradient(#fbdf58,#fbc547);
+	background:-o-linear-gradient(#fbdf58,#fbc547);
+	background:-ms-linear-gradient(#fbdf58,#fbc547);
+	background: linear-gradient(#fbdf58,#fbc547);
+	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#fbdf58',endColorstr='#fbc547',GradientType=0);
+	box-shadow:1px 2px 6px #bdbdbd;
+	-moz-box-shadow:1px 2px 6px #bdbdbd;
+	-webkit-box-shadow:1px 2px 6px #bdbdbd;
+	}
+	#login-popup input[type="submit"]:hover {
+	background:#fbc547;
+	background:-moz-linear-gradient(#fbc547,#fbdf58);
+	background:-webkit-linear-gradient(#fbc547,#fbdf58);
+	background:-o-linear-gradient(#fbc547,#fbdf58);
+	background:-ms-linear-gradient(#fbc547,#fbdf58);
+	background: linear-gradient(#fbc547,#fbdf58);
+	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#fbc547',endColorstr='#fbdf58',GradientType=0);
+	}
+	*+html .popup-label,
+	*+html #login-popup input[type="text"],
+	*+html #login-popup input[type="password"],
+	*+html #login-popup input[type="submit"],
+	.popup-check span {
+	display:inline;
+	zoom:1;
+	}
+	{/literal}
+</style>
+<!-- ШАПКА -->
+
+<div class="header">
+	<div class="user-bar">
+		<img class="logo" src="/img/logo.png">
+		<ul class="menu-header">
+			<li>Магазин</li>
+			<li>Оплата</li>
+			<li>Доставка</li>
+			<li>Помощь</li>
+		</ul>
+		<div class="places-tel">
+			<div class="places">
+				<img src="/img/mesto.png">Вы здесь: <span class="city">Санкт-Петербург</span>
+			</div>
+			<div class="tel">
+				<img src="/img/tel.png">+7 (812) 320 80 80 или <span class="order-tel">закажите звонок</span>
+			</div>
+		</div>
+		<div class="sky">
+			<span class="iphone">iPhone 5</span>
+			<img src="/img/iphone5.png">
+			<span class="first-iphone">Будь первым!</span>
+		</div>
+		<div class="pozit mesto">
+			<div class="pozit-header">Позиционирование<img class="close" src="/img/close.png"></div>
+			<div class="pozit-content">
+				<p class="">Вы здесь:<span class="city">Санкт-Петербург</span></p>
+				<p class="pozit-content_dekor"><img src="/img/place.png">Уточнить местоположение</p><br>
+				<button class="button_basket">Все равно!<img class="arrow_poz" src="/img/arrow-serch.png"><img src="/img/border.png"></button>
+			</div>
+		</div>
+
+		<div class="pozit re-tel">
+			<div class="pozit-header">Обратный звонок<img class="close" src="/img/close.png"></div>
+			<div class="pozit-content">
+				<p class="pliz">Пожалуйста, заполните краткую контактную информацию.
+				Наши сотрудники свяжутся с вами в удобное для вас время.</p>
+				<div class="wrapper_reg">
+					<label for="name_tel"> Имя </label>
+					<input type="text" id="name" value="">
+					<br>
+					<label for="tel"> Телефон </label>
+					<input type="text" id="tel" value=""><br>
+					<label for="email"> Эл. почта </label>
+					<input type="text" id="email" value=""><br>
+					<label for="time"> Удобное время </label>
+					<input type="text" id="time" value=""><br>
+					<div class="help_tel">
+						<p>Сейчас</p>
+						<p>Через пару часов</p>
+						<p>Сегодня</p>
+					</div>
+				</div>
+				<br>
+				<button class="button_basket">Заказать<img class="arrow_poz" src="/img/retel.png"><img src="/img/border.png"></button>
+			</div>
+		</div>
+	</div>
+	<div class="yellow-bar">
+		<div class="center-bar_wrapper">
+			<div class="center-bar ui-widget">
+				<input id="tags" class="serch" type="text" value="Искать среди 92 000 товаров" style="padding:1px 0 1px 10px;">
+			</div>
+		</div>
+		<div class="left-bar">
+			<div class="first-catalog">Выбери в каталоге<img class="arrow-cat" src="/img/arrow-cat.png">
+				<!-- КАТАЛОГ СЛЕВА -->
+				<div class="catalog-left" style="display:none;">
+					<ul>
+						<li class="general-list">Ноутбуки и компьютеры<img src="/img/arrow-cat.png">
+							<div class="catalog-product">
+								<ul>
+									<li class="general-list general-list_in">Мышки
+									<p class="hide-action">Горяччие предложение</p></li>
+									<li class="general-list general-list_in">Акустические системы
+									<p class="hide-action">Горяччие предложение</p></li>
+									<li class="general-list general-list_in">Web-камеры
+									<p class="hide-action">Горяччие предложение</p></li>
+									<li class="general-list general-list_in">Коврики для мыши
+									<p class="hide-action">Горяччие предложение</p> </li>
+									<li class="general-list general-list_in">3D очки
+									<p class="hide-action">Горяччие предложение</p></li>
+									<li class="general-list general-list_in">Мониторы
+									<p class="hide-action">Горяччие предложение</p></li>
+									<li class="general-list general-list_in">Джойстики, рули, геймпады
+									<p class="hide-action">Горяччие предложение</p></li>
+									<li class="general-list general-list_in">Графические планшеты
+									<p class="hide-action">Горяччие предложение</p></li>
+								</ul>
+								<img src="/img/moni.png">
+								<p class="price-catalog">Мониторы по 2000руб.</p>
+								<p class="dop-price">Совершенное уникальная скидка
+								весь сентябрь, при покупке проектора!</p>
+							</div>
+						</li>
+						<li class="general-list">Комплектующие<img src="/img/arrow-cat.png">
+							<div class="catalog-product">
+								<ul>
+									<li class="general-list general-list_in">Мышки
+									<p class="hide-action">Горяччие предложение</p></li>
+									<li class="general-list general-list_in">Акустические системы
+									<p class="hide-action">Горяччие предложение</p></li>
+									<li class="general-list general-list_in">Web-камеры
+									<p class="hide-action">Горяччие предложение</p></li>
+									<li class="general-list general-list_in">Коврики для мыши
+									<p class="hide-action">Горяччие предложение</p> </li>
+									<li class="general-list general-list_in">3D очки
+									<p class="hide-action">Горяччие предложение</p></li>
+									<li class="general-list general-list_in">Мониторы
+									<p class="hide-action">Горяччие предложение</p></li>
+									<li class="general-list general-list_in">Джойстики, рули, геймпады
+									<p class="hide-action">Горяччие предложение</p></li>
+									<li class="general-list general-list_in">Графические планшеты
+									<p class="hide-action">Горяччие предложение</p></li>
+								</ul>
+								<img src="/img/moni.png">
+								<p class="price-catalog">Мониторы по 2000руб.</p>
+								<p class="dop-price">Совершенное уникальная скидка
+								весь сентябрь, при покупке проектора!</p>
+							</div>
+						</li>
+						<li class="general-list">Мониторы и периферия<img src="/img/arrow-cat.png">
+							<div class="catalog-product">
+								<ul>
+									<li class="general-list general-list_in">Мышки
+									<p class="hide-action">Горяччие предложение</p></li>
+									<li class="general-list general-list_in">Акустические системы
+									<p class="hide-action">Горяччие предложение</p></li>
+									<li class="general-list general-list_in">Web-камеры
+									<p class="hide-action">Горяччие предложение</p></li>
+									<li class="general-list general-list_in">Коврики для мыши
+									<p class="hide-action">Горяччие предложение</p> </li>
+									<li class="general-list general-list_in">3D очки
+									<p class="hide-action">Горяччие предложение</p></li>
+									<li class="general-list general-list_in">Мониторы
+									<p class="hide-action">Горяччие предложение</p></li>
+									<li class="general-list general-list_in">Джойстики, рули, геймпады
+									<p class="hide-action">Горяччие предложение</p></li>
+									<li class="general-list general-list_in">Графические планшеты
+									<p class="hide-action">Горяччие предложение</p></li>
+								</ul>
+								<img src="/img/moni.png">
+								<p class="price-catalog">Мониторы по 2000руб.</p>
+								<p class="dop-price">Совершенное уникальная скидка
+								весь сентябрь, при покупке проектора!</p>
+							</div>
+						</li>
+						<li class="general-list">Принтеры и оргтехника<img src="/img/arrow-cat.png">
+							<div class="catalog-product">
+								<ul>
+									<li class="general-list general-list_in">Мышки
+									<p class="hide-action">Горяччие предложение</p></li>
+									<li class="general-list general-list_in">Акустические системы
+									<p class="hide-action">Горяччие предложение</p></li>
+									<li class="general-list general-list_in">Web-камеры
+									<p class="hide-action">Горяччие предложение</p></li>
+									<li class="general-list general-list_in">Коврики для мыши
+									<p class="hide-action">Горяччие предложение</p> </li>
+									<li class="general-list general-list_in">3D очки
+									<p class="hide-action">Горяччие предложение</p></li>
+									<li class="general-list general-list_in">Мониторы
+									<p class="hide-action">Горяччие предложение</p></li>
+									<li class="general-list general-list_in">Джойстики, рули, геймпады
+									<p class="hide-action">Горяччие предложение</p></li>
+									<li class="general-list general-list_in">Графические планшеты
+									<p class="hide-action">Горяччие предложение</p></li>
+								</ul>
+								<img src="/img/moni.png">
+								<p class="price-catalog">Мониторы по 2000руб.</p>
+								<p class="dop-price">Совершенное уникальная скидка
+								весь сентябрь, при покупке проектора!</p>
+							</div>
+						</li>
+						<li class="general-list">Сеть и серверы<img src="/img/arrow-cat.png">
+							<div class="catalog-product">
+								<ul>
+									<li class="general-list general-list_in">Мышки
+									<p class="hide-action">Горяччие предложение</p></li>
+									<li class="general-list general-list_in">Акустические системы
+									<p class="hide-action">Горяччие предложение</p></li>
+									<li class="general-list general-list_in">Web-камеры
+									<p class="hide-action">Горяччие предложение</p></li>
+									<li class="general-list general-list_in">Коврики для мыши
+									<p class="hide-action">Горяччие предложение</p> </li>
+									<li class="general-list general-list_in">3D очки
+									<p class="hide-action">Горяччие предложение</p></li>
+									<li class="general-list general-list_in">Мониторы
+									<p class="hide-action">Горяччие предложение</p></li>
+									<li class="general-list general-list_in">Джойстики, рули, геймпады
+									<p class="hide-action">Горяччие предложение</p></li>
+									<li class="general-list general-list_in">Графические планшеты
+									<p class="hide-action">Горяччие предложение</p></li>
+								</ul>
+								<img src="/img/moni.png">
+								<p class="price-catalog">Мониторы по 2000руб.</p>
+								<p class="dop-price">Совершенное уникальная скидка
+								весь сентябрь, при покупке проектора!</p>
+							</div>
+						</li>
+						<li class="general-list">Телефоны и гаджеты<img src="/img/arrow-cat.png">
+							<div class="catalog-product">
+								<ul>
+									<li class="general-list general-list_in">Мышки
+									<p class="hide-action">Горяччие предложение</p></li>
+									<li class="general-list general-list_in">Акустические системы
+									<p class="hide-action">Горяччие предложение</p></li>
+									<li class="general-list general-list_in">Web-камеры
+									<p class="hide-action">Горяччие предложение</p></li>
+									<li class="general-list general-list_in">Коврики для мыши
+									<p class="hide-action">Горяччие предложение</p> </li>
+									<li class="general-list general-list_in">3D очки
+									<p class="hide-action">Горяччие предложение</p></li>
+									<li class="general-list general-list_in">Мониторы
+									<p class="hide-action">Горяччие предложение</p></li>
+									<li class="general-list general-list_in">Джойстики, рули, геймпады
+									<p class="hide-action">Горяччие предложение</p></li>
+									<li class="general-list general-list_in">Графические планшеты
+									<p class="hide-action">Горяччие предложение</p></li>
+								</ul>
+								<img src="/img/moni.png">
+								<p class="price-catalog">Мониторы по 2000руб.</p>
+								<p class="dop-price">Совершенное уникальная скидка
+								весь сентябрь, при покупке проектора!</p>
+							</div>
+						</li>
+						<li class="general-list">Тв, видео, аудио, игры<img src="/img/arrow-cat.png">
+							<div class="catalog-product">
+								<ul>
+									<li class="general-list general-list_in">Мышки
+									<p class="hide-action">Горяччие предложение</p></li>
+									<li class="general-list general-list_in">Акустические системы
+									<p class="hide-action">Горяччие предложение</p></li>
+									<li class="general-list general-list_in">Web-камеры
+									<p class="hide-action">Горяччие предложение</p></li>
+									<li class="general-list general-list_in">Коврики для мыши
+									<p class="hide-action">Горяччие предложение</p> </li>
+									<li class="general-list general-list_in">3D очки
+									<p class="hide-action">Горяччие предложение</p></li>
+									<li class="general-list general-list_in">Мониторы
+									<p class="hide-action">Горяччие предложение</p></li>
+									<li class="general-list general-list_in">Джойстики, рули, геймпады
+									<p class="hide-action">Горяччие предложение</p></li>
+									<li class="general-list general-list_in">Графические планшеты
+									<p class="hide-action">Горяччие предложение</p></li>
+								</ul>
+								<img src="/img/moni.png">
+								<p class="price-catalog">Мониторы по 2000руб.</p>
+								<p class="dop-price">Совершенное уникальная скидка
+								весь сентябрь, при покупке проектора!</p>
+							</div>
+						</li>
+						<li class="general-list">Фото и видеокамеры<img src="/img/arrow-cat.png">
+							<div class="catalog-product">
+								<ul>
+									<li class="general-list general-list_in">Мышки
+									<p class="hide-action">Горяччие предложение</p></li>
+									<li class="general-list general-list_in">Акустические системы
+									<p class="hide-action">Горяччие предложение</p></li>
+									<li class="general-list general-list_in">Web-камеры
+									<p class="hide-action">Горяччие предложение</p></li>
+									<li class="general-list general-list_in">Коврики для мыши
+									<p class="hide-action">Горяччие предложение</p> </li>
+									<li class="general-list general-list_in">3D очки
+									<p class="hide-action">Горяччие предложение</p></li>
+									<li class="general-list general-list_in">Мониторы
+									<p class="hide-action">Горяччие предложение</p></li>
+									<li class="general-list general-list_in">Джойстики, рули, геймпады
+									<p class="hide-action">Горяччие предложение</p></li>
+									<li class="general-list general-list_in">Графические планшеты
+									<p class="hide-action">Горяччие предложение</p></li>
+								</ul>
+								<img src="/img/moni.png">
+								<p class="price-catalog">Мониторы по 2000руб.</p>
+								<p class="dop-price">Совершенное уникальная скидка
+								весь сентябрь, при покупке проектора!</p>
+							</div>
+						</li>
+						<li class="general-list">Расходные материалы<img src="/img/arrow-cat.png">
+							<div class="catalog-product">
+								<ul>
+									<li class="general-list general-list_in">Мышки
+									<p class="hide-action">Горяччие предложение</p></li>
+									<li class="general-list general-list_in">Акустические системы
+									<p class="hide-action">Горяччие предложение</p></li>
+									<li class="general-list general-list_in">Web-камеры
+									<p class="hide-action">Горяччие предложение</p></li>
+									<li class="general-list general-list_in">Коврики для мыши
+									<p class="hide-action">Горяччие предложение</p> </li>
+									<li class="general-list general-list_in">3D очки
+									<p class="hide-action">Горяччие предложение</p></li>
+									<li class="general-list general-list_in">Мониторы
+									<p class="hide-action">Горяччие предложение</p></li>
+									<li class="general-list general-list_in">Джойстики, рули, геймпады
+									<p class="hide-action">Горяччие предложение</p></li>
+									<li class="general-list general-list_in">Графические планшеты
+									<p class="hide-action">Горяччие предложение</p></li>
+								</ul>
+								<img src="/img/moni.png">
+								<p class="price-catalog">Мониторы по 2000руб.</p>
+								<p class="dop-price">Совершенное уникальная скидка
+								весь сентябрь, при покупке проектора!</p>
+							</div>
+						</li>
+						<li class="general-list">Аксессуары<img src="/img/arrow-cat.png">
+							<div class="catalog-product">
+								<ul>
+									<li class="general-list general-list_in">Мышки
+									<p class="hide-action">Горяччие предложение</p></li>
+									<li class="general-list general-list_in">Акустические системы
+									<p class="hide-action">Горяччие предложение</p></li>
+									<li class="general-list general-list_in">Web-камеры
+									<p class="hide-action">Горяччие предложение</p></li>
+									<li class="general-list general-list_in">Коврики для мыши
+									<p class="hide-action">Горяччие предложение</p> </li>
+									<li class="general-list general-list_in">3D очки
+									<p class="hide-action">Горяччие предложение</p></li>
+									<li class="general-list general-list_in">Мониторы
+									<p class="hide-action">Горяччие предложение</p></li>
+									<li class="general-list general-list_in">Джойстики, рули, геймпады
+									<p class="hide-action">Горяччие предложение</p></li>
+									<li class="general-list general-list_in">Графические планшеты
+									<p class="hide-action">Горяччие предложение</p></li>
+								</ul>
+								<img src="/img/moni.png">
+								<p class="price-catalog">Мониторы по 2000руб.</p>
+								<p class="dop-price">Совершенное уникальная скидка
+								весь сентябрь, при покупке проектора!</p>
+							</div>
+						</li>
+						<li class="general-list">Бытовая техника<img src="/img/arrow-cat.png">
+							<div class="catalog-product">
+								<ul>
+									<li class="general-list general-list_in">Мышки
+									<p class="hide-action">Горяччие предложение</p></li>
+									<li class="general-list general-list_in">Акустические системы
+									<p class="hide-action">Горяччие предложение</p></li>
+									<li class="general-list general-list_in">Web-камеры
+									<p class="hide-action">Горяччие предложение</p></li>
+									<li class="general-list general-list_in">Коврики для мыши
+									<p class="hide-action">Горяччие предложение</p> </li>
+									<li class="general-list general-list_in">3D очки
+									<p class="hide-action">Горяччие предложение</p></li>
+									<li class="general-list general-list_in">Мониторы
+									<p class="hide-action">Горяччие предложение</p></li>
+									<li class="general-list general-list_in">Джойстики, рули, геймпады
+									<p class="hide-action">Горяччие предложение</p></li>
+									<li class="general-list general-list_in">Графические планшеты
+									<p class="hide-action">Горяччие предложение</p></li>
+								</ul>
+								<img src="/img/moni.png">
+								<p class="price-catalog">Мониторы по 2000руб.</p>
+								<p class="dop-price">Совершенное уникальная скидка
+								весь сентябрь, при покупке проектора!</p>
+							</div>
+						</li>
+						<li class="general-list">Инструменты и
+						оборудование<img src="/img/arrow-cat.png">
+							<div class="catalog-product">
+								<ul>
+									<li class="general-list general-list_in">Мышки
+									<p class="hide-action">Горяччие предложение</p></li>
+									<li class="general-list general-list_in">Акустические системы
+									<p class="hide-action">Горяччие предложение</p></li>
+									<li class="general-list general-list_in">Web-камеры
+									<p class="hide-action">Горяччие предложение</p></li>
+									<li class="general-list general-list_in">Коврики для мыши
+									<p class="hide-action">Горяччие предложение</p> </li>
+									<li class="general-list general-list_in">3D очки
+									<p class="hide-action">Горяччие предложение</p></li>
+									<li class="general-list general-list_in">Мониторы
+									<p class="hide-action">Горяччие предложение</p></li>
+									<li class="general-list general-list_in">Джойстики, рули, геймпады
+									<p class="hide-action">Горяччие предложение</p></li>
+									<li class="general-list general-list_in">Графические планшеты
+									<p class="hide-action">Горяччие предложение</p></li>
+								</ul>
+								<img src="/img/moni.png">
+								<p class="price-catalog">Мониторы по 2000руб.</p>
+								<p class="dop-price">Совершенное уникальная скидка
+								весь сентябрь, при покупке проектора!</p>
+							</div>
+						</li>
+						<li class="all-product"><a href="">Весь каталог</a></li>
+					</ul>
+				</div>
+			</div>
+			<div class="serch_inset_left">
+				<span class="serch_grup">Искать везде</span>
+				<img class="arrow-serch" src="/img/arrow-serch.png">
+				<div class="serch-mass">
+					<ul>
+						<li>Ноутбуки и компьютеры</li>
+						<li>Комплектующие</li>
+						<li>Мониторы и периферия</li>
+						<li>Принтеры и оргтехника</li>
+						<li>Сеть и серверы</li>
+						<li>Телефоны и гаджеты</li>
+						<li>Тв, видео, аудио, игры</li>
+						<li>Фото и видеокамеры</li>
+						<li>Расходные материалы</li>
+					</ul>
+				</div>
+			</div>
+		</div>
+		<div class="right-bar">
+			<button class="serch_inset_right" type="submit">Найти<img src="/img/lypa.png"></button>
+			<div class="border_hd"></div>
+			<div id="checkout">
+				<div id="checkout-blank" class="checkout-block">
+					<div class="title">Корзина пуста</div>
+					<p class="text title_blue">Посоветовать вам ?</p>
+					<div class="more"></div>
+				</div>
+				<div id="checkout-has" class="checkout-block hide">
+					<div class="head">
+						<div class="title">В корзине:</div>
+						<a href="#" id="checkout-open">
+							<span class="count-has">
+							<span id="basket-count"></span>&nbsp;
+							<span id="basket-count-text">товар</span> на
+							<span id="basket-sum"></span>&nbsp;руб.
+							</span>
+							<span class="count-blank">Товаров нет</span>
+						</a>
+					</div>
+					<div class="more">
+						<a href="/cart">Оформить или изменить заказ</a>
+					</div>
+				</div>
+				<div id="checkout-wrap" class="hide">
+					<div class="checkout-block"></div>
+					<div class="checkout-list-bg">
+						<ul id="checkout-list"></ul>
+					</div>
+					<div class="issue">
+						<a href="/cart">Оформить заказ</a>
+					</div>
+				</div>
+			</div>
+			<div class="kabinet">
+				<p>Войти</p>
+			</div>
+			<div id="login-popup" class="pozit login_kabinet">
+				<span id="login-popup-title">Авторизация</span>
+				<a class="popup-close" onclick="$('#login-popup').hide();$('.podlojka').hide();"></a>
+				<div id="popup-warning"></div>
+				<form>
+					<span class="popup-label">E-mail:</span>
+					<input type="text" name="email">
+					<br>
+					<span class="popup-label">Пароль:</span>
+					<input type="password" name="password">
+					<br>
+					<div class="popup-check">
+						<input type="checkbox" name="remember">
+						<span>Запомнить меня</span>
+					</div>
+					<div style="text-align:center;">
+						<input type="submit" name="enter" value="Войти">
+						<input type="submit" name="reg" value="Регистрация">
+					</div>
+				</form>
+			</div>
+			<div class="pozit reg_kabinet">
+				<div class="pozit-header"><img class="logo_reg" src="/img/login.png">Регистрация<img class="close" src="/img/close.png"></div>
+				<div class="pozit-content">
+					<div class="wrapper_reg">
+						<label for="name"> Имя </label>
+						<input type="text" id="name" value="">
+						<br>
+						<label for="f_name"> Фамилия </label>
+						<input type="text" id="f_name" value=""><br>
+						<label for="login_reg"> Логин </label>
+						<input type="text" id="login_reg" value=""><br>
+						<label for="email"> Эл. почта </label>
+						<input type="text" id="email" value=""><br>
+						<label for="password_reg"> Пароль </label>
+						<input type="text" id="password_reg" value=""><br>
+						<label for="password_reg_re"> Повторите пароль </label>
+						<input type="text" id="password_reg_re" value=""><br>
+					</div>
+					<input type="checkbox" id="oferta"><label for="oferta">Договор-оферты</label><br>
+					<button class="button_basket">Регистрация<img class="arrow_poz" src="/img/arrow-serch.png"><img src="/img/border.png"></button>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+{/template}
+
+{template bottom}
+
+<!-- КОНТЕНТ ВНИЗУ -->
+<div class="bottom-content">
+	<p class="string string_bot">Вы недавно смотрели:</p>
+	<div class="old-look">
+		<div class="super-price_item_bot" style="width: 212px;">
+			<div class="wrapper-img-banner"><img class="super-price-item_img" src="/img/super-price-item_1.png">
+			</div>
+			<p class="title_blue">Электроды LINCOLN Basic </p>
+			<p class="dop-opis">Комплектующие</p>
+			<p class="product-day_price">10 999<span class="rub">р.</span></p>
+		</div>
+		<div class="super-price_item_bot show300" style="width: 212px;">
+			<div class="wrapper-img-banner"><img class="super-price-item_img" src="/img/foto.png">
+			<img class="banner-product" src="/img/banner-free.png"></div>
+			<p class="title_blue">Gorenie 4ge</p>
+			<p class="dop-opis">Комплектующие</p>
+			<p class="product-day_price">134 999<span class="rub">р.</span></p>
+		</div>
+		<div class="super-price_item_bot show500" style="width: 212px;">
+			<div class="wrapper-img-banner"><img class="super-price-item_img" src="/img/mob.png">
+			<img class="banner-product" src="/img/banner-skidka.png"></div>
+			<p class="title_blue">Gorenie 4ge One HD 342</p>
+			<p class="dop-opis">Комплектующие</p>
+			<p class="product-day_price">1 343 999<span class="rub">р.</span></p>
+		</div>
+		<div class="super-price_item_bot show617" style="width: 212px;">
+			<div class="wrapper-img-banner"><img class="super-price-item_img" src="/img/nout.png">
+			<img class="banner-product" src="/img/banner-hit.png"></div>
+			<p class="title_blue">Gorenie 4ge</p>
+			<p class="dop-opis">Комплектующие</p>
+			<p class="product-day_price">1 999<span class="rub">р.</span></p>
+		</div>
+		<div class="next"><p>Посмотреть всю историю →</p></div>
+	</div>
+	<div class="as-look">
+		<p class="string">Вместе с этим товаром люди ищут:</p>
+		<div class="wrapper_car2">
+			<div class="carousel-component2">
+				<div class="product_carousel2" style="width: 154.5px;">
+					<div class="super-price_item_bot_old">
+						<div class="wrapper-img-banner"><img class="super-price-item_img" src="/img/nout.png">
+						</div>
+						<p class="title_blue">Gorenie 4ge</p>
+					</div>
+				</div>
+				<div class="product_carousel2" style="width: 154.5px;">
+					<div class="super-price_item_bot_old">
+						<div class="wrapper-img-banner"><img class="super-price-item_img" src="/img/super-price-item_1.png">
+						<img class="banner-product" src="/img/banner-new.png">
+						</div>
+						<p class="title_blue">Gorenie 4ge</p>
+					</div>
+				</div>
+				<div class="product_carousel2" style="width: 154.5px;">
+					<div class="super-price_item_bot_old">
+						<div class="wrapper-img-banner"><img class="super-price-item_img" src="/img/foto.png">
+						</div>
+						<span class="title_blue">Электроды LINCOLN Basic</span>
+					</div>
+				</div>
+				<div class="product_carousel2" style="width: 154.5px;">
+					<div class="super-price_item_bot_old">
+						<div class="wrapper-img-banner"><img class="super-price-item_img" src="/img/box.png">
+						<img class="banner-product" src="/img/banner-free.png">
+						</div>
+						<p class="title_blue">Gorenie 4ge</p>
+					</div>
+				</div>
+				<div class="product_carousel2" style="width: 154.5px;">
+					<div class="super-price_item_bot_old">
+						<div class="wrapper-img-banner"><img class="super-price-item_img" src="/img/nout.png">
+						<img class="banner-product" src="/img/banner-hit.png">
+						</div>
+						<p class="title_blue">Электроды LINCOLN Basic </p>
+					</div>
+				</div>
+				<div class="product_carousel2" style="width: 154.5px;">
+					<div class="super-price_item_bot_old">
+						<div class="wrapper-img-banner"><img class="super-price-item_img" src="/img/mob.png">
+						<img class="banner-product" src="/img/banner-hit.png">
+						</div>
+						<p class="title_blue">Gorenie 4ge</p>
+					</div>
+				</div>
+				<div class="product_carousel2" style="width: 154.5px;">
+					<div class="super-price_item_bot_old">
+						<div class="wrapper-img-banner"><img class="super-price-item_img" src="/img/super-price-item_1.png">
+						<img class="banner-product" src="/img/banner-skidka.png">
+						</div>
+						<p class="title_blue">Gorenie 4ge</p>
+					</div>
+				</div>
+				<div class="product_carousel2" style="width: 154.5px;">
+					<div class="super-price_item_bot_old">
+						<div class="wrapper-img-banner"><img class="super-price-item_img" src="/img/foto.png">
+						</div>
+						<p class="title_blue">Gorenie 4ge</p>
+					</div>
+				</div>
+				<div class="product_carousel2" style="width: 154.5px;">
+					<div class="super-price_item_bot_old">
+						<div class="wrapper-img-banner"><img class="super-price-item_img" src="/img/box.png">
+						<img class="banner-product" src="/img/banner-new.png">
+						</div>
+						<p class="title_blue">Gorenie 4ge</p>
+					</div>
+				</div>
+			</div>
+		</div>
+		<img data-carousel="2" class="carousel-prev left-button-image" src="/img/slaider_next.png" alt="Previous Button">
+		<img data-carousel="2" class="carousel-next right-button-image" src="/img/slaider_next.png" alt="Next Button">
+		<div class="next"><p>Посмотреть рейтинг товаров по просмотрам в сутки →</p></div>
+	</div>
+</div>
+
+{/template}
+
+{template footer}
+
+<!-- ПОДВАЛ -->
+
+<div class="clear"></div>
+<div class="footer">
+	<div class="line"></div>
+	<div class="footer_wrapper">
+		<ul class="list list_1">
+			<li class="first">О компании</li>
+			<li>Миссия</li>
+			<li>Акции</li>
+			<li>Новости</li>
+			<li>Вакансии</li>
+			<li>Реквизиты</li>
+		</ul>
+		<ul class="list list_2">
+			<li class="first">Помощь</li>
+			<li>Как заказать</li>
+			<li>Оплата</li>
+			<li>Доставка</li>
+			<li>Помощь</li>
+			<li>Бонусы</li>
+		</ul>
+		<ul class="list list_3">
+			<li class="first">Партнерам</li>
+			<li>Юредическим лицам</li>
+			<li>Партнёрская программа</li>
+			<li>Реализация Вашего товара</li>
+			<li>Логистика и аренда</li>
+			<li>Дорого купим ваш бизнес</li>
+		</ul>
+		<ul class="list list_4">
+			<li class="first">Обратная связь</li>
+			<li>Оставить отзыв о работе</li>
+			<li>Пожаловаться директору</li>
+			<li>Внедряем Ваши идеи</li>
+			<li><img src="/img/soc.png"></li>
+		</ul>
+		<div class="clear"></div>
+	</div>
+	<p class="footer-opis">ЦиFры    2001-2012 Санкт-Петербург  +7  (812) 320-80-80  <span class="email">info@320-8080.ru</span></p>
+</div>
+
+</body>
+</html>
+
+{/template}
+
+{template kabinet-sidebar}
+  <style>
+  {literal}
+.left-list {
+  width:195px;
+  padding:10px;
+  margin-left:10px;
+  background:#f8f8f8;
+  border-radius:6px;
+  -moz-border-radius:6px;
+  -webkit-border-radius:6px;
+  box-shadow:4px 4px 4px #e4e4e4;
+  color:#545454;
+  float:left;
+  overflow:hidden;
+}
+.left-list h3 {
+  font-size:19px;
+  padding-bottom:18px;
+}
+#bonus {
+	height:67px;
+	border-top:1px solid #fff;
+	border-bottom:1px solid #d7b55c;
+	background:#fce059;
+	background:-moz-linear-gradient(#fce059,#fbc348);
+	background:-webkit-linear-gradient(#fce059,#fbc348);
+	background:-o-linear-gradient(#fce059,#fbc348);
+	background:-ms-linear-gradient(#fce059,#fbc348);
+	background: linear-gradient(#fce059,#fbc348);
+	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#fce059',endColorstr='#fbc348',GradientType=0);
+	position:relative;
+	width:215px;
+	left:-10px;
+	margin:10px 0 5px;
+}
+.bonus-inner {
+	height:65px;
+	border-top:1px solid #d7b55c;
+	border-bottom:1px solid #fff;
+	background:url(/img/images/f.png) 37px 17px no-repeat;
+	padding-left:37px;
+}
+.bonus-inner span {
+	display:block;
+}
+.bonus-count {
+	font-size:24px;
+	color:#4e4c4f;
+	line-height:24px;
+	padding-top:3px;
+	padding-right:33px;
+	text-align:right;
+}
+.bonus-bonus {
+	padding-right:33px;
+	text-align:right;
+}
+.bonus-arrow {
+	display:block;
+	float:right;
+	height:65px;
+	width:15px;
+	border-left:1px solid #ecbd4b;
+	background:url(/img/images/arr.png) left top no-repeat;
+}
+  {/literal}
+  </style>
+  <div class="left-list">
+	<h3>Личный кабинет</h3>
+	<ul>
+	  <li><a href="/u/profile">Мои личные данные</a></li>
+	  <li><a href="/u/orders">Мои заказы</a></li>
+	</ul>
+	<div id="bonus">
+	  <div class="bonus-inner">
+		<a class="bonus-arrow" href="#"></a>
+		<span>На Вашей карте</span>
+		<span class="bonus-count">0</span>
+		<span class="bonus-bonus">F-бонусов</span>
+		<div style="clear:both;"></div>
+	  </div>
+	</div>
+	<div style="text-align:right;color:#0071b3;"><a href="#">Пополнить</a></div>
+	<div style="text-align:right;color:#0071b3;"><a href="/u/logout">Выйти</a></div>
+  </div>
+{/template}
+
+{template main }
+
+	{call head /}
+/*	{call header /} */
+<div id="container" class="container">
+	{call soy.header.header /}
+
+
+<style>
+{literal}
+	.tree{display:inline-block;font-size:16px};
+	.title_blue{font-size:21px;color:#107bb9;text-decoration:underline;padding-top:5px;cursor:pointer;text-align:center}
+	.link-item {
+	width:25%;
+	float:left;
+	}
+	.link-item-ava {
+	display:block;
+	width:95px;
+	height:95px;
+	line-height:95px;
+	overflow:hidden;
+	float:left;
+	margin:0 10px 10px 15px;
+	}
+	.link-item-ava img {
+	display:inline-block;
+	vertical-align:middle;
+	max-width:95px;
+	max-height:95px;
+	}
+	.link-item-date {
+	font-size:11px;
+	line-height:13px;
+	display:block;
+	padding-bottom:3px;
+	}
+	a.link-item-title {
+	color:#0071b3;
+	font-size:12px;
+	}
+	.warning {
+	color:#fe2142;
+	text-transform:uppercase;
+	}
+	.link-item-text {
+	font-size:11px;
+	line-height:12px;
+	padding-top:3px;
+	padding-left:15px;
+	}
+	.kabinet-bottom {
+	margin:20px 10px 10px;
+	}
+	.kabinet-bottom h3 {
+	font-size:22px;
+	color:#404040;
+	margin: 0 0 15px 25px;
+	}
+	.paginator {
+	background:#f2f2f2;
+	height:32px;
+	line-height:32px;
+	text-align:center;
+	margin-top:13px;
+	margin-bottom:10px;
+	}
+	.paginator a {
+	display:inline-block;
+	height:32px;
+	line-height:32px;
+	padding:0 5px;
+	color:#0071b3;
+	}
+	.paginator a:hover {
+	text-decoration:none;
+	}
+	.paginator .cur-page {
+	background:#dcdcdc;
+	}
+	.table-status {
+	display:inline-block;
+	width:49px;
+	height:13px;
+	background-image:url(/img/images/status.png);
+	background-repeat:no-repeat;
+	vertical-align:middle;
+	margin-right:6px;
+	}
+	*+html .paginator a,
+	*+html .link-item-ava img,
+	*+html .table-status,
+	*+html .info-span,
+	*+html .info-span-label {
+	display:inline;
+	zoom:1;
+	}
+	.stadia-one {
+	background-position:left top;
+	}
+	.stadia-two {
+	background-position:left -57px;
+	}
+	.stadia-three {
+	background-position:left -110px;
+	}
+	.stadia-four {
+	background-position:left -145px;
+	}
+	#order-table {
+		color:#3d3d3d;
+		width:100%;
+		float:left;
+	}
+		#order-table #thead {
+			margin-top:15px;
+			margin-bottom:26px;
+			background:#f2f2f2;
+			font-size:14px;
+			height:32px;
+			line-height:32px;
+		}
+		#order-table .order-item {
+			background:#f9f9f9;
+			margin-top:3px;
+		}
+			#thead >div {
+				text-align:center;
+				padding-bottom:0;
+				padding-top:0;
+				border-color: #f2f2f2;
+			}
+			.col-1,.col-2 {
+				float:left;
+				height:100%;
+				padding-bottom:7px;
+				padding-top:7px;
+				border-right:1px solid #e1e1e1;
+			}
+			.col-4,.col-5,.col-6 {
+				float:right;
+				height:100%;
+				padding-bottom:7px;
+				padding-top:7px;
+			}
+			.col-1 {
+				padding-left:15px;
+				width:59px;
+			}
+			.col-2 {
+				padding-left:10px;
+				width:79px;
+			}
+			.col-6 {
+				padding-left:10px;
+				width:140px;
+				padding-right:10px;
+			}
+			.col-5,
+			.col-4 {
+				width:89px;
+				padding-left:10px;
+				border-right:1px solid #e1e1e1;
+			}
+			.col-3 {
+				padding-bottom:7px;
+				padding-top:7px;
+				margin-left:165px;
+				margin-right:360px;
+				padding-left:10px;
+				border-right:1px solid #e1e1e1;
+			}
+
+			#order-table .order-item a {
+				color:#0072b3;
+				cursor:pointer;
+			}
+			#order-table .order-item a:hover {
+				text-decoration:none;
+			}
+		#order-table .order-item-hidden {
+			background:#FDFDFD;
+			display:none;
+			font:12px/14px arial,sans-serif;
+		}
+			#order-table .order-item-inner {
+				padding:10px 15px;
+			}
+				#order-table .order-item-inner .close-this {
+					cursor:pointer;
+					text-decoration:underline;
+				}
+				#order-table .order-item-inner .close-this:hover {
+					text-decoration:none;
+				}
+	.kabinet-body {
+	margin-top:17px;
+	padding-left:250px;
+	margin-right:10px;
+	}
+	a.look_all {
+	display:block;
+	float:left;
+	margin-top:8px;
+	color:#0071b3;
+	}
+	.kabinet-table {
+	width:100%;
+	float:left;
+	}
+	.info-span {
+		display:inline-block;
+		vertical-align:top;
+		color:#0072b3;
+		padding:3px 0 3px 15px;
+	}
+	.info-span-label {
+		display:inline-block;
+		vertical-align:top;
+		width:120px;
+		padding:3px 0;
+	}
+	.info-comment {
+		width:300px;
+		padding:7px 10px;
+		border:1px solid #e1e1e1;
+		font-size:10px;
+		margin:3px 0 10px 40px;
+	}
+{/literal}
+</style>
+<div class="content" id="middle"> <div class="full">
+<div class="wrapper-content">
+	<div class="content-left">
+        {call kabinet-sidebar /}
+		<div class="kabinet-body">
+			<ul>
+				<li class="tree title_blue">Главная</li>
+				<span class="delitel">/</span>
+				<li class="tree title_blue">Личный кабинет</li>
+				<span class="delitel">/</span>
+				<li class="tree title_blue">Мои заказы</li>
+			</ul>
+			<h1 style="float:left;padding-right:10px;padding-bottom:10px;margin:0;font:24px 'Myriad Pro';color:#0071b3;">Мои заказы</h1>
+			<a class="look_all" href="#">Посмотреть всю историю заказов</a>
+
+
+
+			<div id="order-table">
+				<script>
+				{literal}
+
+				$(document).ready(function(){
+					$('.order-item').each(function(){
+						var htr = $(this).children('.col-3').height();
+						$(this).children('.td').height(htr);
+						$(this).children('.td').css('line-height',htr+'px');
+					});
+					$('.order-item .open').click(function(){
+						$(this).parents('.order-item').next('.order-item-hidden').animate({'height':'show'});
+						$(this).hide();
+						$(this).next('.close').show();
+					});
+					$('.order-item .close').click(function(){
+						$(this).parents('.order-item').next('.order-item-hidden').animate({'height':'hide'});
+						$(this).hide();
+						$(this).prev('.open').show();
+					});
+				});
+				$(window).resize(function(){
+					$('.order-item').each(function(){
+						var htr = $(this).children('.col-3').height();
+						$(this).children('.td').height(htr);
+						$(this).children('.td').css('line-height',htr+'px');
+					});
+				});
+				{/literal}
+				</script>
+				<div id="thead">
+					<div class="td col-1">Номер</div>
+					<div class="td col-2">Дата</div>
+					<div class="td col-6">Статус</div>
+					<div class="td col-5">Стоимость</div>
+					<div class="td col-4">Количество</div>
+					<div class="td col-3">Наименование товара</div>
+					<div style="clear:both;"></div>
+				</div>
+				{foreach $item in $orders}
+					{if $item}
+						{call order}
+							{param order: $item /}
+						{/call}
+					{/if}
+				{/foreach}
+			</div>
+			<div style="clear:both;"></div>
+            {if length($pages)>1}
+			  <div class="paginator">
+				Cтраницы
+                {foreach $page in $pages}
+                  <a {if $page==$curpage}class="cur-page" {/if} href="?page={$page}">{$page}</a>
+                {/foreach}
+			  </div>
+            {/if}
+		</div>
+		<div style="clear:both;"></div>
+		<!--div class="kabinet-bottom">
+			<h3>Последние новости</h3>
+			<div class="link-item">
+				<a href="#" class="link-item-ava">
+					<img src="/img/product-day_2.png">
+				</a>
+				<span class="link-item-date">02.02.2002</span>
+				<a href="#" class="link-item-title"><span class="warning">Внимание!</span> Технические работы</a>
+				<div class="link-item-text">С 3.11 2013 магазин на Левашовского работает 8 дней в неделю по 25 часов с перерывом на обед</div>
+				<div style="clear:both;"></div>
+			</div>
+			<div class="link-item">
+				<a href="#" class="link-item-ava">
+					<img src="/img/product-day_2.png">
+				</a>
+				<span class="link-item-date">02.02.2002</span>
+				<a href="#" class="link-item-title"><span class="warning">Внимание!</span> Технические работы</a>
+				<div class="link-item-text">С 3.11 2013 магазин на Левашовского работает 8 дней в неделю по 25 часов с перерывом на обед</div>
+				<div style="clear:both;"></div>
+			</div>
+			<div class="link-item">
+				<a href="#" class="link-item-ava">
+					<img src="/img/product-day_2.png">
+				</a>
+				<span class="link-item-date">02.02.2002</span>
+				<a href="#" class="link-item-title"><span class="warning">Внимание!</span> Технические работы</a>
+				<div class="link-item-text">С 3.11 2013 магазин на Левашовского работает 8 дней в неделю по 25 часов с перерывом на обед</div>
+				<div style="clear:both;"></div>
+			</div>
+			<div class="link-item">
+				<a href="#" class="link-item-ava">
+					<img src="/img/product-day_2.png">
+				</a>
+				<span class="link-item-date">02.02.2002</span>
+				<a href="#" class="link-item-title"><span class="warning">Внимание!</span> Технические работы</a>
+				<div class="link-item-text">С 3.11 2013 магазин на Левашовского работает 8 дней в неделю по 25 часов с перерывом на обед</div>
+				<div style="clear:both;"></div>
+			</div>
+			<div style="clear:both;"></div>
+		</div>
+		<div class="kabinet-bottom">
+			<h3>Действующие акции</h3>
+			<div class="link-item">
+				<a href="#" class="link-item-ava">
+					<img src="/img/product-day_2.png">
+				</a>
+				<span class="link-item-date">02.02.2002</span>
+				<a href="#" class="link-item-title"><span class="warning">акция!</span> Технические работы</a>
+				<div class="link-item-text">С 3.11 2013 магазин на Левашовского работает 8 дней в неделю по 25 часов с перерывом на обед</div>
+				<div style="clear:both;"></div>
+			</div>
+			<div class="link-item">
+				<a href="#" class="link-item-ava">
+					<img src="/img/product-day_2.png">
+				</a>
+				<span class="link-item-date">02.02.2002</span>
+				<a href="#" class="link-item-title"><span class="warning">акция!</span> Технические работы</a>
+				<div class="link-item-text">С 3.11 2013 магазин на Левашовского работает 8 дней в неделю по 25 часов с перерывом на обед</div>
+				<div style="clear:both;"></div>
+			</div>
+			<div class="link-item">
+				<a href="#" class="link-item-ava">
+					<img src="/img/product-day_2.png">
+				</a>
+				<span class="link-item-date">02.02.2002</span>
+				<a href="#" class="link-item-title"><span class="warning">акция!</span> Технические работы</a>
+				<div class="link-item-text">С 3.11 2013 магазин на Левашовского работает 8 дней в неделю по 25 часов с перерывом на обед</div>
+				<div style="clear:both;"></div>
+			</div>
+			<div class="link-item">
+				<a href="#" class="link-item-ava">
+					<img src="/img/product-day_2.png">
+				</a>
+				<span class="link-item-date">02.02.2002</span>
+				<a href="#" class="link-item-title"><span class="warning">акция!</span> Технические работы</a>
+				<div class="link-item-text">С 3.11 2013 магазин на Левашовского работает 8 дней в неделю по 25 часов с перерывом на обед</div>
+				<div style="clear:both;"></div>
+			</div>
+			<div style="clear:both;"></div>
+		</div-->
+		<!-- ПРОДУКТЫ -->
+	</div>
+	<div style="clear:both;"></div>
+</div>
+<div class="clear"></div>
+</div></div>
+
+	{call soy.footer.footer /}
+
+</div>
+</body>
+</html>
+{/template}
+
+{template personal}
+
+	{call head /}
+/*	{call header /} */
+<div id="container" class="container">
+	{call soy.header.header /}
+
+<style>
+{literal}
+	.tree{display:inline-block;font-size:16px};
+	.title_blue{font-size:21px;color:#107bb9;text-decoration:underline;padding-top:5px;cursor:pointer;text-align:center}
+	.kabinet-formblock {
+	padding-right:100px;
+	float:left;
+	}
+	.kabinet-formblock .kab-label {
+	display:inline-block;
+	width:110px;
+	padding-right:10px;
+	text-align:right;
+	color:#484848;
+	vertical-align:middle;
+	margin-bottom:10px;
+	}
+	.kabinet-formblock .s-net {
+	display:inline-block;
+	width:265px;
+	vertical-align:middle;
+	}
+	.kabinet-formblock input[type="text"],
+	.kabinet-formblock input[type="password"] {
+	height:26px;
+	background:#fff;
+	border:1px solid #d1d1d1;
+	border-radius:4px;
+	-moz-border-radius:4px;
+	-webkit-border-radius:4px;
+	padding:0;
+	padding-left:7px;
+	width:220px;
+	display:inline-block;
+	box-shadow:0 1px 1px #e5e5e5;
+	-moz-box-shadow:0 1px 1px #e5e5e5;
+	-webkit-box-shadow:0 1px 1px #e5e5e5;
+	margin-bottom:10px;
+	vertical-align:middle;
+	}
+	.kabinet-formblock input[type="submit"] {
+	display:inline-block;
+	border:0;
+	height:32px;
+	width:124px;
+	cursor:pointer;
+	margin-left:200px;
+	background:url(/img/images/savebutton.png) left top no-repeat;
+	}
+	.kabinet-formblock input[type="submit"]:hover {
+	opacity:0.7;
+	-moz-opacity:0.7;
+	filter:progid:DXImageTransform.Microsoft.Alpha(opacity=70);
+	zoom:1;
+	}
+	.kabinet-formblock .add-s-net {
+	display:inline-block;
+	height:19px;
+	width:19px;
+	margin-bottom:10px;
+	vertical-align:middle;
+	margin-left:8px;
+	background:url(/img/images/add-one.png) left top no-repeat;
+	cursor:pointer;
+	}
+	*+html .kabinet-formblock .s-net,
+	*+html .kabinet-formblock .add-s-net,
+	*+html .kabinet-formblock .kab-label,
+	*+html .kabinet-formblock input[type="text"],
+	*+html .kabinet-formblock input[type="password"]{
+	display:inline;
+	zoom:1;
+	}
+	.link-item {
+	width:25%;
+	float:left;
+	}
+	.link-item-ava {
+	display:block;
+	width:95px;
+	height:95px;
+	line-height:95px;
+	overflow:hidden;
+	float:left;
+	margin:0 10px 10px 15px;
+	}
+	.link-item-ava img {
+	display:inline-block;
+	vertical-align:middle;
+	max-width:95px;
+	max-height:95px;
+	}
+	.link-item-date {
+	font-size:11px;
+	line-height:13px;
+	display:block;
+	padding-bottom:3px;
+	}
+	a.link-item-title {
+	color:#0071b3;
+	font-size:12px;
+	}
+	.warning {
+	color:#fe2142;
+	text-transform:uppercase;
+	}
+	.link-item-text {
+	font-size:11px;
+	line-height:12px;
+	padding-top:3px;
+	padding-left:15px;
+	}
+	.kabinet-bottom {
+	margin:20px 10px 10px;
+	}
+	.kabinet-bottom h3 {
+	font-size:22px;
+	color:#404040;
+	margin: 0 0 15px 25px;
+	}
+	.kabinet-body {
+	margin-top:17px;
+	padding-left:250px;
+	margin-right:10px;
+	}
+{/literal}
+</style>
+{call alerts-css /}
+<div class="content" id="middle"> <div class="full">
+<div class="wrapper-content">
+	<div class="content-left">
+        {call kabinet-sidebar /}
+		<div class="kabinet-body">
+			<ul>
+				<li class="tree title_blue">Главная</li>
+				<span class="delitel">/</span>
+				<li class="tree title_blue">Личный кабинет</li>
+			</ul>
+            <div id="profile-alert" class="alert {if $error}alert-error{elseif $msg}alert-success{else}alert-none{/if}">
+                {if $error}
+                    {$error}
+                {else}
+                    {$msg}
+                {/if}
+            </div>
+			<h1 style="font:24px 'Myriad Pro';color:#0071b3;padding-bottom:10px;">Мои личные данные</h1>
+            <form action="/u/profile" method="POST">
+                <div class="kabinet-formblock">
+                    <div>
+                        <span class="kab-label">Ф.И.О.</span>
+                        <input name="name" value="{$name}" type="text">
+                    </div>
+                    <div>
+                        <span class="kab-label">Дата рождения</span>
+                        <input name="birthdate" value="{$birthdate}" type="text">
+                    </div>
+                    <div>
+                        <span class="kab-label">Город</span>
+                        <input name="city" value="{$city}" type="text">
+                    </div>
+                    <div>
+                        <span class="kab-label">Адрес доставки</span>
+                        <input name="address" value="{$address}" type="text">
+                    </div>
+                    <!--div>
+                        <span class="kab-label">Страницы в соц. сетях</span>
+                        <span class="s-net">
+                            <div>
+                                <input type="text">
+                                <a onclick="$(this).parent('div').clone().appendTo('.s-net');"class="add-s-net"></a>
+                            </div>
+                        </span>
+                    </div-->
+                </div>
+                <div class="kabinet-formblock">
+                    <div>
+                        <span class="kab-label">E-mail</span>
+                        <input value="{$email}" type="text" readonly>
+                        <a style="visibility:{if $email_valid}hidden{else}show{/if};" href="#" id="confirm-email">Выслать подтверждение</a>
+                    </div>
+                    <div>
+                        <span class="kab-label">Телефон</span>
+                        <input name="phone" value="{$phone}" type="text" readonly>
+                        <a style="visibility:{if $phone_valid}hidden{else}show{/if};" href="#" id="confirm-phone">Выслать подтверждение</a>
+                    </div>
+                    <div>
+                        <span class="kab-label">Новый пароль</span>
+                        <input name="pass1" type="password">
+                    </div>
+                    <div>
+                        <span class="kab-label">Повторите пароль</span>
+                        <input name="pass2" type="password">
+                    </div>
+                    <div>
+                        <input type="submit" value="">
+                    </div>
+                </div>
+                <div style="clear:both;"></div>
+            </form>
+		</div>
+        {literal}
+          <script>
+            function send_validation(slot, message) {
+              $.ajax({
+                type: "POST",
+                url: "/u/send-validation",
+                data: {slot: slot},
+                success : function(data) {
+                  $("#profile-alert").removeClass("alert-none alert-error").addClass("alert-success");
+                  $("#profile-alert").text(message);
+                },
+                error : function(data) {
+                  $("#profile-alert").removeClass("alert-none alert-success").addClass("alert-error");
+                  $("#profile-alert").text("Что-то пошло не так");
+                }
+              });
+            };
+			$("a#confirm-email").click(function(){
+              send_validation("email", "Ссылка на подтверждение почтового адреса выслана");
+            });
+			$("a#confirm-phone").click(function(){
+              send_validation("phone", "СМС с кодом подтверждения выслано");
+            });
+          </script>
+        {/literal}
+		<div style="clear:both;"></div>
+		<!--div class="kabinet-bottom">
+			<h3>Последние новости</h3>
+			<div class="link-item">
+				<a href="#" class="link-item-ava">
+					<img src="/img/product-day_2.png">
+				</a>
+				<span class="link-item-date">02.02.2002</span>
+				<a href="#" class="link-item-title"><span class="warning">Внимание!</span> Технические работы</a>
+				<div class="link-item-text">С 3.11 2013 магазин на Левашовского работает 8 дней в неделю по 25 часов с перерывом на обед</div>
+				<div style="clear:both;"></div>
+			</div>
+			<div class="link-item">
+				<a href="#" class="link-item-ava">
+					<img src="/img/product-day_2.png">
+				</a>
+				<span class="link-item-date">02.02.2002</span>
+				<a href="#" class="link-item-title"><span class="warning">Внимание!</span> Технические работы</a>
+				<div class="link-item-text">С 3.11 2013 магазин на Левашовского работает 8 дней в неделю по 25 часов с перерывом на обед</div>
+				<div style="clear:both;"></div>
+			</div>
+			<div class="link-item">
+				<a href="#" class="link-item-ava">
+					<img src="/img/product-day_2.png">
+				</a>
+				<span class="link-item-date">02.02.2002</span>
+				<a href="#" class="link-item-title"><span class="warning">Внимание!</span> Технические работы</a>
+				<div class="link-item-text">С 3.11 2013 магазин на Левашовского работает 8 дней в неделю по 25 часов с перерывом на обед</div>
+				<div style="clear:both;"></div>
+			</div>
+			<div class="link-item">
+				<a href="#" class="link-item-ava">
+					<img src="/img/product-day_2.png">
+				</a>
+				<span class="link-item-date">02.02.2002</span>
+				<a href="#" class="link-item-title"><span class="warning">Внимание!</span> Технические работы</a>
+				<div class="link-item-text">С 3.11 2013 магазин на Левашовского работает 8 дней в неделю по 25 часов с перерывом на обед</div>
+				<div style="clear:both;"></div>
+			</div>
+			<div style="clear:both;"></div>
+		</div>
+		<div class="kabinet-bottom">
+			<h3>Действующие акции</h3>
+			<div class="link-item">
+				<a href="#" class="link-item-ava">
+					<img src="/img/product-day_2.png">
+				</a>
+				<span class="link-item-date">02.02.2002</span>
+				<a href="#" class="link-item-title"><span class="warning">акция!</span> Технические работы</a>
+				<div class="link-item-text">С 3.11 2013 магазин на Левашовского работает 8 дней в неделю по 25 часов с перерывом на обед</div>
+				<div style="clear:both;"></div>
+			</div>
+			<div class="link-item">
+				<a href="#" class="link-item-ava">
+					<img src="/img/product-day_2.png">
+				</a>
+				<span class="link-item-date">02.02.2002</span>
+				<a href="#" class="link-item-title"><span class="warning">акция!</span> Технические работы</a>
+				<div class="link-item-text">С 3.11 2013 магазин на Левашовского работает 8 дней в неделю по 25 часов с перерывом на обед</div>
+				<div style="clear:both;"></div>
+			</div>
+			<div class="link-item">
+				<a href="#" class="link-item-ava">
+					<img src="/img/product-day_2.png">
+				</a>
+				<span class="link-item-date">02.02.2002</span>
+				<a href="#" class="link-item-title"><span class="warning">акция!</span> Технические работы</a>
+				<div class="link-item-text">С 3.11 2013 магазин на Левашовского работает 8 дней в неделю по 25 часов с перерывом на обед</div>
+				<div style="clear:both;"></div>
+			</div>
+			<div class="link-item">
+				<a href="#" class="link-item-ava">
+					<img src="/img/product-day_2.png">
+				</a>
+				<span class="link-item-date">02.02.2002</span>
+				<a href="#" class="link-item-title"><span class="warning">акция!</span> Технические работы</a>
+				<div class="link-item-text">С 3.11 2013 магазин на Левашовского работает 8 дней в неделю по 25 часов с перерывом на обед</div>
+				<div style="clear:both;"></div>
+			</div>
+			<div style="clear:both;"></div>
+		</div-->
+		<!-- ПРОДУКТЫ -->
+	</div>
+	<div style="clear:both;"></div>
+</div>
+<div class="clear"></div>
+</div></div>
+
+	{call soy.footer.footer /}
+
+</div>
+</body>
+</html>
+{/template}
+
+
+{template user }
+"{$KEY}"
+{/template}
+
+
+{template address }
+{$ADDRESS}; <br>
+{$CITY}
+{/template}
+
+
+{template order }
+/*  Заказ номер <b> </b><br/>{\n}
+  адрес <b>{if $ADDRESS}{call address data="$ADDRESS" /}{/if}</b> <br/> {\n}
+  сумма бонусов <b>{$BONUSCOUNT} </b><br/> {\n}
+  комментарий к заказу <b>{$COMMENT} </b><br/> {\n}
+  статус заказа  <b>{$order['ORDER-STATE']} </b> <br/> {\n}
+  дата создания в виде timestamp <b>{$DATE} </b>  <br/> {\n}
+  стоимость доставки <b>{$DELIVERY} </b>   <br/> {\n}
+  номер <b>{$EKK} </b>          <br/> {\n}
+  email <b>{$EMAIL} </b>  <br/> {\n}
+  список товаров  <b>{$ITEMS} </b>   <br/> {\n}
+  когда был модифицирован  <b>{$MODIFIED} </b>   <br/> {\n}
+  номер телефона  <b>{$PHONE} </b> <br/> {\n}
+  аккаунт   <b>{if $USER}{call user data="$USER" /}{/if} </b> <br/> {\n}
+  фамилия   <b>{$USERFAMILY} </b> <br/> {\n}
+  имя     <b>{$USERNAME} </b> <br/> {\n}*/
+<div class="order-item">
+	<div class="td col-1">
+		<a class="open">{$order.KEY}</a>
+		<a class="close" style="display:none;">{$order.KEY}</a>
+	</div>
+	<div class="td col-2">{date($order.DATE)}</div>
+	<div class="td col-6">
+	{switch $order['ORDER-STATE']}
+		{case 1}
+		<span class="table-status stadia-one"></span> Обработка
+		{case 2}
+		<span class="table-status stadia-two"></span> Принят
+		{case 3}
+		<span class="table-status stadia-three"></span> Отправка
+		{case 4}
+		<span class="table-status stadia-four"></span> Отгружен
+		{default}
+		<span class="table-status stadia-one"></span> Обработка
+	{/switch}
+	</div>
+	<div class="col-5">
+	{foreach $item in $order.ITEMS}
+		{if $item}
+			{$item['SITE-PRICE']} р.<br>
+		{/if}
+	{/foreach}
+	</div>
+	<div class="col-4">
+	{foreach $item in $order.ITEMS}
+		{if $item}
+			{$item.COUNT} шт.<br>
+		{/if}
+	{/foreach}
+	</div>
+	<div class="col-3">
+	{foreach $item in $order.ITEMS}
+		{if $item}
+			<a href="http://www.320-8080.ru/{$item.ARTICLE}">{$item.NAME}</a><br>
+		{/if}
+	{/foreach}
+	</div>
+	<div style="clear:both;"></div>
+</div>
+<div class="order-item-hidden">
+	<div class="order-item-inner">
+		{if $order.USER}
+			<span class="info-span-label">Пользователь:</span> <span class="info-span">{call user data="$order.USER" /}</span><br>
+		{/if}
+		<span class="info-span-label">Фамилия, Имя:</span> <span class="info-span">{$order.USERFAMILY} {$order.USERNAME}</span><br>
+		{if $order.PHONE}
+			<span class="info-span-label">Номер телефона:</span> <span class="info-span">{$order.PHONE} </span><br>
+		{/if}
+		{if $order.EMAIL}
+			<span class="info-span-label">E-mail:</span> <span class="info-span"><a href="mailto:{$order.EMAIL}">{$order.EMAIL}</a></span><br>
+		{/if}
+		{if $order.ADDRESS}
+			<span class="info-span-label">Адрес:</span> <span class="info-span">{call address data="$order.ADDRESS" /}</span><br>
+		{/if}
+		{if $order.EKK}
+			<span class="info-span-label">Номер бонусной карты:</span> <span class="info-span">{$order.EKK}</span><br>
+		{/if}
+		{if $order.BONUSCOUNT}
+			<span class="info-span-label">Cумма бонусов:</span> <span class="info-span">{$order.BONUSCOUNT} </span><br>
+		{/if}
+		{if $order.DELIVERY}
+			<span class="info-span-label">Cтоимость доставки:</span> <span class="info-span">{$order.DELIVERY} p.</span><br>
+		{/if}
+		{if $order.COMMENT}
+			<span class="info-span-label">Комментарий к заказу:</span>
+			<div class="info-comment">{$order.COMMENT}</div>
+		{/if}
+		/* !--когда был модифицирован  <b>{$order.MODIFIED} </b><br>-- */
+	</div>
+</div>
+{/template}
+
+{template login}
+
+<style>
+{literal}
+#login-page {
+	width:350px;
+	border-radius:5px;
+	-webkit-border-radius:5px;
+	-moz-border-radius:5px;
+	border:1px solid #bdbdbd;
+	box-shadow:0 2px 6px #bdbdbd;
+	-moz-box-shadow:0 2px 6px #bdbdbd;
+	-webkit-box-shadow:0 2px 6px #bdbdbd;
+	padding-bottom:30px;
+	margin-top:20px;
+	margin-bottom:20px;
+}
+#login-page input[type="text"],
+#login-page input[type="password"] {
+	height:26px;
+	line-height:26px;
+	line-height:26px;
+	background:#fff;
+	border:1px solid #d1d1d1;
+	border-radius:4px;
+	-moz-border-radius:4px;
+	-webkit-border-radius:4px;
+	padding:0;
+	padding-left:7px;
+	width:220px;
+	display:inline-block;
+	box-shadow:0 1px 1px #e5e5e5;
+	-moz-box-shadow:0 1px 1px #e5e5e5;
+	-webkit-box-shadow:0 1px 1px #e5e5e5;
+	margin-bottom:17px;
+	vertical-align:middle;
+}
+#login-page input[type="submit"] {
+	display:inline-block;
+	border:0;
+	font-family:tahoma,sans-serif;
+	font-size:14px;
+	color:#48484a;
+	text-shadow:0 1px 0 #fff;
+	line-height:28px;
+	height:28px;
+	vertical-align:middle;
+	padding:0 25px;
+	cursor:pointer;
+	margin:10px 7px 0;
+	border-radius:4px;
+	-moz-border-radius:4px;
+	-webkit-border-radius:4px;
+	background:#fbdf58;
+	background:-moz-linear-gradient(#fbdf58,#fbc547);
+	background:-webkit-linear-gradient(#fbdf58,#fbc547);
+	background:-o-linear-gradient(#fbdf58,#fbc547);
+	background:-ms-linear-gradient(#fbdf58,#fbc547);
+	background: linear-gradient(#fbdf58,#fbc547);	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#fbdf58',endColorstr='#fbc547',GradientType=0);
+	box-shadow:1px 2px 6px #bdbdbd;
+	-moz-box-shadow:1px 2px 6px #bdbdbd;
+	-webkit-box-shadow:1px 2px 6px #bdbdbd;
+}
+#login-page input[type="submit"]:hover {
+	background:#fbc547;
+	background:-moz-linear-gradient(#fbc547,#fbdf58);
+	background:-webkit-linear-gradient(#fbc547,#fbdf58);
+	background:-o-linear-gradient(#fbc547,#fbdf58);
+	background:-ms-linear-gradient(#fbc547,#fbdf58);
+	background: linear-gradient(#fbc547,#fbdf58);	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#fbc547',endColorstr='#fbdf58',GradientType=0);
+}
+#login-page #popup-warning {
+	padding: 8px 14px;
+	margin:0 20px 18px;
+	text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+	color: #b94a48;
+	background-color: #f2dede;
+	border-color: #eed3d7;
+	-webkit-border-radius: 4px;
+	-moz-border-radius: 4px;
+	border-radius: 4px;
+}
+*+html #login-page input[type="text"],
+*+html #login-page input[type="password"],
+*+html #login-page input[type="submit"] {
+	display:inline;
+	zoom:1;
+}
+{/literal}
+</style>
+<div class="content" id="middle">
+	<div class="full">
+		<div class="left">
+		{$menu | noAutoescape}
+		</div>
+		<div class="center">
+			<div id="login-page">
+				<span id="login-popup-title">Авторизация</span>
+        {if $msg}
+				<div id="popup-warning">
+					{$msg}
+				</div>
+        {/if}
+				<form action="/u/login" method="post">
+					<span class="popup-label">E-mail:</span>
+					<input type="text" name="username">
+					<br>
+					<span class="popup-label">Пароль:</span>
+					<input type="password" name="password">
+					<br>
+					/* <div class="popup-check"> */
+					/* 	<input type="checkbox" name="remember"> */
+					/* 	<span>Запомнить меня</span> */
+					/* </div> */
+					<div style="text-align:center;">
+						<input type="submit" name="log" value="Войти">
+						<input type="submit" name="reg" value="Регистрация">
+					</div>
+				</form>
+                <a href="/u/reset">Восстановить пароль</a>
+			</div>
+		</div>
+		<div style="clear:both;"></div>
+	</div>
+</div>
+{/template}
+
+{template registration}
+
+<style>
+{literal}
+#login-page {
+	width:400px;
+	border-radius:5px;
+	-webkit-border-radius:5px;
+	-moz-border-radius:5px;
+	border:1px solid #bdbdbd;
+	box-shadow:0 2px 6px #bdbdbd;
+	-moz-box-shadow:0 2px 6px #bdbdbd;
+	-webkit-box-shadow:0 2px 6px #bdbdbd;
+	padding-bottom:30px;
+	margin-top:20px;
+	margin-bottom:20px;
+}
+#login-page input[type="text"],
+#login-page input[type="password"] {
+	height:26px;
+	line-height:26px;
+	line-height:26px;
+	background:#fff;
+	border:1px solid #d1d1d1;
+	border-radius:4px;
+	-moz-border-radius:4px;
+	-webkit-border-radius:4px;
+	padding:0;
+	padding-left:7px;
+	width:220px;
+	display:inline-block;
+	box-shadow:0 1px 1px #e5e5e5;
+	-moz-box-shadow:0 1px 1px #e5e5e5;
+	-webkit-box-shadow:0 1px 1px #e5e5e5;
+	margin-bottom:17px;
+	vertical-align:middle;
+}
+#login-page input[type="submit"] {
+	display:inline-block;
+	border:0;
+	font-family:tahoma,sans-serif;
+	font-size:14px;
+	color:#48484a;
+	text-shadow:0 1px 0 #fff;
+	line-height:28px;
+	height:28px;
+	vertical-align:middle;
+	padding:0 25px;
+	cursor:pointer;
+	margin:10px 7px 0;
+	border-radius:4px;
+	-moz-border-radius:4px;
+	-webkit-border-radius:4px;
+	background:#fbdf58;
+	background:-moz-linear-gradient(#fbdf58,#fbc547);
+	background:-webkit-linear-gradient(#fbdf58,#fbc547);
+	background:-o-linear-gradient(#fbdf58,#fbc547);
+	background:-ms-linear-gradient(#fbdf58,#fbc547);
+	background: linear-gradient(#fbdf58,#fbc547);	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#fbdf58',endColorstr='#fbc547',GradientType=0);
+	box-shadow:1px 2px 6px #bdbdbd;
+	-moz-box-shadow:1px 2px 6px #bdbdbd;
+	-webkit-box-shadow:1px 2px 6px #bdbdbd;
+}
+#login-page input[type="submit"]:hover {
+	background:#fbc547;
+	background:-moz-linear-gradient(#fbc547,#fbdf58);
+	background:-webkit-linear-gradient(#fbc547,#fbdf58);
+	background:-o-linear-gradient(#fbc547,#fbdf58);
+	background:-ms-linear-gradient(#fbc547,#fbdf58);
+	background: linear-gradient(#fbc547,#fbdf58);	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#fbc547',endColorstr='#fbdf58',GradientType=0);
+}
+#login-page #popup-warning {
+	padding: 8px 14px;
+	margin:0 20px 18px;
+	text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+	color: #b94a48;
+	background-color: #f2dede;
+	border-color: #eed3d7;
+	-webkit-border-radius: 4px;
+	-moz-border-radius: 4px;
+	border-radius: 4px;
+}
+*+html #login-page input[type="text"],
+*+html #login-page input[type="password"],
+*+html #login-page input[type="submit"] {
+	display:inline;
+	zoom:1;
+}
+.reg-comment {
+	font:11px/14px arial;
+	color:#666;
+	padding:0 20px 5px;
+}
+.req-text {
+	font:11px/14px arial;
+	padding:0 20px 5px;
+}
+#login-page .popup-label {
+	width:120px;
+	padding-right:20px;
+	margin-bottom:17px;
+	line-height:28px;
+}
+{/literal}
+{call alerts-css /}
+</style>
+<div class="content" id="middle">
+	<div class="full">
+		<div class="left">
+		{$menu | noAutoescape}
+		</div>
+		<div class="center">
+			<div id="login-page">
+				<span id="login-popup-title">Регистрация</span>
+                <div id="reg-alert" class="alert {if $error}alert-error{elseif $msg}alert-success{else}alert-none{/if}">
+                    {if $error}
+                        {$error}
+                    {else}
+                        {$msg}
+                    {/if}
+                </div>
+				<form autocomplete="off" id="reg-form" action="#">
+					<span class="popup-label">Ф.И.О.:*</span>
+					<input autocomplete="off" type="text" name="name">
+					<br>
+					<span class="popup-label">E-mail:*</span>
+					<input autocomplete="off" type="text" name="username">
+					<br>
+					<span class="popup-label">Пароль:*</span>
+					<input autocomplete="off" type="password" name="password">
+					<br>
+					<span class="popup-label">Бонусная карта:</span>
+					<input autocomplete="off" type="text" name="bonuscard">
+					<br>
+					<span class="popup-label">Телефон:</span>
+					<input autocomplete="off" type="text" name="phone" placeholder="8XXXXXXXXXX">
+					<br>
+					<div class="reg-comment">
+						Мы будем отправлять sms-уведомления о различных состояниях заказа и связываться с вами, когда вы заказываете доставку. Мы не берем за это денег, не рассылаем спам и не раскрываем ваш номер сторонним организациям.
+					</div>
+					<div class="req-text">* - отмеченные поля обязательны для заполнения</div>
+					<div class="messenger"></div>
+					/* <div class="popup-check"> */
+					/* 	<input type="checkbox" name="remember"> */
+					/* 	<span>Запомнить меня</span> */
+					/* </div> */
+					<div style="text-align:center;">
+						<input type="submit" name="reg" value="Регистрация">
+					</div>
+				</form>
+				{literal}
+				<script>
+				var field = new Array("name","email","password");
+				$("form#reg-form").submit(function(){
+					var error=0;
+					$(this).find("input[type='text']").css("border", "1px solid #d1d1d1");
+					$(this).find("input[type='password']").css("border", "1px solid #d1d1d1");
+					$(this).find(":input").each(function(){
+						for(var i=0;i<field.length;i++){
+							if($(this).attr("name")==field[i]){
+								if(!$(this).val()){
+									$(this).css("border", "1px solid red");
+									error=1;
+								}
+								else{
+									$(this).css("border", "1px solid #d1d1d1");
+								}
+							}
+						}
+					});
+					$(this).find("input[name='username']").each(function(){
+						var emailV = $("form#reg-form").find("input[name='username']").val();
+						var filter  = /^([a-zA-Z0-9_\.\-\+])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,6})+$/;
+						if (!filter.test(emailV)) {
+							$("input[name='username']").css("border", "1px solid red");
+							error=1;
+						}
+					});
+					if(error==0){
+                                        alert(0);
+                        $.ajax({
+                            type: "POST",
+                            url: "/u/api/registration",
+                            data: {
+                                name: $("form#reg-form input[name='name']").val(),
+                                username: $("form#reg-form input[name='username']").val(),
+                                password: $("form#reg-form input[name='password']").val(),
+                                bonuscard: $("form#reg-form input[name='bonuscard']").val(),
+                                phone: $("form#reg-form input[name='phone']").val(),
+                                reg: 1
+                            },
+                            success : function(data) {
+                                        alert(1);
+                                var obj = $.parseJSON(data);
+                                if (obj.error == 1) {
+                                    $("#reg-alert").removeClass("alert-none alert-success").addClass("alert-error");
+                                    $("#reg-alert").text(obj.message);
+                                } else {
+                                    window.location.replace("/u/orders");
+                                };
+                            }
+                        });
+						return false;
+					}
+					else{
+						if(error==1) var err_text = "<p style='color:red;padding-left:20px;'>Проверьте заполнение выделенных полей!</p>";
+						$(this).find(".messenger").html(err_text);
+						return false;
+					}
+				});
+				</script>
+				{/literal}
+			</div>
+		</div>
+		<div style="clear:both;"></div>
+	</div>
+</div>
+{/template}
+
+{template recovery}
+<style>
+{literal}
+#login-page {
+	width:400px;
+	border-radius:5px;
+	-webkit-border-radius:5px;
+	-moz-border-radius:5px;
+	border:1px solid #bdbdbd;
+	box-shadow:0 2px 6px #bdbdbd;
+	-moz-box-shadow:0 2px 6px #bdbdbd;
+	-webkit-box-shadow:0 2px 6px #bdbdbd;
+	padding-bottom:30px;
+	margin-top:20px;
+	margin-bottom:20px;
+}
+#login-page input[type="text"],
+#login-page input[type="password"] {
+	height:26px;
+	line-height:26px;
+	line-height:26px;
+	background:#fff;
+	border:1px solid #d1d1d1;
+	border-radius:4px;
+	-moz-border-radius:4px;
+	-webkit-border-radius:4px;
+	padding:0;
+	padding-left:7px;
+	width:220px;
+	display:inline-block;
+	box-shadow:0 1px 1px #e5e5e5;
+	-moz-box-shadow:0 1px 1px #e5e5e5;
+	-webkit-box-shadow:0 1px 1px #e5e5e5;
+	margin-bottom:17px;
+	vertical-align:middle;
+}
+#login-page input[type="submit"] {
+	display:inline-block;
+	border:0;
+	font-family:tahoma,sans-serif;
+	font-size:14px;
+	color:#48484a;
+	text-shadow:0 1px 0 #fff;
+	line-height:28px;
+	height:28px;
+	vertical-align:middle;
+	padding:0 25px;
+	cursor:pointer;
+	margin:10px 7px 0;
+	border-radius:4px;
+	-moz-border-radius:4px;
+	-webkit-border-radius:4px;
+	background:#fbdf58;
+	background:-moz-linear-gradient(#fbdf58,#fbc547);
+	background:-webkit-linear-gradient(#fbdf58,#fbc547);
+	background:-o-linear-gradient(#fbdf58,#fbc547);
+	background:-ms-linear-gradient(#fbdf58,#fbc547);
+	background: linear-gradient(#fbdf58,#fbc547);	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#fbdf58',endColorstr='#fbc547',GradientType=0);
+	box-shadow:1px 2px 6px #bdbdbd;
+	-moz-box-shadow:1px 2px 6px #bdbdbd;
+	-webkit-box-shadow:1px 2px 6px #bdbdbd;
+}
+#login-page input[type="submit"]:hover {
+	background:#fbc547;
+	background:-moz-linear-gradient(#fbc547,#fbdf58);
+	background:-webkit-linear-gradient(#fbc547,#fbdf58);
+	background:-o-linear-gradient(#fbc547,#fbdf58);
+	background:-ms-linear-gradient(#fbc547,#fbdf58);
+	background: linear-gradient(#fbc547,#fbdf58);	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#fbc547',endColorstr='#fbdf58',GradientType=0);
+}
+#login-page #popup-warning {
+	padding: 8px 14px;
+	margin:0 20px 18px;
+	text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+	color: #b94a48;
+	background-color: #f2dede;
+	border-color: #eed3d7;
+	-webkit-border-radius: 4px;
+	-moz-border-radius: 4px;
+	border-radius: 4px;
+}
+*+html #login-page input[type="text"],
+*+html #login-page input[type="password"],
+*+html #login-page input[type="submit"] {
+	display:inline;
+	zoom:1;
+}
+.reg-comment {
+	font:11px/14px arial;
+	color:#666;
+	padding:0 20px 5px;
+}
+.req-text {
+	font:11px/14px arial;
+	padding:0 20px 5px;
+}
+#login-page .popup-label {
+	width:120px;
+	padding-right:20px;
+	margin-bottom:17px;
+	line-height:28px;
+}
+{/literal}
+</style>
+{call alerts-css /}
+<div class="content" id="middle">
+	<div class="full">
+		<div class="left">
+		{$menu | noAutoescape}
+		</div>
+		<div class="center">
+			<div id="login-page">
+				<span id="login-popup-title">Восстановление пароля</span>
+				<div id="recovery-alert" class="alert {if $msg}alert-error{else}alert-none{/if}">
+					{$msg}
+				</div>
+				<form id="reg-form" action="#">
+					<span class="popup-label">E-mail:</span>
+					<input type="text" name="username">
+					<br>
+					<div style="text-align:center;">
+						<input type="submit" name="recover" value="Восстановить">
+					</div>
+				</form>
+				{literal}
+				<script>
+				$("form#reg-form").submit(function(){
+					var error=0;
+					if(error==0){
+                        var email = $("form#reg-form").find("input[type='text']").val();
+                        $.ajax({
+                                type: "POST",
+                                url: "/u/reset",
+                                data: {
+                                    username: email
+                                },
+                                success : function(data) {
+                                    var obj = $.parseJSON(data);
+                                    if (obj.error == 1) {
+                                        $("#recovery-alert").removeClass("alert-none alert-success").addClass("alert-error");
+                                    } else {
+                                        $("#recovery-alert").removeClass("alert-none alert-error").addClass("alert-success");
+                                    };
+                                    $("#recovery-alert").text(obj.message);
+                                }
+                        });
+						return false;
+					}
+					else{
+						if(error==1) var err_text = "<p style='color:red;padding-left:20px;'>Проверьте заполнение выделенных полей!</p>";
+						$(this).find(".messenger").html(err_text);
+						return false;
+					}
+				});
+				</script>
+				{/literal}
+			</div>
+		</div>
+		<div style="clear:both;"></div>
+	</div>
+</div>
+{/template}
+
+{template newpass}
+<style>
+{literal}
+#login-page {
+	width:400px;
+	border-radius:5px;
+	-webkit-border-radius:5px;
+	-moz-border-radius:5px;
+	border:1px solid #bdbdbd;
+	box-shadow:0 2px 6px #bdbdbd;
+	-moz-box-shadow:0 2px 6px #bdbdbd;
+	-webkit-box-shadow:0 2px 6px #bdbdbd;
+	padding-bottom:30px;
+	margin-top:20px;
+	margin-bottom:20px;
+}
+#login-page input[type="text"],
+#login-page input[type="password"] {
+	height:26px;
+	line-height:26px;
+	line-height:26px;
+	background:#fff;
+	border:1px solid #d1d1d1;
+	border-radius:4px;
+	-moz-border-radius:4px;
+	-webkit-border-radius:4px;
+	padding:0;
+	padding-left:7px;
+	width:220px;
+	display:inline-block;
+	box-shadow:0 1px 1px #e5e5e5;
+	-moz-box-shadow:0 1px 1px #e5e5e5;
+	-webkit-box-shadow:0 1px 1px #e5e5e5;
+	margin-bottom:17px;
+	vertical-align:middle;
+}
+#login-page input[type="submit"] {
+	display:inline-block;
+	border:0;
+	font-family:tahoma,sans-serif;
+	font-size:14px;
+	color:#48484a;
+	text-shadow:0 1px 0 #fff;
+	line-height:28px;
+	height:28px;
+	vertical-align:middle;
+	padding:0 25px;
+	cursor:pointer;
+	margin:10px 7px 0;
+	border-radius:4px;
+	-moz-border-radius:4px;
+	-webkit-border-radius:4px;
+	background:#fbdf58;
+	background:-moz-linear-gradient(#fbdf58,#fbc547);
+	background:-webkit-linear-gradient(#fbdf58,#fbc547);
+	background:-o-linear-gradient(#fbdf58,#fbc547);
+	background:-ms-linear-gradient(#fbdf58,#fbc547);
+	background: linear-gradient(#fbdf58,#fbc547);	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#fbdf58',endColorstr='#fbc547',GradientType=0);
+	box-shadow:1px 2px 6px #bdbdbd;
+	-moz-box-shadow:1px 2px 6px #bdbdbd;
+	-webkit-box-shadow:1px 2px 6px #bdbdbd;
+}
+#login-page input[type="submit"]:hover {
+	background:#fbc547;
+	background:-moz-linear-gradient(#fbc547,#fbdf58);
+	background:-webkit-linear-gradient(#fbc547,#fbdf58);
+	background:-o-linear-gradient(#fbc547,#fbdf58);
+	background:-ms-linear-gradient(#fbc547,#fbdf58);
+	background: linear-gradient(#fbc547,#fbdf58);	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#fbc547',endColorstr='#fbdf58',GradientType=0);
+}
+#login-page #popup-warning {
+	padding: 8px 14px;
+	margin:0 20px 18px;
+	text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+	color: #b94a48;
+	background-color: #f2dede;
+	border-color: #eed3d7;
+	-webkit-border-radius: 4px;
+	-moz-border-radius: 4px;
+	border-radius: 4px;
+    display:none
+}
+*+html #login-page input[type="text"],
+*+html #login-page input[type="password"],
+*+html #login-page input[type="submit"] {
+	display:inline;
+	zoom:1;
+}
+.req-text {
+	font:11px/14px arial;
+	padding:0 20px 5px;
+}
+#login-page .popup-label {
+	width:120px;
+	padding-right:20px;
+	margin-bottom:17px;
+	line-height:28px;
+}
+{/literal}
+</style>
+{call alerts-css /}
+<div class="content" id="middle">
+	<div class="full">
+		<div class="left">
+		{$menu | noAutoescape}
+		</div>
+		<div class="center">
+			<div id="login-page">
+				<span id="login-popup-title">Восстановление пароля</span>
+				<div id="newpass-alert" class="alert {if $msg}alert-error{else}alert-none{/if}">
+					{$msg}
+				</div>
+				<form id="newpass-form" action="#">
+					<span class="popup-label">Новый пароль:</span>
+					<input type="password" name="newpass">
+					<br>
+					<div style="text-align:center;">
+						<input type="submit" name="recover" value="Сменить пароль">
+					</div>
+				</form>
+                <script>
+                  var id = {$id},
+                      token = "{$token}";
+                </script>
+				{literal}
+				  <script>
+				    $("form#newpass-form").submit(function(){
+                        error = 0;
+                        // Error checking and password hints here
+					    if(error==0){
+                            var newpass = $("form#newpass-form").find("input[type='password']").val();
+                            $.ajax({
+                                type: "POST",
+                                url: "/u/reset/"+id,
+                                data: {
+                                    token: token,
+                                    newpass: newpass
+                                },
+                                success : function(data) {
+                                    var obj = $.parseJSON(data);
+                                    if (obj.error == 1) {
+                                        $("#newpass-alert").removeClass("alert-none alert-success").addClass("alert-error");
+                                    } else {
+                                        window.location.replace("/u/orders");
+                                    };
+                                    $("#newpass-alert").text(obj.message);
+                                }
+                            })
+						    return false;
+					    } else {
+						    if(error==1) var err_text = "<p style='color:red;padding-left:20px;'>Проверьте заполнение выделенных полей!</p>";
+						    $(this).find(".messenger").html(err_text);
+						    return false;
+					    }
+				    });
+				  </script>
+				{/literal}
+			</div>
+		</div>
+		<div style="clear:both;"></div>
+	</div>
+</div>
+{/template}
+
+{template simply-message}
+  {$message}
+{/template}
+
+{template alerts-css}
+  <style>
+    {literal}
+.alert {
+	padding: 8px 14px;
+	margin:0 20px 18px;
+	text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+	-webkit-border-radius: 4px;
+	-moz-border-radius: 4px;
+	border-radius: 4px;
+}
+.alert-none {
+    display:none
+}
+.alert-error {
+    display:block;
+	color: #b94a48;
+	background-color: #f2dede;
+	border-color: #eed3d7;
+}
+.alert-success {
+    display:block;
+	color: #4ab948;
+	background-color: #def2de;
+	border-color: #d3eed7;
+}
+    {/literal}
+  </style>
+{/template}

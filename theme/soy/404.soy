@@ -1,0 +1,190 @@
+{namespace soy.er404}
+
+{template content}
+    <div class="content" id="middle">
+        <div class="full">
+            <div class="left">
+                {$menu |noAutoescape}
+            </div>
+            <div class="center">
+                <div class="er-404-sorry">
+                    <p>Ой… К сожалению,<br> страница не найдена!</p>
+                </div>
+                <div class="er-404-dont-worry">
+                    <p>Не расстраивайтесь!<br>Вы обязательно найдете то, что Вам нужно<br>– просто воспользуйтесь поиском по нашему сайту</p>
+                </div>
+                <div class="er-404-search">
+                    <div class="search-form">
+                        <form action="/search" method="get">
+                            <div class="field">
+                                <label for="search-field">Введите название товара</label>
+                                <input type="text" name="q" class="clear-field" value="" id="search-field">
+                            </div>
+                            <input class="button red" type="submit" value="Найти" id="search-submit">
+                        </form>
+                    </div>
+                    <div class="clr"></div>
+                </div>
+                <div class="er-404-catalog">
+                    <p class="title">или списком разделов:</p>
+                    <div class="wrap">
+                        <div class="category">
+                            <span>Покупателям</span>
+                            <ul>
+                                <li>
+                                    <a href="/delivery">Доставка и оплата</a>
+                                </li>
+                                <li>
+                                    <a href="/warranty">Гарантия</a>
+                                </li>
+                                <li>
+                                    <a href="/bonus">F-club</a>
+                                </li>
+                                <li class="big">
+                                    <a href="/corporate">Корпоративным клиентам</a>
+                                </li>
+                                <li class="big">
+                                    <a href="/listservice">Сервисные центры производителей</a>
+                                </li>
+                                <li>
+                                    <a href="/faq">FAQ</a>
+                                </li>
+                            </ul>
+                        </div><!-- category -->
+                        <div class="category">
+                            <span>О нас</span>
+                            <ul>
+                                <li>
+                                    <a href="/about">О компании</a>
+                                </li>
+                                <li>
+                                    <a href="/levashovsky">Наш центральный магазин</a>
+                                </li>
+                                <li>
+                                    <a href="/contacts">Контакты</a>
+                                </li>
+                                <li>
+                                    <a href="/vacancy">Вакансии</a>
+                                </li>
+                                <li>
+                                    <a href="/address">Адрес Магазина</a>
+                                </li>
+                            </ul>
+                        </div><!-- category -->
+                        <div class="clr"></div>
+                    </div><!-- wrap -->
+                </div>
+                <div class="er-404-offers">
+                    <p>Обратите внимание на супер-выгодные предложения в<br> блоках ниже. К Вашим услугам новинки, лучшие цены и последние акции!</p>
+                </div>
+            </div>
+            <div class="right">
+                {call support-block /}
+                {$olist |noAutoescape}
+            </div>
+        </div>
+        <div class="full" id="tabs-best-products">
+            <ul class="tabs">
+                <li class="h2 active"><a href="#best-price">Лучшие цены</a></li>
+                <li class="h2"><a href="#new">Новинки</a></li>
+                <li class="h2"><a href="#product-day">Товар дня</a></li>
+            </ul>
+            <div class="tab tab-best-price">
+                <table cellspacing="0" width="100%">
+                    <tr>
+                        {foreach $item in $bestpriceproducts}
+                            {call product data="$item" /}
+                        {/foreach}
+                    </tr>
+                </table>
+            </div>
+            <div class="tab tab-new tab-hidden">
+                <table cellspacing="0" width="100%">
+                    <tr>
+                        {foreach $item in $newproducts}
+                            {call product data="$item" /}
+                        {/foreach}
+                    </tr>
+                </table>
+            </div>
+            <div class="tab tab-product-day tab-hidden">
+                <table cellspacing="0" width="100%">
+                    <tr>
+                        {foreach $item in $dayproducts}
+                            {call product data="$item" /}
+                        {/foreach}
+                    </tr>
+                </table>
+            </div>
+        </div>
+        <div class="full">
+            <div class="sidebar">
+                <div class="main_title" id="social-groups-main-title">
+                    <h2>
+                        <span class="black">В центре внимания</span>
+                        <img src="/img/arr-right.png" alt="">
+                    </h2>
+                </div>
+                <div class="social-block-full">
+                    {call soy.index.social-block /}
+                </div>
+            </div>
+            <div class="mainbar">
+                {$post |noAutoescape}
+            </div>
+        </div>
+    </div>
+{/template}
+
+{template support-block}
+<div class="block block-also">
+    <p><b>Если вы так и не нашли нужную вам страницу</b>, или обнаружили ошибку, оставьте сообщение по электронной почте и мы вам поможем </p>
+    <p class="h2">
+        <a href="mailto:info@320-8080.ru">info@320-8080.ru</a>
+    </p>
+</div>
+{/template}
+
+{template product}
+<td rel="/{$articul}" class="product">
+    <div class="bg">
+        <div class="head">
+            <div class="group" rel="link">
+                <a href="/{$grouplink}">{$groupname}</a>
+            </div>
+            <div class="area">
+                <div class="badge yellow">
+                    <span>Новинка</span>
+                </div>
+                <p class="rating rating5"><i></i></p>
+                <div class="clr"></div>
+            </div>
+        </div>
+        <div class="midd">
+            <div class="image">
+                <a href="/{$articul}">
+                    {if $pic}
+                        <img src="/pic/middle/{$articul}/{$pic}" alt="{$name}"/>
+                    {else}
+                        <img src="/img/temp/empty-foto.jpg" width="225" alt="Фото"/>
+                    {/if}
+                </a>
+            </div>
+            <div class="title" rel="link">
+                <h2>
+                    <a href="/{$articul}">{$name}</a>
+                </h2>
+            </div>
+        </div>
+        <div class="foot">
+            <div class="price">
+                <span class="new black"><b>{$showsiteprice}</b> руб.</span>
+            </div>
+            <div class="buy" rel="link">
+                {$buttonaddcart | noAutoescape}
+            </div>
+            <div class="clr"></div>
+        </div>
+    </div>
+</td>
+{/template}
