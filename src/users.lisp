@@ -87,11 +87,11 @@
   (remf args :bonuscard)
   (apply #'call-next-method user args)
   (when bonuscard
-    (funcall +bonuscard-validator+ bonuscard))
-  (setf (slot-value user 'bonuscard)
-        (or (eshop.odm:getobj 'bonuscard bonuscard)
-            (make-instance 'bonuscard
-                           :key bonuscard))))
+    (funcall +bonuscard-validator+ bonuscard)
+    (setf (slot-value user 'bonuscard)
+          (or (eshop.odm:getobj 'bonuscard bonuscard)
+              (make-instance 'bonuscard
+                             :key bonuscard)))))
 
 (defclass bonuscard (eshop.odm:persistent-object)
   ((eshop.odm:key :validation +bonuscard-validator+)
