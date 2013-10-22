@@ -2087,7 +2087,7 @@
 					$(this).find("input[type='text']").css("border", "1px solid #d1d1d1");
 					$(this).find("input[type='password']").css("border", "1px solid #d1d1d1");
 					$(this).find(":input").each(function(){
-						for(var i=0;i<$field.length;i++){
+						for(var i=0;i<field.length;i++){
 							if($(this).attr("name")==field[i]){
 								if(!$(this).val()){
 									$(this).css("border", "1px solid red");
