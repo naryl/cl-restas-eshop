@@ -106,4 +106,12 @@
                                 (name it)
                                 "")
             (price answer) (siteprice it)))
-    (st-json:write-json-to-string answer)))
+    (st-json:write-json-to-string
+     (son "articul" (slot-value answer 'articul)
+          "errorid" (slot-value answer 'errorid)
+          "group" (slot-value answer 'group)
+          "name" (slot-value answer 'name)
+          "orderid" (slot-value answer 'orderid)
+          "phone" (slot-value answer 'phone)
+          "price" (slot-value answer 'price)
+          "total" (slot-value answer 'total)))))
