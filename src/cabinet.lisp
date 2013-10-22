@@ -187,16 +187,15 @@
                             'name name
                             'birthdate @birthdate
                             'city city
-                            'addresses (list address)))
+                            'addresses (list address))
+          (son "error" 0 "message" "Данные успешно обновлены"))
       (eshop.odm:validation-error (e)
         (let ((cause (slot-value e 'eshop.odm::cause))
               (msg nil))
           (if (eq (type-of cause) 'data-sift:validation-fail)
               (setf msg (data-sift:validation-fail-message cause))
               (setf msg "Какая-то ошибка в заполнении каких-то полей"))
-          (return-from request-user-profile-route-ajax
-            (son "error" 1 "message" msg)))))
-    (son "error" 0 "message" "Данные успешно обновлены")))
+          (son "error" 1 "message" msg))))))
 
 (define-ajax-route registration-route ("/u/api/registration")
   (:decorators '@timer '@session)
