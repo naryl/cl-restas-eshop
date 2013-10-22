@@ -118,10 +118,13 @@ ENCODE-SESSION-STRING."
   (setf hunchentoot:*session* nil)
   (start-session :persistent persistent))
 
-(defun bot-request ()
-  (some #'(lambda (bot)
-            (search bot (hunchentoot:user-agent)))
-        (eshop:config.get-option :other-options :bot-useragents)))
+(defun bot-request (&optional (user-agent (hunchentoot:user-agent)))
+  (let ((bot-p (some #'(lambda (bot)
+                         (search bot user-agent))
+                     (config.get-option :other-options :bot-useragents))))
+    (when bot-p
+      (metric:count "bots"))
+    bot-p))
 
 (defun start-session (&key persistent)
   "Returns the current SESSION object. If there is no current session,

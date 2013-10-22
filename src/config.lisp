@@ -124,6 +124,9 @@ Return format is plist"
         (error "Option ~A/~A not found in config" section option)
         (setf (getf option-data :value) value))))
 
+(defun (setf config.get-option) (value section option)
+  (config.set-option section option value))
+
 ;; TODO: don't duplicate code from config.get-option
 (defun config.option-exists-p (section option)
   "Checks whether specified option exists in config."

@@ -356,8 +356,9 @@ Otherwise throw ACCOUNT-ERROR"
 ;;;; Require hunchentoot context
 
 (defun current-user ()
-  (session-user (start-session)))
+  (awhen (start-session)
+    (session-user it)))
 
 (defun (setf current-user) (user)
-  (eshop.odm:setobj (start-session)
-                    'user user))
+  (awhen (start-session)
+      (eshop.odm:setobj it 'user user)))
