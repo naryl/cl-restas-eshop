@@ -326,7 +326,7 @@ Otherwise throw ACCOUNT-ERROR"
     (email
      (let* ((user (validation-object validation))
             (mail (user-email user))
-            (body (format nil "http://~A/u/valiadate?user=~A&token=~A"
+            (body (format nil "http://~A/u/validate?user=~A&token=~A"
                           domain
                           (eshop.odm:serializable-object-key validation)
                           (validation-token validation))))
