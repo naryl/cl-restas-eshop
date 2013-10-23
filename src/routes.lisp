@@ -50,7 +50,10 @@
 (defmethod restas:process-route :around ((route timer-route) bindings)
   "log timing and additional data for current route processing and
    update current thread information"
-  (metric:count "process-route")
+  (metric:count "requests")
+  (metric:count (if (bot-request)
+                    "bots"
+                    "users"))
   (let ((*current-route-symbol* (route-symbol route)))
     (metric:time ((concatenate 'string "process-route." (route-name)))
       (call-next-method))))

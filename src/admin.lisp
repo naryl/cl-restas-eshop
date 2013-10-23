@@ -519,7 +519,7 @@
   (let ((post-data (alist-plist (hunchentoot:post-parameters hunchentoot:*request*))))
     (soy.admin:main
      (list
-      :user (session-user (start-session))
+      :user (current-user)
       :content
            (switch ((ensure-string key) :test #'string=)
              ("info" (soy.admin:info (list :info (admin.get-info))))
