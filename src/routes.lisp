@@ -17,14 +17,9 @@
   ((roles :initform nil
           :initarg :roles)))
 
-(defun @protected-admin (route)
-  (make-instance 'protected-route :target route :roles '("admin")))
-
-(defun @protected-anon (route)
-  (make-instance 'protected-route :target route :roles '("anon")))
-
-(defun @protected-tks (route)
-  (make-instance 'protected-route :target route :roles '("tks")))
+(defun @protected (&rest roles)
+  #'(lambda (route)
+      (make-instance 'protected-route :target route :roles roles)))
 
 (defmethod restas:process-route :before ((route protected-route) bindings)
   (let ((current-user (current-user)))

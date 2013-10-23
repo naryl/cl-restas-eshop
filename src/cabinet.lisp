@@ -23,12 +23,12 @@
         (setf (current-user) user)))))
 
 (restas:define-route request-user-route ("/u")
-  (:decorators '@protected-anon)
+  (:decorators (@protected "anon"))
   (hunchentoot:redirect "/u/orders"
                         :code hunchentoot:+http-moved-permanently+))
 
 (restas:define-route request-user-orders-route ("/u/orders")
-  (:decorators '@timer '@session '@no-cache '@protected-anon)
+  (:decorators '@timer '@session '@no-cache (@protected "anon"))
   (let ((page-size 3))
     (let* ((query (son 'user (current-user)))
            (page (parse-integer (or (hunchentoot:get-parameter "page") "1")))
@@ -53,7 +53,7 @@
         :email_valid (validated-p user 'email)))
 
 (restas:define-route request-user-profile-route ("/u/profile")
-  (:decorators '@timer '@session '@no-cache '@protected-anon)
+  (:decorators '@timer '@session '@no-cache (@protected "anon"))
   (soy.cabinet:personal (user-plist (current-user))))
 
 ;; REGISTARTION
@@ -80,7 +80,7 @@
 
 ;; LOGOUT
 (restas:define-route logout-route ("/u/logout")
-  (:decorators '@timer '@session '@no-cache '@protected-anon)
+  (:decorators '@timer '@session '@no-cache (@protected "anon"))
   (new-session)
   (hunchentoot:redirect "/"))
 
@@ -165,14 +165,14 @@
       (son "error" 1 "message" (msg e)))))
 
 (define-ajax-route send-validation-ajax ("/u/api/send-validation")
-  (:decorators '@timer '@session '@no-cache '@protected-anon)
+  (:decorators '@timer '@session '@no-cache (@protected "anon"))
   (let ((slot (intern (string-upcase (hunchentoot:parameter "slot"))
                       :eshop)))
     (send-validation (make-validation (current-user) slot))
     ""))
 
 (define-ajax-route request-user-profile-route-ajax ("/u/api/profile")
-  (:decorators '@timer '@session '@no-cache '@protected-anon)
+  (:decorators '@timer '@session '@no-cache (@protected "anon"))
   (with-hunchentoot-parameters (name @birthdate city address @phone @pass1 @pass2)
     (handler-case
         (eshop.odm:with-transaction
