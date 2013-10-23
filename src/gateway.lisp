@@ -295,3 +295,16 @@
                 ("1" (%gateway.processing-single-package it))
                 (t (%gateway.processing-package it)))))
          "NIL")))
+
+;;;; EKK
+
+(defun gateway-ekk ()
+  "Только одиночная выгрузка. Номера карт и бонусы, разделённые пробелами"
+  (let* ((raw (sb-ext:octets-to-string (hunchentoot:raw-post-data)))
+         (data (split-sequence #\Space raw)))
+    (doplist (k v data)
+      (let ((v (parse-integer v)))
+        (aif (eshop.odm:getobj 'bonuscard k)
+             (eshop.odm:setobj it 'count v)
+             (make-instance 'bonuscard :key k :count v))))
+    "ok"))

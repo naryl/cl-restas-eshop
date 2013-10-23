@@ -281,6 +281,10 @@
   (:decorators '@timer)
   (gateway-page))
 
+(restas:define-route gateway-ekk/post-route ("/gateway-ekk" :method :post)
+  (:decorators '@timer)
+  (gateway-ekk))
+
 ;; SEARCH
 
 (restas:define-route search-route ("/search")
