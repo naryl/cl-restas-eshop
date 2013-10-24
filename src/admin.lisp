@@ -3,23 +3,23 @@
 (in-package #:eshop)
 
 (restas:define-route admin-route ("/administration-super-panel")
-  (:decorators (@protected "admin"))
+  (:decorators (@protected "admin" "content"))
   (restas:redirect 'admin/-route))
 
 (restas:define-route admin/-route ("/administration-super-panel/")
-  (:decorators (@protected "admin"))
+  (:decorators (@protected "admin" "content"))
   (show-admin-page "info"))
 
 (restas:define-route admin-actions-key-route ("/administration-super-panel/actions" :method :post)
-  (:decorators (@protected "admin"))
+  (:decorators (@protected "admin" "content"))
   (show-admin-page "actions"))
 
 (restas:define-route admin-pics-route ("/administration-super-panel/pics" :method :post)
-  (:decorators (@protected "admin"))
+  (:decorators (@protected "admin" "content"))
   (show-admin-page "pics"))
 
 (restas:define-route admin-templates-route ("/administration-super-panel/templates" :method :post)
-  (:decorators (@protected "admin"))
+  (:decorators (@protected "admin" "content"))
   (show-admin-page "templates"))
 
 (restas:define-route admin-backup1-route ("/administration-super-panel/makebackup")
@@ -34,7 +34,7 @@
 ;;   (show-admin-page "black-list"))
 
 (restas:define-route admin-black-list-post-route ("/administration-super-panel/black-list" :method :post)
-  (:decorators (@protected "admin"))
+  (:decorators (@protected "tks" "content"))
   (show-admin-page "black-list"))
 
 (restas:define-route admin-cron-route ("/administration-super-panel/cron-jobs" :method :post)
@@ -63,7 +63,7 @@
    (list :content content)))
 
 (restas:define-route admin-black-list-route ("/administration-super-panel/black-list")
-  (:decorators (@protected "tks"))
+  (:decorators (@protected "tks" "content"))
   (show-admin-page "black-list"))
 
 (restas:define-route admin-filter-create ("administration-super-panel/filter-create" :method :get)
@@ -232,7 +232,7 @@
           (admin.standard-ajax-response t)))))
 
 (restas:define-route admin-edit-get-route ("/administration-super-panel/edit" :method :get)
-  (:decorators (@protected "admin"))
+  (:decorators (@protected "admin" "content"))
   ;; TODO: use type parameter
   (admin.page-wrapper
    (let* ((key (hunchentoot:get-parameter "key"))
@@ -258,7 +258,7 @@
     (setf (fullfilter item) (decode-fullfilter (raw-fullfilter item)))))
 
 (restas:define-route admin-edit-post-route ("/administration-super-panel/edit" :method :post)
-  (:decorators (@protected "admin"))
+  (:decorators (@protected "admin" "content"))
   (let* ((key (hunchentoot:post-parameter "key"))
          (item (getobj key)))
     (if item
