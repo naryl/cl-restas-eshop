@@ -96,7 +96,7 @@
   (dolines (line pathname result)
     (setf result (nconc (st-json:read-json-from-string line) result))))
 
- (defun %product-update-name (product name)
+(defun %product-update-name (product name)
   "Update product field name"
   (declare (product product) ((or string t) name))
   (when name
@@ -161,20 +161,18 @@
   "Process product item plist. Check fields and update data in storage."
   (labels ((@ (field) (getf item field))
            (fl@ (field) (float-string->int (@ field))))
-    (awhen (@ :id)
+    (when (@ :id)
       (let* ((key (write-to-string (fl@ :id)))
              (old-product (getobj key 'product))
-             (product))
-        (setf product (aif old-product
-                           it
-                           (make-instance 'product :articul (fl@ :id))))
+             (product (or old-product
+                          (make-instance 'product :articul (fl@ :id)))))
         (setf (key product) key)
         (setf (articul product) (fl@ :id))
         (%product-update-name product (@ :name))
         (%product-update-prices product
-                                (fl@ :price--site) (fl@ :price) (fl@ :price--old))
+                                (fl@ :price_site) (fl@ :price) (fl@ :price_old))
         (%product-update-bonuscount product (fl@ :bonuscount))
-        (%product-update-counts product (fl@ :count--total) (fl@ :count--transit))
+        (%product-update-counts product (fl@ :count_total) (fl@ :count_transit))
         (%product-update-erp product (fl@ :iprice) (@ :cat))
         (setf (active product) (plusp (count-total product)))
         (unless old-product

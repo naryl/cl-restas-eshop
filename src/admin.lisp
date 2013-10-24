@@ -50,7 +50,7 @@
   (show-admin-page "vendor-seo"))
 
 (restas:define-route admin-key-route ("/administration-super-panel/:key")
-  (:decorators (@protected "admin"))
+  (:decorators (@protected "admin" "content"))
   (show-admin-page key))
 
 (defun admin.standard-ajax-response (success &optional msg)
