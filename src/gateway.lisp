@@ -297,12 +297,13 @@
 ;;;; EKK
 
 (defun gateway-ekk ()
-  "Только одиночная выгрузка. Номера карт и бонусы, разделённые пробелами"
+  "Только одиночная выгрузка. JSON вида [{\"ekk\":\"1234\",\"bonuses\":0}]"
   (let* ((raw (sb-ext:octets-to-string (hunchentoot:raw-post-data)))
-         (data (split-sequence #\Space raw)))
-    (doplist (k v data)
-      (let ((v (parse-integer v)))
-        (aif (eshop.odm:getobj 'bonuscard k)
-             (eshop.odm:setobj it 'count v)
-             (make-instance 'bonuscard :key k :count v))))
+         (data (st-json:read-json-from-string raw)))
+    (dolist (bonuscard data)
+      (let ((ekk (cdr (assoc :ekk bonuscard)))
+            (bonuses (cdr (assoc :bonuses bonuscard))))
+        (aif (eshop.odm:getobj 'bonuscard ekk)
+             (eshop.odm:setobj it 'count bonuses)
+             (make-instance 'bonuscard :key ekk :count bonuses))))
     "ok"))
