@@ -167,8 +167,8 @@
 (restas:define-route admin-new-make-post-route ("/administration-super-panel/new-make" :method :post)
   (:decorators (@protected "admin"))
   (log:debug (hunchentoot:post-parameters*))
-  (let ((type (string-downcase (tbnl:post-parameter "type")))
-        (key (tbnl:post-parameter "key")))
+  (let ((type (string-downcase (hunchentoot:post-parameter "type")))
+        (key (hunchentoot:post-parameter "key")))
     (if (getobj key)
         (restas:redirect 'admin-edit-get-route :type type :key key)
         (progn
@@ -274,36 +274,35 @@
         not found"))))
 
 
-(defun admin.pics-deleting (post-data)
-  (let* ((key (getf post-data :key))
+(defun admin.pics-deleting ()
+  (let* ((key (hunchentoot:post-parameter "key"))
          (p (getobj key 'product))
          (output (format nil "Product with key ~a not found" key)))
     (when p
       (rename-remove-product-pics p)
+      (drop-pics-cache key)
       (setf output (format nil "Successfully deleted ~a's pics" key)))
     (soy.admin:pics-deleting (list :output output))))
 
-(defun admin.compile-template (post-data)
-  (let ((name (hunchentoot:post-parameter "name"))
-        (output))
-    (when post-data
+(defun admin.compile-template ()
+  (let ((output))
+    (awhen (hunchentoot:post-parameter "name")
       (setf output
             (if (file-exists-p (pathname (merge-pathnames
-                                          (pathname name)
+                                          (pathname it)
                                           (config.get-option :paths :path-to-templates))))
                 (handler-case
                     (progn
-                      (servo.compile-soy name)
-                      (format nil "Successfully compiled ~a" name))
+                      (servo.compile-soy it)
+                      (format nil "Successfully compiled ~a" it))
                   (error (e) (format  nil "ERROR:~%~a" e)))
-                (format nil "File ~a not found" name))))
+                (format nil "File ~a not found" it))))
     (soy.admin:compile-template (list :output output
                                       :tmpls (mapcar #'pathname-name (get-all-template-paths))))))
 
-(defun admin.make-backup (post-data)
-  (let ((dobackup (getf post-data :dobackup))
-        (output))
-    (when (string= dobackup "dobackup")
+(defun admin.make-backup ()
+  (let ((output))
+    (when (hunchentoot:parameter "dobackup")
       (setf output
             (handler-case
                 (progn
@@ -329,7 +328,7 @@
          (rename-convert-all)
          "DO proccess-pictures")
         ("dtd"
-         (dtd)
+         (xls.update-options-from-xls)
          "DO DTD")
         ("articles-restore"
          (articles.restore)
@@ -361,11 +360,11 @@
         (t (format nil "DON't know action ~A<br>~A" action (admin.get-info))))
     (error (e) (format  nil "ERROR:~%~a" e))))
 
-(defun admin.parenting-content (post-data)
-  (when post-data
-    (setf post-data (servo.plist-to-unique post-data))
-    (let ((products (ensure-list (getf post-data :products)))
-          (groups (ensure-list (getf post-data :groups))))
+(defun admin.parenting-content ()
+  (when (and (hunchentoot:parameter "products")
+             (hunchentoot:parameter "groups"))
+    (let ((products (ensure-list (hunchentoot:parameter "products")))
+          (groups (ensure-list (hunchentoot:parameter "groups"))))
       (mapcar #'(lambda (product)
                   (mapcar #'(lambda (group)
                               (class-core.bind-product-to-group
@@ -391,12 +390,10 @@
            :length (length unparented-products)
            :groups (slots.%view 'group-list nil "GROUPS" nil)))))
 
-(defun admin.vendor-seo-upload (post-data)
-  (let* ((get-params (alist-plist (hunchentoot:get-parameters hunchentoot:*request*)))
-         (group-key (getf post-data :group))
-         (vendor-key (string-downcase (getf post-data :vendor)))
-         (new-text (getf post-data :text)))
-    (log:debug post-data get-params)
+(defun admin.vendor-seo-upload ()
+  (let* ((group-key (hunchentoot:parameter "group"))
+         (vendor-key (string-downcase (hunchentoot:parameter "vendor")))
+         (new-text (hunchentoot:parameter "text")))
     (cond
       ((and new-text (not (and group-key vendor-key))) "Error: please specify vendor and group")
       ((and new-text (not (getobj group-key 'group))) "Error: group not found")
@@ -406,9 +403,17 @@
          (soy.admin:vendor-seo-upload (list :text (awhen (getobj vendor-key 'vendor)
                                                     (gethash group-key (seo-texts it)))))))))
 
+(defun send-mail-blacklist (key)
+  (let* ((user (current-user))
+         (body (format nil
+                       "~A:~A"
+                       (user-email user)
+                       key)))
+    (sendmail:send-email :to '("wolforus@gmail.com" "Errorsite@alpha-pc.com")
+                         :body body)))
 
-(defun admin.black-list (post-data)
-  (let ((key (getf post-data :key))
+(defun admin.black-list ()
+  (let ((key (hunchentoot:parameter "key"))
         (output nil)
         (errortext nil))
     (when key
@@ -417,7 +422,8 @@
              (black-list.insert it)
              (black-list.%deactive it)
              (setf output (format nil "Товар <a href='/~A'>~A</a>:~A убран"
-                                  (key it) (key it) (name-seo it))))
+                                  (key it) (key it) (name-seo it)))
+             (send-mail-blacklist key))
            (setf errortext "Нет такого товара")))
     (soy.admin:black-list (list :output output :errortext errortext))))
 
@@ -516,22 +522,21 @@
   '(:order-count))
 
 (defun show-admin-page (&optional (key ""))
-  (let ((post-data (alist-plist (hunchentoot:post-parameters hunchentoot:*request*))))
-    (soy.admin:main
-     (list
-      :user (current-user)
-      :content
-           (switch ((ensure-string key) :test #'string=)
-             ("info" (soy.admin:info (list :info (admin.get-info))))
-             ("objects" (admin.list-obj))
-             ("actions" (soy.admin:action-buttons (list :post post-data
-                                                        :info (admin.do-action
-                                                               (getf post-data :action)))))
-             ("parenting" (admin.parenting-content post-data))
-             ("pics" (admin.pics-deleting post-data))
-             ("templates" (admin.compile-template post-data))
-             ("backup" (admin.make-backup post-data))
-             ("black-list" (admin.black-list post-data))
-             ("vendor-seo" (admin.vendor-seo-upload post-data))
-             ("tbmonitor" (soy.admin:table-monitoring))
-             (t "Админка в разработке"))))))
+  (soy.admin:main
+   (list
+    :user (current-user)
+    :content
+    (switch ((ensure-string key) :test #'string=)
+      ("info" (soy.admin:info (list :info (admin.get-info))))
+      ("objects" (admin.list-obj))
+      ("actions" (soy.admin:action-buttons (list :post (hunchentoot:post-parameters*)
+                                                 :info (admin.do-action
+                                                        (hunchentoot:parameter "action")))))
+      ("parenting" (admin.parenting-content))
+      ("pics" (admin.pics-deleting))
+      ("templates" (admin.compile-template))
+      ("backup" (admin.make-backup))
+      ("black-list" (admin.black-list))
+      ("vendor-seo" (admin.vendor-seo-upload))
+      ("tbmonitor" (soy.admin:table-monitoring))
+      (t "Админка в разработке")))))
