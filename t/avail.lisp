@@ -17,7 +17,6 @@
                             (equal "no-cache" (assoc :pragma  headers))
                             (search "no-store" (assoc :cache-control  headers))
                             (search "no-cache" (assoc :cache-control  headers))
-                            (search "no-cache" (assoc :cache-control  headers))
                             (search "must-revalidate" (assoc :cache-control  headers))
                             (search "post-check=0" (assoc :cache-control  headers))
                             (search "pre-check=0" (assoc :cache-control  headers)))))))
