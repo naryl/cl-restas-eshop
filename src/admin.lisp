@@ -3,11 +3,11 @@
 (in-package #:eshop)
 
 (restas:define-route admin-route ("/administration-super-panel")
-  (:decorators (@protected "admin" "content"))
+  (:decorators (@protected "admin" "content" "tks"))
   (restas:redirect 'admin/-route))
 
 (restas:define-route admin/-route ("/administration-super-panel/")
-  (:decorators (@protected "admin" "content"))
+  (:decorators (@protected "admin" "content" "tks"))
   (show-admin-page "info"))
 
 (restas:define-route admin-actions-key-route ("/administration-super-panel/actions" :method :post)

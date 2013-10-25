@@ -154,15 +154,16 @@ case the function will also send a session cookie to the browser."
             (setf (slot-value session slot) value))))))
 
 (defmethod hunchentoot:session-verify ((request hunchentoot:request))
- (let ((session-identifier (or (when-let (session-cookie (hunchentoot:cookie-in (hunchentoot:session-cookie-name hunchentoot:*acceptor*) request))
-                                  (hunchentoot:url-decode session-cookie))
-                                (hunchentoot:get-parameter (hunchentoot:session-cookie-name hunchentoot:*acceptor*) request))))
-    (unless (and session-identifier
-                 (stringp session-identifier)
-                 (plusp (length session-identifier)))
-      (return-from hunchentoot:session-verify nil))
-    (let ((hunchentoot:*request* request))
-      (session-verify session-identifier))))
+  (unless (bot-request (hunchentoot:user-agent request))
+    (let ((session-identifier (or (when-let (session-cookie (hunchentoot:cookie-in (hunchentoot:session-cookie-name hunchentoot:*acceptor*) request))
+                                    (hunchentoot:url-decode session-cookie))
+                                  (hunchentoot:get-parameter (hunchentoot:session-cookie-name hunchentoot:*acceptor*) request))))
+      (unless (and session-identifier
+                   (stringp session-identifier)
+                   (plusp (length session-identifier)))
+        (return-from hunchentoot:session-verify nil))
+      (let ((hunchentoot:*request* request))
+        (session-verify session-identifier)))))
 
 (defun reset-session-secret ()
   "Sets *SESSION-SECRET* to a new random value. All old sessions will

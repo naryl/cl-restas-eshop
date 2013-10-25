@@ -6,7 +6,8 @@
                #:local-time
                #:function-cache
                #:metric #:log4cl #:drakma
-               #:anaphora #:alexandria #:parse-float)
+               #:anaphora #:alexandria #:parse-float
+               #:eshop.odm)
   :pathname "src"
   :serial t
   :components ((:module "patches"
@@ -36,9 +37,7 @@
                (:module "store"
                         :pathname "."
                         :serial t
-                        :components ((:file "process")
-                                     (:file "mop-odm")
-                                     (:file "storage")
+                        :components ((:file "storage")
                                      (:file "sessions")
                                      (:file "users")
                                      (:file "slots")
