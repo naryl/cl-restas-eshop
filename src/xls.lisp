@@ -12,6 +12,9 @@
 
 (defvar *xls-last-modified* (make-hash-table :test #'equal))
 
+;; hash-table that stores for each articul the first file where it has occured
+(defvar *xls-articles* (make-hash-table :test #'equal))
+
 (defun xls.%read-and-process-file (pathname)
   "Processes the xls file and returns a list of options lists"
   (declare (pathname pathname))
@@ -91,9 +94,7 @@
                    (setf (gethash key articul-file) file)))))))
 
 (defun xls.update-options-from-xls ()
-  (let (;; hash-table that stores for each articul the first file where it has occured
-        (articul-file (make-hash-table :test #'equal))
-        ;; hash-table that for each dubbing articul stores a list of all files where it has occured
+  (let (;; hash-table that for each dubbing articul stores a list of all files where it has occured
         (error-articuls (make-hash-table :test #'equal)))
     (cl-fad:walk-directory
      (config.get-option :paths :path-to-xls)
@@ -103,7 +104,8 @@
            (slet (gethash file *xls-last-modified*)
              (when (or (not it)
                        (< it file-last-modified))
-               (xls.%update-options-single-file file articul-file error-articuls)
+               (log:info "xls: ~A" file)
+               (xls.%update-options-single-file file *xls-articles* error-articuls)
                (setf it file-last-modified)))))
      :test #'(lambda (file)
                (and (not (directory-pathname-p file))
