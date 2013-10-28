@@ -25,10 +25,10 @@
 
 (alexandria:define-constant +sendmail-bin+
     (find-if #'probe-file
-             (list "/usr/lib/sendmail"
-                   "/usr/bin/sendmail"
-                   "/usr/sbin/sendmail"))
-  :test (constantly t)
+             (list "/usr/sbin/sendmail"
+                   "/usr/lib/sendmail"
+                   "/usr/bin/sendmail"))
+  :test #'equal
   :documentation "Path to executable sendmail file")
 
 (defclass email ()
