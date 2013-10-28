@@ -1519,12 +1519,12 @@
                     <div>
                         <span class="kab-label">E-mail</span>
                         <input value="{$email}" type="text" readonly>
-                        <a style="visibility:{if $email_valid}hidden{else}show{/if};" href="#" id="confirm-email">Выслать подтверждение</a>
+                        <a style="visibility:{if $email_valid}hidden{else}show{/if};" href="#" id="confirm-email">Связать</a>
                     </div>
                     <div>
                         <span class="kab-label">Телефон</span>
                         <input name="phone" value="{$phone}" type="text" readonly>
-                        <a style="visibility:{if $phone_valid}hidden{else}show{/if};" href="#" id="confirm-phone">Выслать подтверждение</a>
+                        <a style="visibility:{if $phone_valid}hidden{else}show{/if};" href="#" id="confirm-phone">Связать</a>
                     </div>
                     <div>
                         <span class="kab-label">Новый пароль</span>
@@ -2490,7 +2490,7 @@
 {/template}
 
 {template simply-message}
-  {$message}
+  <p>{$message}</p>
 {/template}
 
 {template alerts}
