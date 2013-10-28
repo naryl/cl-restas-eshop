@@ -8,5 +8,6 @@
            #:process-running
            #:ensure-process
            #:stop-process
+           #:proc-vars
            #:process-call
            #:process-exec))
