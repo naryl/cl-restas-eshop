@@ -409,8 +409,10 @@
                        "~A:~A"
                        (user-email user)
                        key)))
-    (sendmail:send-email :to '("wolforus@gmail.com" "Errorsite@alpha-pc.com")
-                         :body body)))
+    (sendmail:send-email
+     :from (config.get-option :critical :from-email)
+     :to '("wolforus@gmail.com" "Errorsite@alpha-pc.com")
+     :body body)))
 
 (defun admin.black-list ()
   (let ((key (hunchentoot:parameter "key"))
