@@ -19,7 +19,8 @@
   ((phone     :initarg :phone     :initform nil   :accessor phone)
    (errorid   :initarg :errorid   :initform nil   :accessor errorid)))
 
-(define-tracing-route phone-next-route ("/phone_next")
+(restas:define-route phone-next-route ("/phone_next")
+  (:decorators '@timer)
   (phone-next (request-get-plist)))
 
 (defun phone-next (request-get-plist)
@@ -30,7 +31,9 @@
         (email.phone-next-mail (soy.sendmail:phonemail (list :phone phone)))
         (setf error-id 2)) ;; no phone number in parameters
     (setf (errorid answer) error-id)
-    (st-json:write-json-to-string answer)))
+    (st-json:write-json-to-string
+     (son "phone" (slot-value answer 'phone)
+          "errorid" (slot-value answer 'errorid)))))
 
 
 (defvar *sbr-orders* (make-hash-table :test #'equal))
@@ -38,18 +41,22 @@
 
 (defparameter *sbr-result* nil)
 
-(define-tracing-route sberbank-route ("/sberbank_test")
-    (incf *sbr-orders-id*)
-    (setf *sbr-result* (drakma:http-request (format nil "https://3dsec.sberbank.ru/payment/rest/registerPreAuth.do?userName=320_8080-api&password=320_8080&orderNumber=~A&amount=54321&returnUrl=http%3A%2F%2F320-8080.ru%2Fresult" *sbr-orders-id*))))
+(restas:define-route sberbank-route ("/sberbank_test")
+  (:decorators '@timer)
+  (incf *sbr-orders-id*)
+  (setf *sbr-result* (drakma:http-request (format nil "https://3dsec.sberbank.ru/payment/rest/registerPreAuth.do?userName=320_8080-api&password=320_8080&orderNumber=~A&amount=54321&returnUrl=http%3A%2F%2F320-8080.ru%2Fresult" *sbr-orders-id*))))
 
 
-(define-tracing-route checkout1-route ("/checkout1")
+(restas:define-route checkout1-route ("/checkout1")
+  (:decorators '@timer)
   (newcart-show1))
 
-(define-tracing-route checkout1-post-route ("/checkout1" :method :post)
+(restas:define-route checkout1-post-route ("/checkout1" :method :post)
+  (:decorators '@timer)
   (newcart-show1))
 
-(define-tracing-route thanks1-route ("/thanks1")
+(restas:define-route thanks1-route ("/thanks1")
+  (:decorators '@timer)
   (thanks-page1))
 
 ;;отображение страницы
