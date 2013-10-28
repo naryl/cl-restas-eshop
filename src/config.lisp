@@ -60,7 +60,7 @@
          )
    ;; OTHER-OPTIONS section
    :other-options (list
-                   :bot-useragents     (list :value (list)         :type :string-list)
+                   :bot-useragents     (list :value (list "AdsBot-Google" "AdsBot-Google-Mobile" "Googlebot" "YandexBot" "YandexDirect" "bingbot" "msnbot" "MJ12bot" "Googlebot-Image")         :type :string-list)
                    ;; 24 hours in seconds
                    :pics-cache-ttl     (list :value #.(* 24 60 60) :type :int)))
 "Variable for storing config options")
