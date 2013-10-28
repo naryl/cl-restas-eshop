@@ -60,8 +60,9 @@
                                      (:file "cart")
                                      (:file "oneclickcart")
                                      (:file "filters")
-                                     (:file "cabinet")
-                                     (:file "routes")))
+                                     (:file "routes")
+                                     (:file "admin")
+                                     (:file "cabinet")))
                (:module "misc"
                         :pathname "."
                         :serial t
@@ -72,7 +73,6 @@
                                      (:file "rename")
                                      (:file "prerender")
                                      (:file "marketing-filters")
-                                     (:file "admin")
                                      (:file "email")
                                      (:file "groupd")
                                      (:file "cartrige")
