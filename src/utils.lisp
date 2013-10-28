@@ -73,3 +73,13 @@ execute it each INTERVAL seconds. Use START-TIMER and STOP-TIMER to start and st
      (st-json:write-json-to-string
       (progn
         ,@(remove-if #'(lambda (item) (keywordp (car item))) body)))))
+
+;;;; JSON
+
+(defun write-object-to-json (object)
+  (let ((ht (make-hash-table :test 'equal)))
+    (dolist (slot (c2cl:class-direct-slots (class-of object)))
+      (let ((slot-name (slot-definition-name slot)))
+        (setf (gethash (string-downcase (string slot-name)) ht)
+              (slot-value object slot-name))))
+    (st-json:write-json-to-string ht)))

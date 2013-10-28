@@ -31,9 +31,7 @@
         (email.phone-next-mail (soy.sendmail:phonemail (list :phone phone)))
         (setf error-id 2)) ;; no phone number in parameters
     (setf (errorid answer) error-id)
-    (st-json:write-json-to-string
-     (son "phone" (slot-value answer 'phone)
-          "errorid" (slot-value answer 'errorid)))))
+    (write-object-to-json answer)))
 
 
 (defvar *sbr-orders* (make-hash-table :test #'equal))

@@ -1,7 +1,7 @@
 ;;;; packages.lisp
 
 (defpackage #:eshop.utils
-  (:use :cl
+  (:use :c2cl
         :alexandria
         :local-time)
   (:export #:unix-to-universal-time
@@ -15,7 +15,9 @@
 
            #:deftimer
            #:start-timer
-           #:stop-timer))
+           #:stop-timer
+
+           #:write-object-to-json))
 
 (defpackage :search-tips
   (:use :cl)
