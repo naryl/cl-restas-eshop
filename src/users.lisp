@@ -16,7 +16,8 @@
 
 (defclass user (eshop.odm:persistent-object)
   ((eshop.odm:key :validation (data-sift:compile-parse-rule 'data-sift:email
-                                                             :message "Ошибка при вводе email"))
+                                                             :message "Ошибка при вводе email")
+                  :reader user-email)
    (pass :type (or null string)
          :serializable t
          :accessor user-pass
@@ -75,26 +76,28 @@
   (when (slot-boundp obj 'roles)
     (format stream "~A" (user-roles obj))))
 
-(defun user-email (user)
-  (eshop.odm:serializable-object-key user))
-
 (defparameter +bonuscard-validator+
   (data-sift:compile-parse-rule 'string
                                 :min-length 3 :max-length 30
                                 :message "Ошибка при вводе номера бонусной карты"))
+
+(defun set-bonuscard (user bonuscard-id)
+  (when bonuscard-id
+    (setf (slot-value user 'bonuscard)
+          (or (eshop.odm:getobj 'bonuscard bonuscard-id)
+              (make-instance 'bonuscard
+                             :key bonuscard-id)))))
 
 (defmethod initialize-instance ((user user) &rest args &key bonuscard)
   (remf args :bonuscard)
   (apply #'call-next-method user args)
   (when bonuscard
     (funcall +bonuscard-validator+ bonuscard)
-    (setf (slot-value user 'bonuscard)
-          (or (eshop.odm:getobj 'bonuscard bonuscard)
-              (make-instance 'bonuscard
-                             :key bonuscard)))))
+    (set-bonuscard user bonuscard)))
 
 (defclass bonuscard (eshop.odm:persistent-object)
-  ((eshop.odm:key :validation +bonuscard-validator+)
+  ((eshop.odm:key :validation +bonuscard-validator+
+                  :reader bonuscard-id)
    (count :type fixnum
           :initform 0
           :initarg :count
@@ -103,7 +106,8 @@
   (:metaclass eshop.odm:persistent-class))
 
 (defclass password-reset (eshop.odm:persistent-object)
-  ((user :serializable t
+  ((key :reader password-reset-key)
+   (user :serializable t
          :accessor password-reset-user
          :initarg :user)
    (token :type string
@@ -220,7 +224,8 @@
   (:metaclass eshop.odm:serializable-class))
 
 (defclass validation (eshop.odm:persistent-object)
-  ((object :type eshop.odm:persistent-object
+  ((key :reader validation-key)
+   (object :type eshop.odm:persistent-object
            :serializable t
            :reader validation-object
            :initarg :object)
@@ -291,7 +296,7 @@ Otherwise throw ACCOUNT-ERROR"
          (mail (user-email user))
          (body (format nil "http://~A/u/reset/~A?token=~A"
                        domain
-                       (eshop.odm:serializable-object-key reset)
+                       (password-reset-key reset)
                        (password-reset-token reset))))
     (sendmail:send-email :to mail
                          :body body)))
@@ -318,24 +323,35 @@ Otherwise throw ACCOUNT-ERROR"
 (defun make-token (slot)
   (case slot
     (email (create-random-string 36 36))
-    (phone (create-random-string 8 10))))
+    (phone (create-random-string 8 10))
+    (bonuscard (create-random-string 36 36))))
 
 (defun send-validation (validation &key (domain (hunchentoot:header-in* "HOST")))
-  (case (validation-slot validation)
-    ;; TODO: send proper email
-    (email
-     (let* ((user (validation-object validation))
-            (mail (user-email user))
-            (body (format nil "http://~A/u/validate?id=~A&token=~A"
-                          domain
-                          (eshop.odm:serializable-object-key validation)
-                          (validation-token validation))))
-       (sendmail:send-email :to mail
-                            :body body)))
-    (phone
-     (cerror "Ignore" "Can't send SMS yet."))
-    (t
-     (cerror "Ignore" "Unknown slot to validate"))))
+  (let ((user (validation-object validation)))
+    (case (validation-slot validation)
+      ;; TODO: send proper email
+      (email
+       (let ((mail (user-email user))
+             (body (format nil "http://~A/u/validate?id=~A&token=~A"
+                           domain
+                           (validation-key validation)
+                           (validation-token validation))))
+         (sendmail:send-email :to mail
+                              :body body)))
+      (phone
+       (cerror "Ignore" "Can't send SMS yet."))
+      (bonuscard
+       (let ((mails (config.get-option :critical :ekk-emails))
+             (body (format nil "~A~%~A~%http://~A/u/validate?id=~A&token=~A"
+                           (user-name user)
+                           (bonuscard-id (user-bonuscard user))
+                           domain
+                           (validation-id )
+                           (validation-token validation))))
+         (sendmail:send-email :to mails
+                              :body body)))
+      (t
+       (cerror "Ignore" "Unknown slot to validate")))))
 
 (defun validate-slot (id token)
   (if-let ((validation (eshop.odm:getobj 'validation id)))
@@ -346,8 +362,14 @@ Otherwise throw ACCOUNT-ERROR"
                 (slot-value object 'validations))
           (eshop.odm:remobj validation)
           object))
-      (error 'account-error :msg "неправильный validation token"))
+      (error 'account-error :msg "Неправильный validation token"))
     (error 'account-error :msg "Неизвестный validation id")))
+
+(defun reset-validation (user slot)
+  "Make slot non-validated"
+  (eshop.odm:with-transaction
+    (let ((user (eshop.odm:getobj 'user (user-email user))))
+      (deletef (slot-value user 'validations) slot))))
 
 (declaim (ftype (function (user symbol) boolean) validated-p))
 (defun validated-p (user slot)

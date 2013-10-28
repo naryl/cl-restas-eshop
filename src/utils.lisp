@@ -71,7 +71,7 @@ execute it each INTERVAL seconds. Use START-TIMER and STOP-TIMER to start and st
   `(restas:define-route ,name (,template :method :post)
      ,@(remove-if-not #'(lambda (item) (keywordp (car item))) body)
      (st-json:write-json-to-string
-      (progn
+      (block ,name
         ,@(remove-if #'(lambda (item) (keywordp (car item))) body)))))
 
 ;;;; JSON

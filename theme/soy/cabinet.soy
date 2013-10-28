@@ -1491,19 +1491,19 @@
                 <div class="kabinet-formblock">
                     <div>
                         <span class="kab-label">Ф.И.О.</span>
-                        <input name="name" value="{$name}" type="text">
+                        <input autocomplete="off" name="name" value="{$name}" type="text">
                     </div>
                     <div>
                         <span class="kab-label">Дата рождения</span>
-                        <input name="birthdate" value="{$birthdate}" type="text">
+                        <input autocomplete="off" name="birthdate" value="{$birthdate}" type="text">
                     </div>
                     <div>
                         <span class="kab-label">Город</span>
-                        <input name="city" value="{$city}" type="text">
+                        <input autocomplete="off" name="city" value="{$city}" type="text">
                     </div>
                     <div>
                         <span class="kab-label">Адрес доставки</span>
-                        <input name="address" value="{$address}" type="text">
+                        <input autocomplete="off" name="address" value="{$address}" type="text">
                     </div>
                     <!--div>
                         <span class="kab-label">Страницы в соц. сетях</span>
@@ -1518,21 +1518,26 @@
                 <div class="kabinet-formblock">
                     <div>
                         <span class="kab-label">E-mail</span>
-                        <input value="{$email}" type="text" readonly>
+                        <input autocomplete="off" value="{$email}" type="text" readonly>
                         <a style="visibility:{if $email_valid}hidden{else}show{/if};" href="#" id="confirm-email">Связать</a>
                     </div>
                     <div>
                         <span class="kab-label">Телефон</span>
-                        <input name="phone" value="{$phone}" type="text" readonly>
+                        <input autocomplete="off" name="phone" value="{$phone}" type="text">
                         <a style="visibility:{if $phone_valid}hidden{else}show{/if};" href="#" id="confirm-phone">Связать</a>
                     </div>
                     <div>
+                        <span class="kab-label">Бонусная карта</span>
+                        <input autocomplete="off" name="bonuscard" value="{$bonuscard}" type="text">
+                        <a style="visibility:{if $bonuscard_valid}hidden{else}show{/if};" href="#" id="confirm-bonuscard">Связать</a>
+                    </div>
+                    <div>
                         <span class="kab-label">Новый пароль</span>
-                        <input name="pass1" type="password">
+                        <input autocomplete="off" name="pass1" type="password">
                     </div>
                     <div>
                         <span class="kab-label">Повторите пароль</span>
-                        <input name="pass2" type="password">
+                        <input autocomplete="off" name="pass2" type="password">
                     </div>
                     <div>
                         <input type="submit" value="">
@@ -1570,6 +1575,9 @@
 			$("#confirm-phone").click(function(){
               send_validation("phone", "СМС с кодом подтверждения выслано");
             });
+			$("#confirm-bonuscard").click(function(){
+              send_validation("bonuscard", "ok");
+            });
             $("form#profile-form").submit(function(){
               $("#profile-form").submit(null);
               $("#loading").attr("src", "/img/loading.gif");
@@ -1582,6 +1590,7 @@
                   city: $("input[name='city']").val(),
                   address: $("input[name='address']").val(),
                   phone: $("input[name='phone']").val(),
+                  bonuscard: $("input[name='bonuscard']").val(),
                   pass1: $("input[name='pass1']").val(),
                   pass2: $("input[name='pass2']").val()
                 },

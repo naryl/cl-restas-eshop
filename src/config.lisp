@@ -56,6 +56,7 @@
                                                           "shop@320-8080.ru"
                                                           "zakaz320@yandex.ru"
                                                           "wolforus@gmail.com")       :type :string-list)
+         :ekk-emails                   (list :value (list "wolforus@gmail.com")       :type :string-list)
          :from-email                   (list :value "shop@320-8080.ru"                :type :string)
          )
    ;; OTHER-OPTIONS section

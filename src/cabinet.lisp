@@ -50,7 +50,9 @@
         :phone (user-phone user)
         :phone_valid (validated-p user 'phone)
         :email (user-email user)
-        :email_valid (validated-p user 'email)))
+        :email_valid (validated-p user 'email)
+        :bonuscard (bonuscard-id (user-bonuscard user))
+        :bonuscard_valid (validated-p user 'bonuscard)))
 
 (restas:define-route request-user-profile-route ("/u/profile")
   (:decorators '@timer '@session '@no-cache (@protected "anon"))
@@ -173,22 +175,27 @@
 
 (define-ajax-route request-user-profile-route-ajax ("/u/api/profile")
   (:decorators '@timer '@session '@no-cache (@protected "anon"))
-  (with-hunchentoot-parameters (name @birthdate city address @phone @pass1 @pass2)
+  (with-hunchentoot-parameters (name @birthdate city address @phone @bonuscard @pass1 @pass2)
     (handler-case
         (eshop.odm:with-transaction
-          (when (or @pass1 @pass2)
-            (if (string= @pass1 @pass2)
-                (eshop.odm:setobj (current-user)
-                                  'pass @pass1)
-                (return-from request-user-profile-route-ajax
-                  (son "error" 1 "message" "Новые пароли не совпадают"))))
-          (eshop.odm:setobj (current-user)
-                            'phone @phone
-                            'name name
-                            'birthdate @birthdate
-                            'city city
-                            'addresses (list address))
-          (son "error" 0 "message" "Данные успешно обновлены"))
+          (let ((user (current-user)))
+            (when (or @pass1 @pass2)
+              (if (string= @pass1 @pass2)
+                  (eshop.odm:setobj user 'pass @pass1)
+                  (return-from request-user-profile-route-ajax
+                    (son "error" 1 "message" "Новые пароли не совпадают"))))
+            (unless (equal (slot-value user 'phone) @phone)
+              (reset-validation user 'phone))
+            (unless (equal (slot-value user 'bonuscard) @bonuscard)
+              (reset-validation user 'bonuscard))
+            (eshop.odm:setobj user
+                              'phone @phone
+                              'name name
+                              'birthdate @birthdate
+                              'city city
+                              'addresses (list address))
+            (set-bonuscard user @bonuscard)
+            (son "error" 0 "message" "Данные успешно обновлены")))
       (eshop.odm:validation-error (e)
         (let ((cause (slot-value e 'eshop.odm::cause))
               (msg nil))
