@@ -1,7 +1,7 @@
 ;;;; packages.lisp
 
 (defpackage #:eshop.utils
-  (:use :cl
+  (:use :c2cl
         :alexandria
         :local-time)
   (:export #:unix-to-universal-time
@@ -15,7 +15,9 @@
 
            #:deftimer
            #:start-timer
-           #:stop-timer))
+           #:stop-timer
+
+           #:write-object-to-json))
 
 (defpackage :search-tips
   (:use :cl)
@@ -58,58 +60,6 @@
            :main-page.restore
            :cartrige.restore
            :log-to-this-console))
-
-(defpackage #:eshop.proc
-  (:use :cl
-        :eshop.utils
-        :anaphora
-        :sb-concurrency
-        :bordeaux-threads)
-  (:export #:process
-           #:noproc
-           #:process-running
-           #:ensure-process
-           #:stop-process
-           #:process-call
-           #:process-exec))
-
-(defpackage #:eshop.odm
-  (:use :c2cl
-        :anaphora
-        :alexandria
-        :eshop.utils
-        :eshop.proc
-        :function-cache
-        :mongo-cl-driver.sugar)
-  (:export #:serializable-class
-           #:serializable-object
-           #:serializable-object-key
-           #:key
-           #:serialize
-           #:deserialize
-           ;; ^^^^ Serialization
-           ;; vvvv Persistence
-           #:connect
-           #:reconnect
-           #:persistent-class
-           #:persistent-object
-           #:getobj
-           #:get-one
-           #:get-list
-           #:setobj
-           #:mapobj
-           #:doobj
-           #:instance-count
-           #:list-persistent-classes
-           ;; Versions
-           #:getobj-for-date
-           #:object-slot-history
-           #:remobj
-           #:with-transaction
-           #:rollback-transaction
-           ;; Validation
-           #:validation-error
-           ))
 
 (in-package #:eshop)
 ;;; registering classes for proper compilation of methods

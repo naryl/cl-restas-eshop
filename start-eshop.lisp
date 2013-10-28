@@ -7,11 +7,9 @@
 (defparameter *debug* (sb-unix::posix-getenv "DEBUG"))
 (defparameter *swank-port* (parse-integer (sb-unix::posix-getenv "SWANK_PORT")))
 
-
 ;; регестрация путей для asdf
 (load (merge-pathnames "load.lisp" *path-to-eshop*))
 (load.register-libs *path-to-libs*)
-
 
 (when *debug*
     (restrict-compiler-policy 'debug 1)
@@ -48,10 +46,14 @@
                                           (st-json:camel-dash (string key))
                                           :keyword)))
 
+;; Debug
 (if (eshop:config.get-option :start-options :dbg-on)
     (restas:debug-mode-on)
     (restas:debug-mode-off))
+
+;; Hunchentoot
 (setf hunchentoot:*catch-errors-p* (eshop:config.get-option :start-options :catch-errors))
+(setf hunchentoot:*rewrite-for-session-urls* nil)
 
 (eshop.odm:connect "zifry")
 

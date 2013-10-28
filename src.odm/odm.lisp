@@ -391,7 +391,7 @@
   (values))
 
 (defun reconnect ()
-  (log:info "Connecting to mongo...")
+  #+log4cl (log:info "Connecting to mongo...")
   (unless (and *db-name* *server-config*)
     (error "Can't reconnect before making initial connection using CONNECT"))
   (when (process-running *db-proc*)
@@ -413,9 +413,9 @@
           (dolist (slot (class-slots class))
             (flet ((make-index (dir)
                      (let ((index-name (symbol-fqn (slot-definition-name slot))))
-                       (log:info "Ensuring index over class ~A; slot: ~A"
-                                 (symbol-fqn (class-name class))
-                                 index-name)
+                       #+log4cl (log:info "Ensuring index over class ~A; slot: ~A"
+                                          (symbol-fqn (class-name class))
+                                          index-name)
                        (incf cnt)
                        (mongo:ensure-index collection
                                            (son index-name dir)))))
@@ -425,7 +425,7 @@
                 (:desc (make-index -1))
                 (:both (make-index 1)
                        (make-index -1))))))))
-    (log:info "~A indexes ensured" cnt)))
+    #+log4cl (log:info "~A indexes ensured" cnt)))
 
 (defmethod initialize-instance :before ((obj persistent-object) &key &allow-other-keys)
   (setf (slot-value obj 'state) :rw))
@@ -605,7 +605,7 @@
 (defun getobj-current (class key)
   "Fetch an object from the database. The object will be read-only unless it's done inside
   a transaction."
-  (metric:count "getobj")
+  #+metric (metric:count "getobj")
   (if *transaction*
       (awhen (gethash (list class key) *transaction*)
         (return-from getobj-current it)))
@@ -807,6 +807,7 @@ collection"))
 (defun getobj-cache-size ()
   (cached-results-count *getobj-cache-cache*))
 
+#+metric
 (metric:defmetric getobj-cache-size ("getobj.cache")
   (getobj-cache-size))
 
@@ -817,8 +818,3 @@ collection"))
                        (serialize-slot v)))
              raw-query)
     cooked-query))
-
-;;;; Stuff
-
-;; (defmethod print-object ((instance hash-table) stream)
-;;   (format stream "#HT(~{~S~^ ~})" (hash-table-plist instance)))
