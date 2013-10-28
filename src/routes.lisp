@@ -176,7 +176,7 @@
 ;; STORAGE OBJECT
 
 (defun vendor-transform-from-alias (alias)
-  (aif (getobj alias 'vendor)
+  (aif (getobj (string-downcase alias) 'vendor)
        (name it)
        alias))
 

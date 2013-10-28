@@ -59,51 +59,94 @@
                   (remove-if-not #'active (get-root-groups)))))
     (soy.menu:main (list :elts src-lst))))
 
+;;; KEYWORDS
+
 (defmethod render.get-keywords ((object group) &optional (parameters (request-get-plist)))
-  (let* ((name (name object))
-         (vendor (getf parameters :vendor))
-         (page-name))
-    (if vendor
-        (setf page-name (format nil "~a ~a" (sklonenie name 1) vendor))
-        (setf page-name (format nil "~a" (sklonenie name 1))))
-    (format nil "~a, ~a купить, ~a цена, ~a в Санкт-Петербурге, ~a продажа" page-name page-name page-name page-name  page-name)))
+  (declare (ignore parameters))
+  (let* ((h1 (name object))
+         (vendor (hunchentoot:get-parameter "vendor")))
+    (when vendor
+      (setf h1 (concatenate 'string h1 " " (vendor-transform-from-alias vendor))))
+    (format nil "~A купить цена каталог интернет-магазин характеристики описание фото отзывы гарантия доставка"
+            h1)))
 
 (defmethod render.get-keywords ((object product) &optional (parameters (request-get-plist)))
   (declare (ignore parameters))
   (let ((page-name (name-seo object)))
-    (format nil "~a, ~a купить, ~a цена, ~a в Санкт-Петербурге, ~a продажа" page-name page-name page-name page-name  page-name)))
+    (format nil "~a, ~a купить, ~a цена, ~a в Санкт-Петербурге, ~a продажа"
+            page-name page-name page-name page-name  page-name)))
 
+(defmethod render.get-keywords ((object filter) &optional (parameters (request-get-plist)))
+  (declare (ignore parameters))
+  (let ((fltr-name (getf (data object) :name)))
+    (format nil "~A купить цена каталог интернет-магазин характеристики описание фото отзывы гарантия доставка"
+            fltr-name)))
+;;; TITLE
 
 (defmethod render.get-title ((object group) &optional (parameters (request-get-plist)))
-  (let ((name (name object))
-        (vendor (vendor-transform-from-alias (getf parameters :vendor))))
-    (string-titlecase
-     (if vendor
-         (format nil "~a ~a - купить ~a ~a по низкой цене, продажа ~a ~a с доставкой и гарантией в ЦиFры 320-8080"
-                 (sklonenie name 1)
-                 vendor
-                 (sklonenie name 2)
-                 vendor
-                 (sklonenie name 3)
-                 vendor)
-         (format nil "~a - купить ~a  по низкой цене, продажа ~a с доставкой и гарантией в ЦиFры 320-8080"
-                 (sklonenie name 1)
-                 (sklonenie name 2)
-                 (sklonenie name 3))))))
+  (declare (ignore parameters))
+  (let ((h1 (name object))
+        (page (hunchentoot:get-parameter "page"))
+        (vendor (hunchentoot:get-parameter "vendor")))
+    (when vendor
+      (setf h1 (concatenate 'string h1 " " (vendor-transform-from-alias vendor))))
+    (format nil "~A – купить по выгодным ценам | ~A – каталог в интернет-магазине «ЦиFры»:
+ характеристики, описание, фото, отзывы~A"
+            h1 h1
+            (if (and page
+                     (string< "1" page))
+                (format nil " | Страница ~A" page)
+                ""))))
+
+(defmethod render.get-title ((object product) &optional (parameters (request-get-plist)))
+  (declare (ignore parameters))
+  (format nil "~A Арт.:~A | ~A | Купить по выгодной цене в интернет-магазине «ЦыFры» | ~A: обзор, характеристики, фото, описание, отзывы"
+          (name-seo object)
+          (articul object)
+          (aif (parent object)
+               (name it)
+               "")
+          (name-seo object)
+          ))
+
+(defmethod render.get-title ((object filter) &optional (parameters (request-get-plist)))
+  (declare (ignore parameters))
+  (let ((fltr-name (getf (data object) :name))
+         (group-name (name (parent object)))
+         (page (hunchentoot:get-parameter "page")))
+    (format nil "~A | ~A | купить по выгодным ценам в интернет-магазине «ЦиFры»:
+ характеристики, описание, фото, отзывы~A"
+            group-name fltr-name
+            (if (and page
+                     (string< "1" page))
+                (format nil " | Страница ~A" page)
+                ""))))
+
+;;; DESCRIPTION
 
 (defmethod render.get-description ((object group) &optional (parameters (request-get-plist)))
-  (let ((name (name object))
-        (vendor (getf parameters :vendor)))
-    (string-titlecase
-     (if vendor
-         (format nil "Купить ~a ~a по низкой цене, продажа ~a ~a с доставкой и гарантией в ЦиFры 320-8080"
-                 (sklonenie name 2)
-                 vendor
-                 (sklonenie name 3)
-                 vendor)
-         (format nil "Купить ~a  по низкой цене, продажа ~a с доставкой и гарантией в ЦиFры 320-8080"
-                 (sklonenie name 2)
-                 (sklonenie name 3))))))
+  (declare (ignore parameters))
+  (let ((h1 (name object))
+        (vendor (hunchentoot:get-parameter "vendor")))
+    (when vendor
+        (setf h1 (concatenate 'string h1 " " (vendor-transform-from-alias vendor))))
+    (format nil "~A по выгодным ценам в интернет-магазине «ЦиFры». В каталоге вы можете ознакомиться с ценами, отзывами покупателей, описанием, фотографиями и подробными техническими характеристиками товаров. У нас можно купить ~A с гарантией и доставкой."
+             h1
+             h1)))
+
+
+(defmethod render.get-description ((object product) &optional (parameters (request-get-plist)))
+   (declare (ignore parameters))
+   (format nil "~A по выгодной цене в интернет-магазине «ЦиFры». В каталоге вы можете ознакомиться с ценами, отзывами покупателей, описанием, фотографиями и подробными техническими характеристиками товаров. У нас можно купить ~A с гарантией и доставкой."
+           (name-seo object)
+           (name-seo object)))
+
+(defmethod render.get-description ((object filter) &optional (parameters (request-get-plist)))
+  (declare (ignore parameters))
+  (let ((fltr-name (getf (data object) :name)))
+    (format nil "~A по выгодным ценам в интернет-магазине «ЦиFры». В каталоге вы можете ознакомиться с ценами, отзывами покупателей, описанием, фотографиями и подробными техническими характеристиками товаров. У нас можно купить ~A с гарантией и доставкой."
+            fltr-name fltr-name)))
+
 
 
 (defmethod render.render ((object group) &optional (parameters (request-get-plist)))
@@ -593,12 +636,8 @@
                              :NAME "Узнай специальную цену для членов F-клуба!"
                              :SRC2 "/img/banners/nokia.png"))
         :keywords (render.get-keywords object nil)
-        :description (format nil "купить ~a в ЦиFры 320-8080 по лучшей цене с доставкой по Санкт-Петербургу"
-                             (name-seo object))
-        :title (string-titlecase
-                (format nil "~a купить в ЦиFры - цена, фотография и описание, продажа ~a с гарантией и доставкой в ЦиFры 320-8080"
-                        (name-seo object)
-                        (name-seo object))))))
+        :description (render.get-description object nil)
+        :title (render.get-title object nil))))
 
 
 (defun render.make-producters-reverse-lists-by-column (list  &optional (columns 4))
@@ -683,34 +722,9 @@
                                             :for product
                                             :in  paginated
                                             :collect (render.view product))))))
-          :keywords (format nil "~a ~a" group-name fltr-name)
-          :description (format nil "~a ~a" group-name fltr-name)
-          :title (let ((vendor (getf (request-get-plist) :vendor))
-                       (name-1 (sklonenie fltr-name 1))
-                       (name-2 (sklonenie fltr-name 2))
-                       (name-3 (sklonenie fltr-name 3))
-                       (grname-1 (sklonenie group-name 1))
-                       (grname-2 (sklonenie group-name 2))
-                       (grname-3 (sklonenie group-name 3)))
-                   (string-titlecase
-                    (if vendor
-                        (format nil "~a ~a ~a - купить ~a ~a ~a по низкой цене, продажа ~a ~a ~a с доставкой и гарантией в ЦиFры 320-8080"
-                                grname-1
-                                name-1
-                                vendor
-                                grname-2
-                                name-2
-                                vendor
-                                grname-3
-                                name-3
-                                vendor)
-                        (format nil "~a ~a - купить ~a ~a  по низкой цене, продажа ~a ~a с доставкой и гарантией в ЦиFры 320-8080"
-                                grname-1
-                                name-1
-                                grname-2
-                                name-2
-                                grname-3
-                                name-3))))))))
+          :keywords (render.get-keywords object nil)
+          :description (render.get-description object nil)
+          :title (render.get-title object nil)))))
 
 
 
