@@ -51,8 +51,8 @@
         :phone_valid (validated-p user 'phone)
         :email (user-email user)
         :email_valid (validated-p user 'email)
-        :bonuscard (bonuscard-id (user-bonuscard user))
-        :bonuscard_valid (validated-p user 'bonuscard)))
+        :bonuscard (awhen (slot-value user 'bonuscard) (bonuscard-key it))
+        :bonuscard_valid (string (user-bonuscard-valid-p user))))
 
 (restas:define-route request-user-profile-route ("/u/profile")
   (:decorators '@timer '@session '@no-cache (@protected "anon"))
@@ -80,13 +80,6 @@
                              "/")
                         :code hunchentoot:+http-moved-temporarily+))
 
-;; LOGOUT
-(restas:define-route logout-route ("/u/logout")
-  (:decorators '@timer '@session '@no-cache (@protected "anon"))
-  (new-session)
-  (hunchentoot:redirect "/"))
-
-
 (restas:define-route login-page-route ("/u/login" :method :get)
   (:decorators '@timer '@session '@no-cache)
   (default-page
@@ -94,12 +87,19 @@
        (list :menu (render.menu)
              :msg (hunchentoot:get-parameter "msg")))))
 
+;; LOGOUT
+(restas:define-route logout-route ("/u/logout")
+  (:decorators '@timer '@session '@no-cache (@protected "anon"))
+  (new-session)
+  (hunchentoot:redirect "/"))
+
 (restas:define-route user-request-reset-route ("/u/reset")
   (:decorators '@timer '@session)
   (default-page
       (soy.cabinet:recovery
        (list :menu (render.menu)))))
 
+;; EMAIL ROUTES
 (restas:define-route user-apply-reset-route ("/u/reset/:id")
   (:decorators '@timer '@session)
   (let ((token (hunchentoot:parameter "token")))
@@ -137,6 +137,20 @@
             (validation-error))
           (validation-error))
       (account-error (e) (validation-error e)))))
+
+(restas:define-route confirm-bonuscard-route ("/u/confirm-bonuscard")
+  (:decorators '@timer)
+  (with-hunchentoot-parameters (id token)
+    (if (confirm-bonuscard (parse-integer id) token)
+        (soy.cabinet:simply-message (list :msg "Успешно"))
+        (soy.cabinet:simply-message (list :msg "Ошибка")))))
+
+(restas:define-route reject-bonuscard-route ("/u/reject-bonuscard")
+  (:decorators '@timer)
+  (with-hunchentoot-parameters (id token)
+    (if (reject-bonuscard (parse-integer id) token)
+        (soy.cabinet:simply-message (list :msg "Успешно"))
+        (soy.cabinet:simply-message (list :msg "Ошибка")))))
 
 ;;;; AJAX
 
@@ -178,7 +192,7 @@
   (with-hunchentoot-parameters (name @birthdate city address @phone @bonuscard @pass1 @pass2)
     (handler-case
         (eshop.odm:with-transaction
-          (let ((user (current-user)))
+          (let ((user (eshop.odm:regetobj (current-user))))
             (when (or @pass1 @pass2)
               (if (string= @pass1 @pass2)
                   (eshop.odm:setobj user 'pass @pass1)
@@ -187,14 +201,15 @@
             (unless (equal (slot-value user 'phone) @phone)
               (reset-validation user 'phone))
             (unless (equal (slot-value user 'bonuscard) @bonuscard)
-              (reset-validation user 'bonuscard))
+              (if @bonuscard
+                  (send-bonuscard-validation-mail (make-bonuscard-validation user @bonuscard))
+                  (setf (slot-value user 'bonuscard) nil)))
             (eshop.odm:setobj user
                               'phone @phone
                               'name name
                               'birthdate @birthdate
                               'city city
                               'addresses (list address))
-            (set-bonuscard user @bonuscard)
             (son "error" 0 "message" "Данные успешно обновлены")))
       (eshop.odm:validation-error (e)
         (let ((cause (slot-value e 'eshop.odm::cause))

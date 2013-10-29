@@ -1519,17 +1519,21 @@
                     <div>
                         <span class="kab-label">E-mail</span>
                         <input autocomplete="off" value="{$email}" type="text" readonly>
-                        <a style="visibility:{if $email_valid}hidden{else}show{/if};" href="#" id="confirm-email">Связать</a>
+                        <a style="visibility:{if $email_valid}hidden{else}show{/if};"
+                           href="#" id="confirm-email">Связать</a>
                     </div>
                     <div>
                         <span class="kab-label">Телефон</span>
                         <input autocomplete="off" name="phone" value="{$phone}" type="text">
-                        <a style="visibility:{if $phone_valid}hidden{else}show{/if};" href="#" id="confirm-phone">Связать</a>
+                        <a style="visibility:{if $phone_valid}hidden{else}show{/if};"
+                           href="#" id="confirm-phone">Связать</a>
                     </div>
                     <div>
                         <span class="kab-label">Бонусная карта</span>
                         <input autocomplete="off" name="bonuscard" value="{$bonuscard}" type="text">
-                        <a style="visibility:{if $bonuscard_valid}hidden{else}show{/if};" href="#" id="confirm-bonuscard">Связать</a>
+                        <img id="ekk-valid" style="display:{if $bonuscard_valid=='VALID'}inline{else}none{/if}" src="" alt="Подтверждена">
+                        <img id="ekk-pending" style="display:{if $bonuscard_valid=='PENDING'}inline{else}none{/if}" src="" alt="Ждёт подтверждения">
+                        <img id="ekk-invalid" style="display:{if $bonuscard_valid=='INVALID'}inline{else}none{/if}" src="" alt="Отклонена">
                     </div>
                     <div>
                         <span class="kab-label">Новый пароль</span>
@@ -1549,6 +1553,7 @@
 		</div>
         {literal}
           <script>
+            var old_ekk = $("input[name='bonuscard']").val();
             function send_validation(slot, message) {
               $("#loading").attr("src", "/img/loading.gif");
               $.ajax({
@@ -1601,6 +1606,16 @@
                   } else if (obj.error == "0") {
                     setAlertClass("profile-alert", "alert-success");
                   };
+                  var new_ekk = $("input[name='bonuscard']").val();
+                  if (old_ekk != new_ekk) {
+                    $("#ekk-valid").hide();
+                    $("#ekk-invalid").hide();
+                    if(new_ekk == "") 
+                      $("#ekk-pending").hide();
+                    else
+                      $("#ekk-pending").show();
+                    old_ekk = new_ekk;
+                  }
                   $("#profile-alert").text(obj.message);
                 },
                 complete : function(data) {

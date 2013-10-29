@@ -485,9 +485,9 @@
   (with-gensyms (transaction)
     `(flet ((,transaction ()
               ,@body))
-       (let ((*finished* nil))
-         (if *transaction*
-             (,transaction)
+       (if *transaction*
+           (,transaction)
+           (let ((*finished* nil))
              (catch 'rollback-transaction
                (let ((*transaction* (make-hash-table :test #'equal)))
                  (values
@@ -612,6 +612,9 @@
   (when-let* ((db-obj (getobj-cache class key))
               (obj (deserialize db-obj)))
     (new-transaction-object obj)))
+
+(defun regetobj (obj)
+  (getobj (type-of obj) (slot-value obj 'key)))
 
 (defun remobj (&rest objs)
   "Deletes an object from the database"

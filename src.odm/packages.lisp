@@ -21,6 +21,7 @@
            #:getobj
            #:get-one
            #:get-list
+           #:regetobj
            #:setobj
            #:mapobj
            #:doobj
