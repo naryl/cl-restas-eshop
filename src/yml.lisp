@@ -42,31 +42,31 @@
                    (< (date-start v) (get-universal-time) (date-finish v)))))
 
 (defun yml.%offers ()
-  (format nil "~{~a~}"
-          (collect-storage
-           'product
-           ;;продукт должен находиться в группе маркированной как ymlshow
-           ;;быть активным и иметь не нулевую цену
-           :when-fn #'yml.yml-show-p
-           :func #'(lambda (product)
-                     (soy.yml:offer
-                      (list :articul (articul product)
-                            :available (active product) ; если не active, то прошел available-for-order
-                            :deliveryprice (get-product-delivery-price product)
-                            :price (siteprice product)
-                            :category (yml-id (parent product))
-                            :picture (let ((pics (get-pics
-                                                  (key product))))
-                                       (when pics
-                                         (encode-uri (car pics))))
-                            :vendorcode (get-option product "Общие характеристики" "Код производителя")
-                            :name (let ((yml-name (get-option product "Secret" "Yandex")))
-                                    (if (or (null yml-name)
-                                            (string= "" (stripper yml-name))
-                                            (string= "No" (stripper yml-name)))
-                                        (name-seo product)
-                                        yml-name))
-                            :description nil))))))
+  (collect-storage
+   'product
+   ;;продукт должен находиться в группе маркированной как ymlshow
+   ;;быть активным и иметь не нулевую цену
+   :when-fn #'yml.yml-show-p
+   :func #'(lambda (product)
+             (list :articul (articul product)
+                   :available (active product) ; если не active, то прошел available-for-order
+                   :deliveryprice (get-product-delivery-price product)
+                   :price (siteprice product)
+                   :category (yml-id (parent product))
+                   :picture (let ((pics (get-pics
+                                         (key product))))
+                              (when pics
+                                (encode-uri (car pics))))
+                   :vendorcode (get-option product "Общие характеристики" "Код производителя")
+                   :vendor (get-option product "Общие характеристики" "Производитель")
+                   :model (get-option product "Общие характеристики" "Модель")
+                   :name (let ((yml-name (get-option product "Secret" "Yandex")))
+                           (if (or (null yml-name)
+                                   (string= "" (stripper yml-name))
+                                   (string= "No" (stripper yml-name)))
+                               (name-seo product)
+                               yml-name))
+                   :description nil))))
 
 (defun yml.%category ()
   (loop
@@ -162,45 +162,24 @@
   (:decorators '@timer)
   (yml-page-icontext))
 
-
-(defun yml.%offers-icontext ()
-  (format nil "~{~a~}"
-          (collect-storage
-           'product
-           ;;продукт должен находиться в группе маркированной как ymlshow
-           ;;быть активным и иметь не нулевую цену
-           :when-fn #'yml.yml-show-p
-           :func #'(lambda (product)
-                     (soy.yml:offer-full
-                      (list :articul (articul product)
-                            :available (active product) ; если не active, то прошел available-for-order
-                            :deliveryprice (get-product-delivery-price product)
-                            :price (siteprice product)
-                            :category (yml-id (parent product))
-                            :picture (let ((pics (get-pics
-                                                  (key product))))
-                                       (when pics
-                                         (encode-uri (car pics))))
-                            :vendorcode (get-option product "Общие характеристики" "Код производителя")
-                            :vendor (get-option product "Общие характеристики" "Производитель")
-                            :model (get-option product "Общие характеристики" "Модель")
-                            :name (let ((yml-name (get-option product "Secret" "Yandex")))
-                                    (if (or (null yml-name)
-                                            (string= "" (stripper yml-name))
-                                            (string= "No" (stripper yml-name)))
-                                        (name-seo product)
-                                        yml-name))
-                            :description nil))))))
-
-
 (defun yml-page-icontext ()
   (let ((data-yml))
     (setf (hunchentoot:content-type*) "application/xml; charset=utf-8")
-    (setf data-yml (soy.yml:xml
+    (setf data-yml (soy.yml:xml-icontext
                     (list :datetime (time.get-date-time)
                           :marketname "ЦиFры 320-8080"
                           :marketcompany "ЦиFры 320-8080"
                           :marketurl "http://www.320-8080.ru/"
                           :categoryes (yml.%category)
-                          :offers (yml.%offers-icontext))))
+                          :offers (yml.%offers))))
     data-yml))
+
+
+ ;;; csv yml version
+(restas:define-route yml-csv-route ("/yml-csv.csv")
+  (:decorators '@timer)
+  (yml-page-csv))
+
+(defun yml-page-csv ()
+  (soy.yml:yml-csv
+   (list :offers (yml.%offers))))

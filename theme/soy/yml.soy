@@ -19,7 +19,9 @@
     </categories>{\n}
 
 	<offers>{\n}
-	  {$offers |noAutoescape}
+    {foreach $offer in $offers}
+	    {call offer data="$offer" /}
+    {/foreach}
 	</offers>{\n}
 
   </shop>{\n}
@@ -40,7 +42,7 @@
   <picture>http://www.320-8080.ru/pic/small/{$articul}/{$picture}</picture>{\n}
   {/if}
   <delivery>true</delivery>{\n}
- <local_delivery_cost>{if $deliveryprice}{$deliveryprice}{else}300{/if}</local_delivery_cost>
+ <local_delivery_cost>{if $deliveryprice}{$deliveryprice}{else}300{/if}</local_delivery_cost>{\n}
   <name>{$name}</name>{\n}
   {if $vendorcode}
   <vendorCode>{$vendorcode}</vendorCode>{\n}
@@ -51,6 +53,36 @@
 {/template}
 
 
+
+// icontext
+
+{template xml-icontext}
+<?xml version="1.0" encoding="utf-8"?>{\n}
+<!DOCTYPE yml_catalog SYSTEM "shops.dtd">{\n}
+<yml_catalog date="{$datetime}">{\n}
+  <shop>{\n}
+	<name>{$marketname}</name>{\n}
+	<company>{$marketcompany}</company>{\n}
+	<url>{$marketurl}</url>{\n}
+	<currencies>{\n}
+      <currency id="RUR" rate="1"/>{\n}
+    </currencies>{\n}
+
+    <categories>{\n}
+	  {foreach $category in $categoryes}
+	  {call category data="$category" /}
+	  {/foreach}
+    </categories>{\n}
+
+	<offers>{\n}
+    {foreach $offer in $offers}
+	    {call offer-full data="$offer" /}
+    {/foreach}
+	</offers>{\n}
+
+  </shop>{\n}
+</yml_catalog>{\n}
+{/template}
 
 
 {template offer-full}
@@ -72,4 +104,12 @@
   <description>{if $description}{$description}{/if}</description>{\n}
   <sales_notes>Бонусы на карту F-клуба</sales_notes>{\n}
 </offer>{\n}
+{/template}
+
+
+// yml csv
+{template yml-csv}
+    {foreach $offer in $offers}
+	    {$offer.articul};"{$offer.name}";{$offer.price};{\n}
+    {/foreach}
 {/template}
