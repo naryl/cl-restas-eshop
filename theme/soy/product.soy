@@ -509,7 +509,7 @@
 									    <table class="chars-table">
 										    {foreach $keyoption in $keyoptions}
 											    {if $keyoption.optvalue}
-												    {if not $keyoption.optvalue == ''}
+												    {if $keyoption.optvalue != ''}
 													    <tr {if isLast($keyoption)}class="noborder"{/if}>
 													    <th>{$keyoption.optname}</th>
 													    <td>{$keyoption.optvalue}</td>
@@ -716,7 +716,7 @@
     <div class="clear"></div>
 		{foreach $keyoption in $keyoptions}
 			{if $keyoption.optvalue}
-				{if not $keyoption.optvalue == ''}
+				{if $keyoption.optvalue != ''}
 					<span class="opis">{$keyoption.optname}</span>
 					<span class="opis_to">{$keyoption.optvalue}</span>
 					<br/>
@@ -744,7 +744,7 @@
 					<ul class="ul_item_big_free">
 						{foreach $keyoption in $item.keyoptions}
 							{if $keyoption.optvalue}
-								{if not $keyoption.optvalue == ''}
+								{if $keyoption.optvalue != ''}
 								<li>
 									<div class="first_opis_item_min_free">{$keyoption.optname}</div>
 									<div class="two_opis_item_min_free">{$keyoption.optvalue}</div>
@@ -775,7 +775,7 @@
 					<ul class="ul_item_free">
 						{foreach $keyoption in $item.keyoptions}
 							{if $keyoption.optvalue}
-								{if not $keyoption.optvalue == ''}
+								{if $keyoption.optvalue != ''}
 								<li>
 									<div class="first_opis_item_min_free">{$keyoption.optname}</div>
 									<div class="two_opis_item_min_free">{$keyoption.optvalue}</div>
