@@ -42,7 +42,7 @@
   (show-admin-page "cron-jobs"))
 
 (restas:define-route admin-parenting-key-route ("/administration-super-panel/parenting" :method :post)
-  (:decorators (@protected "admin"))
+  (:decorators (@protected "admin" "content"))
   (show-admin-page "parenting"))
 
 (restas:define-route admin-vendor-seo-route ("/administration-super-panel/vendor-seo" :method :post)
@@ -78,10 +78,11 @@
                                        (filters.get-basic-fields (hunchentoot:get-parameter "filter-type")))))))
 
 (restas:define-route admin-edit-slot-route ("administration-super-panel/edit-slot" :method :post)
-  (:decorators (@protected "admin"))
+  (:decorators (@protected "admin" "content"))
   (let ((object (getobj (hunchentoot:post-parameter "key")))
         (slot (anything-to-symbol (hunchentoot:post-parameter "slot")))
         (value (hunchentoot:post-parameter "value")))
+    (log:info object slot value)
     (if object
         (handler-case
             (progn
@@ -361,34 +362,32 @@
     (error (e) (format  nil "ERROR:~%~a" e))))
 
 (defun admin.parenting-content ()
-  (when (and (hunchentoot:parameter "products")
-             (hunchentoot:parameter "groups"))
-    (let ((products (ensure-list (hunchentoot:parameter "products")))
-          (groups (ensure-list (hunchentoot:parameter "groups"))))
+  (with-hunchentoot-parameters (@products @groups)
+    (when (and @products @groups)
       (mapcar #'(lambda (product)
                   (mapcar #'(lambda (group)
                               (class-core.bind-product-to-group
                                (getobj product 'product)
                                (getobj group 'group)))
-                          groups))
-              products)))
-  (let ((unparented-products (collect-storage
-                              'product
-                              :when-fn
-                              #'(lambda (item)
-                                  (and (active item)
-                                       (null (parent item))
-                                       (not (special-p item)))))))
-    (when (< 1000 (length unparented-products))
-      (setf unparented-products (subseq unparented-products 0 1000)))
-    (soy.class_forms:parenting-page
-     (list :products (mapcar #'(lambda (product)
-                                 (soy.class_forms:unparented-product-checkbox
-                                  (list :key (key product)
-                                        :name (name-seo product))))
-                             unparented-products)
-           :length (length unparented-products)
-           :groups (slots.%view 'group-list nil "GROUPS" nil)))))
+                          @groups))
+              @products))
+    (let ((unparented-products (collect-storage
+                                'product
+                                :when-fn
+                                #'(lambda (item)
+                                    (and (active item)
+                                         (null (parent item))
+                                         (not (special-p item)))))))
+      (when (< 1000 (length unparented-products))
+        (setf unparented-products (subseq unparented-products 0 1000)))
+      (soy.class_forms:parenting-page
+       (list :products (mapcar #'(lambda (product)
+                                   (soy.class_forms:unparented-product-checkbox
+                                    (list :key (key product)
+                                          :name (name-seo product))))
+                               unparented-products)
+             :length (length unparented-products)
+             :groups (slots.%view 'group-list nil "groups" nil))))))
 
 (defun admin.vendor-seo-upload ()
   (let* ((group-key (hunchentoot:parameter "group"))
