@@ -176,10 +176,15 @@
 
 
  ;;; csv yml version
-(restas:define-route yml-csv-route ("/yml-csv.csv")
-  (:decorators '@timer)
-  (yml-page-csv))
-
 (defun yml-page-csv ()
   (soy.yml:yml-csv
    (list :offers (yml.%offers))))
+
+(restas:define-route yml-csv-route ("/yml-csv.csv")
+  (:decorators '@timer)
+  (let ((filename (merge-pathnames "yml-csv.csv" (config.get-option :critical :path-to-sitemap))))
+    (with-open-file
+        (stream (pathname filename)
+                :direction :output :if-exists :supersede :external-format :cp1251)
+      (format stream "~A" (yml-page-csv)))
+    (pathname filename)))
