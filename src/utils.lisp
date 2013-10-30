@@ -55,14 +55,22 @@ execute it each INTERVAL seconds. Use START-TIMER and STOP-TIMER to start and st
       string)))
 
 (defmacro with-hunchentoot-parameters ((&rest parameters) &body body)
-  "Fetches hunchentoot parameters. Prepend symbol with @ to replace it with NIL if it's empty."
+  "Fetches hunchentoot parameters. Prepend symbol with @ to replace it with NIL if it's
+empty. Parameter can be a list to make it look for another parameter name (e.g. when it's
+  upcase) like this
+  (with-hunchentoot-parameters (param1 @param2 (param3 \"PARAM_3\") ...)"
   `(let ,(loop
             :for param :in parameters
-            :collect (let ((raw-name (string-downcase (string param))))
-                       `(,param
-                         ,(if (char= #\@ (elt raw-name 0))
-                              `(optional-parameter ,(subseq raw-name 1))
-                              `(hunchentoot:parameter ,raw-name)))))
+            :collect (let* ((param (ensure-list param))
+                            (symbol (first param))
+                            (http-param (or (second param)
+                                            (string-left-trim '(#\@)
+                                                              (string-downcase
+                                                               (string (first param)))))))
+                       `(,symbol
+                         ,(if (char= #\@ (elt (string symbol) 0))
+                              `(optional-parameter ,http-param)
+                              `(hunchentoot:parameter ,http-param)))))
      ,@body))
 
 ;;;; AJAX
