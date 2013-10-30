@@ -83,3 +83,7 @@ execute it each INTERVAL seconds. Use START-TIMER and STOP-TIMER to start and st
         (setf (gethash (string-downcase (string slot-name)) ht)
               (slot-value object slot-name))))
     (st-json:write-json-to-string ht)))
+
+
+(defun write-plist-to-json (plist)
+  (st-json:write-json-to-string (plist-hash-table plist)))

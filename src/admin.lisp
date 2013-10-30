@@ -55,7 +55,7 @@
 
 (defun admin.standard-ajax-response (success &optional msg)
   "Standard json-encoded ajax response, include success and msg fields"
-  (encode-json-plist-to-string (list :success success :msg (if msg msg "Success"))))
+  (write-plist-to-json (list :success success :msg (if msg msg "Success"))))
 
 (defun admin.page-wrapper (content)
   "Standard wrapper with styles, scripts, header, etc"
@@ -71,10 +71,10 @@
   (switch ((hunchentoot:get-parameter "get") :test #'string=)
     ("filter-types"
      ;; FIXME: use json encode, not format
-     (format nil "[~{~A~^,~}]" (mapcar #'encode-json-plist-to-string
+     (format nil "[~{~A~^,~}]" (mapcar #'write-plist-to-json
                                        (filters.get-basics-types))))
     ("fields"
-     (format nil "[~{~A~^,~}]" (mapcar #'encode-json-plist-to-string
+     (format nil "[~{~A~^,~}]" (mapcar #'write-plist-to-json
                                        (filters.get-basic-fields (hunchentoot:get-parameter "filter-type")))))))
 
 (restas:define-route admin-edit-slot-route ("administration-super-panel/edit-slot" :method :post)
@@ -82,7 +82,6 @@
   (let ((object (getobj (hunchentoot:post-parameter "key")))
         (slot (anything-to-symbol (hunchentoot:post-parameter "slot")))
         (value (hunchentoot:post-parameter "value")))
-    (log:info object slot value)
     (if object
         (handler-case
             (progn
@@ -369,8 +368,12 @@
                               (class-core.bind-product-to-group
                                (getobj product 'product)
                                (getobj group 'group)))
-                          @groups))
-              @products))
+                          (ensure-list @groups)))
+              (remove-if #'null
+                         (mapcar #'(lambda (p)
+                                     (if (equal (car p) "products")
+                                         (cdr p)))
+                                 (hunchentoot:post-parameters*)))))
     (let ((unparented-products (collect-storage
                                 'product
                                 :when-fn
