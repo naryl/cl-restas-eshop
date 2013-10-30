@@ -16,9 +16,9 @@
 
 (defun init-closure-user-functions ()
   (closure-template::add-user-function "date" #'(lambda (timestamp) (render-time +date+ timestamp)))
-  (closure-template::add-user-function "productpics" #'(lambda (product) (get-pics product)))
-  (closure-template::add-user-function "parent" #'(lambda (product) (parent product)))
-  )
+  (closure-template::add-user-function "productpics" #'get-pics)
+  (closure-template::add-user-function "parent" #'(lambda (obj) (parent obj)))
+  (closure-template::add-user-function "gaCustomVars" #'(lambda (obj) (ga-custom-vars obj))))
 
 (log:info "Compiling all templates")
 (init-closure-user-functions)
