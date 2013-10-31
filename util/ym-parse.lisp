@@ -1,20 +1,53 @@
 
 (defpackage eshop.parse-ym
   (:use :cl
+        :cl-html-parse
         :alexandria
         :drakma))
 
 (in-package eshop.parse-ym)
 
-(defun get-product-page (product)
-  (cl-html-parse:parse-html
-   (drakma:http-request
-    (format nil "http://market.yandex.ru/search.xml?text=~A&cvredirect=2"
-            (hunchentoot:url-encode product))
-    :preserve-uri t)))
+(defvar *data* (make-hash-table))
 
-(defun get-product-image-url (product)
-  (let ((img-span (query (get-product-page product) ".b-model-pictures__big")))
+(defun get-img-data ()
+  (setf *data* (make-hash-table))
+  (let ((group (eshop::getobj "watch"))
+        (path (merge-pathnames "market-images/"
+                               (eshop::config.get-option :paths :path-to-logs))))
+    (dolist (product (slot-value group 'eshop::products))
+      (let ((articul (slot-value product 'eshop::articul))
+            (name (slot-value product 'eshop::name-seo)))
+        (destructuring-bind (page productid)
+            (get-product-page name)
+          (let ((path (merge-pathnames (format nil "~A/~A.jpg" articul name)
+                                       path))
+                (img-url (get-product-image-url page)))
+            (setf (gethash articul *data*)
+                  (list name productid img-url))
+            (when img-url
+              (ensure-directories-exist path)
+              (write-byte-vector-into-file (drakma:http-request img-url)
+                                           path)))))
+      (sleep 1))
+    (eshop::rename-convert-all :from path)))
+
+(defun get-product-page (product)
+  (multiple-value-bind (body code headers uri)
+      (drakma:http-request
+       (format nil "http://market.yandex.ru/search.xml?text=~A&cvredirect=2"
+               (hunchentoot:url-encode product))
+       :preserve-uri t)
+    (declare (ignore code headers))
+    (let ((have-modelid (second (multiple-value-list
+                                 (cl-ppcre:scan-to-strings "modelid=(\\d+)"
+                                                           (puri:uri-query
+                                                            uri))))))
+      (list
+       (parse-html body)
+       (when have-modelid (parse-integer (aref have-modelid 0)))))))
+
+(defun get-product-image-url (page)
+  (let ((img-span (query page ".b-model-pictures__big")))
     (or (tag-attr (query img-span "a") :href)
         (tag-attr (query img-span "img") :src))))
 
