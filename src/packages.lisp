@@ -17,7 +17,8 @@
            #:start-timer
            #:stop-timer
 
-           #:write-object-to-json))
+           #:write-object-to-json
+           #:write-plist-to-json))
 
 (defpackage :search-tips
   (:use :cl)

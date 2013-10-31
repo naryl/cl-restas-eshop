@@ -24,7 +24,7 @@
    :paths
    (list :path-to-dropbox              (list :value #P"~/Dropbox/"                      :type :path)
          :path-to-last-backup          (list :value #P"~/eshop-dev/last-backup/"        :type :path)
-         :path-to-templates            (list :value #P"~/Dropbox/httpls/release/"       :type :path)
+         :path-to-templates            (list :value #P"~/cl-restas-eshop/theme/soy/"      :type :path)
          :path-to-articles             (list :value #P"~/Dropbox/content/articles/"     :type :path)
          :path-to-static-pages         (list :value #P"~/Dropbox/content/static-pages/" :type :path)
          :path-to-pics                 (list :value #P"~/htpics1/"                      :type :path)

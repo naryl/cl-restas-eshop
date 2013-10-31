@@ -91,3 +91,7 @@ empty. Parameter can be a list to make it look for another parameter name (e.g. 
         (setf (gethash (string-downcase (string slot-name)) ht)
               (slot-value object slot-name))))
     (st-json:write-json-to-string ht)))
+
+
+(defun write-plist-to-json (plist)
+  (st-json:write-json-to-string (plist-hash-table plist)))

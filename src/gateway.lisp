@@ -298,7 +298,7 @@
 
 (defun gateway-ekk ()
   "Только одиночная выгрузка. JSON вида [{\"ekk\":\"1234\",\"bonuses\":0}]"
-  (let* ((raw (sb-ext:octets-to-string (hunchentoot:raw-post-data)))
+  (let* ((raw (sb-ext:octets-to-string (hunchentoot:raw-post-data)  :external-format :cp1251))
          (data (st-json:read-json-from-string raw)))
     (dolist (bonuscard data)
       (let ((ekk (cdr (assoc :ekk bonuscard)))
@@ -306,4 +306,12 @@
         (aif (eshop.odm:getobj 'bonuscard ekk)
              (eshop.odm:setobj it 'count bonuses)
              (make-instance 'bonuscard :key ekk :count bonuses))))
+    "ok"))
+
+;;;; ORDER STATUS
+
+(defun gateway-status ()
+  (let* ((raw (sb-ext:octets-to-string (hunchentoot:raw-post-data) :external-format :cp1251))
+         (data (st-json:read-json-from-string raw)))
+    (log:info "~A" data)
     "ok"))

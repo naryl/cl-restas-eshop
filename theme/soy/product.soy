@@ -432,7 +432,7 @@
 					    {$breadcrumbs |noAutoescape}
 				    </p>
 				    <div class="item-heading">
-					    <p class="h1"><h1>{$name}</h1><var class="art">Арт.:{$articul}</var>{if $ymlname}<br><var class="yml-name">Код производителя: {$ymlname}</var>{/if}</p>
+					    <h1>{$name}</h1><p class="h1"><var class="art">Арт.:{$articul}</var>{if $ymlname}<br><var class="yml-name">Код производителя: {$ymlname}</var>{/if}</p>
 					    {if $slogan}
 						    <p class="h2">{$slogan|noAutoescape}</p>
 					    {/if}
@@ -509,7 +509,7 @@
 									    <table class="chars-table">
 										    {foreach $keyoption in $keyoptions}
 											    {if $keyoption.optvalue}
-												    {if not $keyoption.optvalue == ''}
+												    {if $keyoption.optvalue != ''}
 													    <tr {if isLast($keyoption)}class="noborder"{/if}>
 													    <th>{$keyoption.optname}</th>
 													    <td>{$keyoption.optvalue}</td>
@@ -670,7 +670,7 @@
                 <span class="h2" id="tech-real">Технические характеристики {$name} </span><br/>
                 {$optlist |noAutoescape}
 `               {/if}
-                <div class="orferta">Уважаемые клиенты, описание товара {$name} на сайте носит информационный характер и не является публичной офертой. Производитель оставляет за собой право менять характеристики, комплектацию и внешний вид товара без предварительного уведомления продавца. Убедительно просим Вас при покупке {$name} проверять наличие желаемых функций и характеристик.</div>
+                <div class="orferta">Уважаемые клиенты, описание товара на сайте носит информационный характер и не является публичной офертой. Производитель оставляет за собой право менять характеристики, комплектацию и внешний вид товара без предварительного уведомления продавца. Убедительно просим Вас при покупке проверять наличие желаемых функций и характеристик.</div>
               </div>
             {/if}
 
@@ -716,7 +716,7 @@
     <div class="clear"></div>
 		{foreach $keyoption in $keyoptions}
 			{if $keyoption.optvalue}
-				{if not $keyoption.optvalue == ''}
+				{if $keyoption.optvalue != ''}
 					<span class="opis">{$keyoption.optname}</span>
 					<span class="opis_to">{$keyoption.optvalue}</span>
 					<br/>
@@ -744,7 +744,7 @@
 					<ul class="ul_item_big_free">
 						{foreach $keyoption in $item.keyoptions}
 							{if $keyoption.optvalue}
-								{if not $keyoption.optvalue == ''}
+								{if $keyoption.optvalue != ''}
 								<li>
 									<div class="first_opis_item_min_free">{$keyoption.optname}</div>
 									<div class="two_opis_item_min_free">{$keyoption.optvalue}</div>
@@ -775,7 +775,7 @@
 					<ul class="ul_item_free">
 						{foreach $keyoption in $item.keyoptions}
 							{if $keyoption.optvalue}
-								{if not $keyoption.optvalue == ''}
+								{if $keyoption.optvalue != ''}
 								<li>
 									<div class="first_opis_item_min_free">{$keyoption.optname}</div>
 									<div class="two_opis_item_min_free">{$keyoption.optvalue}</div>
