@@ -69,4 +69,4 @@
                    :comment comment
                    :delivery delivery
                    :items products
-                   :state 3)))
+                   :state 0)))
