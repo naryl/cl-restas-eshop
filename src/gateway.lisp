@@ -310,8 +310,20 @@
 
 ;;;; ORDER STATUS
 
+(defmethod %order-id ((str string))
+  (when (search "ЗИ" str)
+    (setf str (subseq str 2)))
+  (first (multiple-value-list
+          (ceiling (parse-float str)))))
+
 (defun gateway-status ()
   (let* ((raw (sb-ext:octets-to-string (hunchentoot:raw-post-data) :external-format :cp1251))
          (data (st-json:read-json-from-string raw)))
-    (log:info "~A" data)
+    (dolist (order data)
+      (let ((key (%order-id (cdr (assoc :id order))))
+            (status (cdr (assoc :status order))))
+            (log:info key status)
+        (aif (eshop.odm:getobj 'order key)
+             (eshop.odm:setobj it 'order-state status)
+             (log:warn "Can't find ORDER ~S" data))))
     "ok"))

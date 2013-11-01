@@ -40,7 +40,8 @@
                                                           :skip (* (1- page) page-size)
                                                           :limit page-size)
                               :pages (iota (ceiling order-count page-size) :start 1)
-                              :curpage page)))))
+                              :curpage page
+                              :bonuscount (or (user-bonus (current-user)) 0))))))
 
 (defun user-plist (user)
   (list :name (user-name user)
@@ -52,7 +53,8 @@
         :email (user-email user)
         :email_valid (validated-p user 'email)
         :bonuscard (awhen (slot-value user 'bonuscard) (bonuscard-key it))
-        :bonuscard_valid (string (user-bonuscard-valid-p user))))
+        :bonuscard_valid (string (user-bonuscard-valid-p user))
+        :bonuscount (or (user-bonus user) 0)))
 
 (restas:define-route request-user-profile-route ("/u/profile")
   (:decorators '@timer '@session '@no-cache (@protected "anon"))

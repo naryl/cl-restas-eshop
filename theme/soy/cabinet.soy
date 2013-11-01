@@ -924,7 +924,7 @@
 	  <div class="bonus-inner">
 		<a class="bonus-arrow" href="#"></a>
 		<span>На Вашей карте</span>
-		<span class="bonus-count">0</span>
+		<span class="bonus-count">{$bonuscount}</span>
 		<span class="bonus-bonus">F-бонусов</span>
 		<div style="clear:both;"></div>
 	  </div>
@@ -1168,7 +1168,7 @@
 <div class="content" id="middle"> <div class="full">
 <div class="wrapper-content">
 	<div class="content-left">
-        {call kabinet-sidebar /}
+        {call kabinet-sidebar data="all" /}
 		<div class="kabinet-body">
 			<ul>
 				<li class="tree title_blue">Главная</li>
@@ -1472,7 +1472,7 @@
 <div class="content" id="middle"> <div class="full">
 <div class="wrapper-content">
 	<div class="content-left">
-        {call kabinet-sidebar /}
+        {call kabinet-sidebar data="all" /}
 		<div class="kabinet-body">
 			<ul>
 				<li class="tree title_blue">Главная</li>

@@ -374,13 +374,14 @@
                                      (if (equal (car p) "products")
                                          (cdr p)))
                                  (hunchentoot:post-parameters*)))))
-    (let ((unparented-products (collect-storage
+    (let* ((unparented-products (collect-storage
                                 'product
                                 :when-fn
                                 #'(lambda (item)
                                     (and (active item)
                                          (null (parent item))
-                                         (not (special-p item)))))))
+                                         (not (special-p item))))))
+          (count (length unparented-products)))
       (when (< 1000 (length unparented-products))
         (setf unparented-products (subseq unparented-products 0 1000)))
       (soy.class_forms:parenting-page
@@ -389,7 +390,7 @@
                                     (list :key (key product)
                                           :name (name-seo product))))
                                unparented-products)
-             :length (length unparented-products)
+             :length count
              :groups (slots.%view 'group-list nil "groups" nil))))))
 
 (defun admin.vendor-seo-upload ()

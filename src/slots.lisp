@@ -396,10 +396,10 @@ Type: ~A" type))
 
 (defmethod slots.%get-data ((type (eql 'bool)) post-data-string)
   (declare (string post-data-string))
-  (let ((bool (st-json:read-json-from-string post-data-string)))
-    (if (typep bool 'boolean)
-        bool
-        (error "Error: value ~A is not bool" bool))))
+  (switch (post-data-string :test #'string=)
+      ("true" t)
+      ("false" nil)
+      (t (error "Error: value ~A is not bool" post-data-string))))
 
 (defmethod slots.%encode-to-string ((type (eql 'bool)) value)
   (format nil "~A" value))

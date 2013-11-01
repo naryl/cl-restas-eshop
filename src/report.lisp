@@ -136,7 +136,7 @@ list of conses (column-header . column-specifier).
   (report.%rsc
    'product-dtd
    #'(lambda (item)
-       (gethash (articul item) *xls-articles*)))
+       (gethash (write-to-string (articul item)) *xls-articles*)))
   (report.%rsc 'product-vendor #'vendor)
   (report.%rsc 'product-delivery #'get-product-delivery-price)
   (report.%rsc
