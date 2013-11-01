@@ -1,12 +1,11 @@
 
 (defpackage eshop.parse-ym
   (:use :cl
-        :x.let-star
+        :eshop.utils
         :alexandria
         :cl-html-parse
         :cl-html-query
-        :drakma)
-  (:shadowing-import-from :x.let-star #:let*))
+        :drakma))
 
 (in-package eshop.parse-ym)
 
@@ -18,7 +17,7 @@
         (path (merge-pathnames "market-images/"
                                (eshop::config.get-option :paths :path-to-logs))))
     (dolist (product (slot-value group 'eshop::products))
-      (let* ((articul (slot-value product 'eshop::articul))
+      (let+ ((articul (slot-value product 'eshop::articul))
              (name (slot-value product 'eshop::name-seo))
              ((page productid) (get-product-page name))
              (path (merge-pathnames (format nil "~A/~A.jpg" articul name)
@@ -34,7 +33,7 @@
     (eshop::rename-convert-all :from path)))
 
 (defun get-product-page (product)
-  (let* (((:mval body _ _ uri)
+  (let+ (((:values body _ _ uri)
           (drakma:http-request
            (format nil "http://market.yandex.ru/search.xml?text=~A&cvredirect=2"
                    (hunchentoot:url-encode product))

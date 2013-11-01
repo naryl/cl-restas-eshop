@@ -95,3 +95,50 @@ empty. Parameter can be a list to make it look for another parameter name (e.g. 
 
 (defun write-plist-to-json (plist)
   (st-json:write-json-to-string (plist-hash-table plist)))
+
+;;;; Bindings
+
+;;; My version of let+. Sorry.
+
+(defmacro let+ ((&rest clauses) &body body)
+  (if clauses
+      (let ((clause (car clauses)))
+        (nconc (transform-clause clause)
+               (if (cdr clauses)
+                   (list `(let+ ,(cdr clauses) ,@body))
+                   body)))
+      `(progn ,@body)))
+
+(defun transform-clause (clause)
+  (let ((ignored nil)
+        (ignorable nil))
+    (flet ((process-vars (vars)
+             (mapcar #'(lambda (var)
+                         (cond ((equal (symbol-name var) "_")
+                                (push (gensym "IGNORED") ignored)
+                                (car ignored))
+                               ((char= #\_ (elt (symbol-name var) 0))
+                                (push var ignorable)
+                                var)
+                               (t var)))
+                     vars))
+           (insert-decls ()
+             (when (or ignored ignorable)
+               (list `(declare ,@(when ignored (list `(ignore ,@ignored)))
+                               ,@(when ignorable (list `(ignorable ,@ignorable))))))))
+      (cond ((or (symbolp clause) ; let
+                 (and (listp clause)
+                      (symbolp (car clause))))
+             `(let (,clause)))
+            ((and (listp clause)  ; destructuring-bind
+                  (listp (car clause))
+                  (not (keywordp (caar clause))))
+             `(destructuring-bind ,(process-vars (car clause))
+                  ,(cadr clause)
+                ,@(insert-decls)))
+            ((and (listp clause)  ; multiple-value-bind
+                  (listp (car clause))
+                  (eq :values (caar clause)))
+             `(multiple-value-bind ,(process-vars (cdar clause))
+                  ,(cadr clause)
+                ,@(insert-decls)))))))
