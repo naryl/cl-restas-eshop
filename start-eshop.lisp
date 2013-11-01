@@ -29,6 +29,8 @@
                      :port *swank-port*)
 
 ;; load eshop
+(pushnew :metric *features*)
+(pushnew :log4cl *features*)
 (push *path-to-eshop* asdf:*central-registry*)
 (asdf:load-system :eshop)
 

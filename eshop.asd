@@ -7,7 +7,7 @@
                #:function-cache
                #:metric #:log4cl #:drakma
                #:anaphora #:alexandria #:parse-float
-               #:eshop.odm)
+               #:let+ #:eshop.odm)
   :pathname "src"
   :serial t
   :components ((:module "patches"
