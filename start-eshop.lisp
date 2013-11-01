@@ -62,7 +62,7 @@
   (when (eshop:config.get-option :start-options :load-storage)
     (eshop:sklonenie.restore)
     (eshop:delivery-price.restore)
-    (eshop:class-core.unserialize-all :filesystem)
+    (eshop:class-core.unserialize-all :mongo)
     (eshop:gateway.load))
   (when (eshop:config.get-option :start-options :load-xls)
     (eshop:xls.update-options-from-xls)
