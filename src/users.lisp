@@ -157,6 +157,10 @@
                 :serializable t))
   (:metaclass eshop.odm:persistent-class))
 
+(defmethod print-object ((obj order) stream)
+  (when (slot-boundp obj 'order-state)
+    (format stream "~A" (order-state obj))))
+
 (defun order-total (order)
   (+ (order-delivery order)
      (reduce #'+ (order-items order)
