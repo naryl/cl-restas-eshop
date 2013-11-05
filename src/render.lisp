@@ -536,6 +536,7 @@
 (defmethod restas:render-object ((designer eshop-render) (object product))
   (aif (get-option object "Secret" "Дубль")
        (hunchentoot:redirect (concatenate 'string "/" it) :code 301))
+  (setf (getf closure-template:*injected-data* :object) object)
   (let* ((pics (get-pics (key object)))
          (diff-percent (servo.diff-percentage (price object) (siteprice object)))
          (is-available (yml.available-for-order-p object))
