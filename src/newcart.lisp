@@ -269,8 +269,7 @@
              (not (null (newcart-get-data-from-alist :phone user))))
         ;; если в заказе есть валидные товары и телефон пользователя
         ;; генерация идентификатора заказа происходит только если заказ валиден
-        (let ((order-id (get-order-id)) ;; генерируем ID заказа
-              (deliverysum 0) ;;цена доставки
+        (let ((deliverysum 0) ;;цена доставки
               (client-mail) ;; текст письма с информацие о заказе для клиента
               (mail-file) ;; информация для ТКС
               (tks-mail) ;; файл с информацией о заказе для ТКС
@@ -285,49 +284,50 @@
             (if  (and (string= delivery-type "pickup")
                       (string= pickup "pickup-3"))
                  (setf deliverysum 100))
-            (let ((real-comment (switch (delivery-type :test #'string=)
-                                  ("express" courier_comment)
-                                  ("pickup" pickup_comment)
-                                  (t ""))))
-              (make-order-obj order-id phone email city addr name family ekk
-                              bonuscount real-comment deliverysum products))
-            (setf client-mail
-                  (soy.sendmail:clientmail
-                   (list :datetime (time.get-date-time)
-                         :order_id order-id
-                         :name (report.convert-name (format nil "~a ~a" name family))
-                         :family "" ;; Фамилия не передается отдельно
-                         :city city
-                         :paytype (switch (payment :test #'string=)
-                                    ("payment_method-1" "Наличными")
-                                    ("payment_method-2" "Кредитной картой")
-                                    ("payment_method-3" "Безналичный расчет")
-                                    ("payment_method-4" "Банковским переводом")
-                                    (t payment))
-                         :deliverytype (switch (delivery-type :test #'string=)
-                                         ("express" "Курьер")
-                                         ("pickup" "Самовывоз")
-                                         (t delivery-type))
-                         :addr addr
-                         :bankaccount (if (string= payment "payment_method-4")
-                                          bankaccount)
-                         :phone phone
-                         :ekk ekk
-                         :bonuscount (if (and ekk
-                                              (not (equal ekk "")))
-                                         bonuscount)
-                         :bonusname (if bonuscount
-                                        (nth (skls.get-count-skls bonuscount)
-                                             (list "бонус" "бонуса" "бонусов")))
-                         :email email
-                         :comment (switch (delivery-type :test #'string=)
-                                    ("express" courier_comment)
-                                    ("pickup" pickup_comment)
-                                    (t ""))
-                         :articles nil
-                         :products products
-                         :deliverysum deliverysum
-                         :itogo (+ pricesum deliverysum))))
+            (let ((order-id (order-id
+                             (let ((real-comment (switch (delivery-type :test #'string=)
+                                                   ("express" courier_comment)
+                                                   ("pickup" pickup_comment)
+                                                   (t ""))))
+                               (make-order-obj phone email city addr name family ekk
+                                               bonuscount real-comment deliverysum products)))))
+              (setf client-mail
+                    (soy.sendmail:clientmail
+                     (list :datetime (time.get-date-time)
+                           :order_id order-id
+                           :name (report.convert-name (format nil "~a ~a" name family))
+                           :family "" ;; Фамилия не передается отдельно
+                           :city city
+                           :paytype (switch (payment :test #'string=)
+                                      ("payment_method-1" "Наличными")
+                                      ("payment_method-2" "Кредитной картой")
+                                      ("payment_method-3" "Безналичный расчет")
+                                      ("payment_method-4" "Банковским переводом")
+                                      (t payment))
+                           :deliverytype (switch (delivery-type :test #'string=)
+                                           ("express" "Курьер")
+                                           ("pickup" "Самовывоз")
+                                           (t delivery-type))
+                           :addr addr
+                           :bankaccount (if (string= payment "payment_method-4")
+                                            bankaccount)
+                           :phone phone
+                           :ekk ekk
+                           :bonuscount (if (and ekk
+                                                (not (equal ekk "")))
+                                           bonuscount)
+                           :bonusname (if bonuscount
+                                          (nth (skls.get-count-skls bonuscount)
+                                               (list "бонус" "бонуса" "бонусов")))
+                           :email email
+                           :comment (switch (delivery-type :test #'string=)
+                                      ("express" courier_comment)
+                                      ("pickup" pickup_comment)
+                                      (t ""))
+                           :articles nil
+                           :products products
+                           :deliverysum deliverysum
+                           :itogo (+ pricesum deliverysum)))))
             (setf mail-file (list :order_id order-id
                                   :ekk ekk
                                   :name (report.convert-name (format nil "~a ~a" name family))

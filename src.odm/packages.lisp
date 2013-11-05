@@ -6,6 +6,7 @@
         :eshop.proc
         :function-cache
         :mongo-cl-driver.sugar)
+  (:import-from :mongo #:duplicate-key-error)
   (:export #:serializable-class
            #:serializable-object
            #:serializable-object-key
@@ -27,6 +28,7 @@
            #:doobj
            #:instance-count
            #:list-persistent-classes
+           #:duplicate-key-error ; Reexport from mongo-cl-driver
            ;; Versions
            #:getobj-for-date
            #:object-slot-history

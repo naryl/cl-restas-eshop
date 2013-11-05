@@ -125,7 +125,7 @@
                       order-id-pathname))
                   (SB-INT:SIMPLE-PARSE-ERROR () 1)
                   (SB-INT:SIMPLE-FILE-ERROR () 1)))
-          (get-order-id)))))
+          (get-sbr-order-id)))))
 
 
 ;; страница информации об отправленном заказе

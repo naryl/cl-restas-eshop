@@ -100,10 +100,11 @@
   (:metaclass eshop.odm:persistent-class))
 
 (defclass order (eshop.odm:persistent-object)
-  ((phone :type string
-          :serializable t
-          :accessor order-phone
-          :initarg :phone)
+  ((eshop.odm:key :reader order-id)
+   (phone :type string
+             :serializable t
+             :accessor order-phone
+             :initarg :phone)
    (email :type string
           :serializable t
           :accessor order-email

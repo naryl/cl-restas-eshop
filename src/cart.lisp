@@ -2,32 +2,14 @@
 
 (in-package #:eshop)
 
-(defvar *order-id* nil)
-
 (defun get-order-id ()
-  "Generate pseudo-unique order number"
-  (let ((current-order-id *order-id*)
-        (order-id-pathname (config.get-option :critical :path-to-order-id-file)))
-    (if *order-id*
-        (progn
-          (incf *order-id*)
-          (with-open-file (file order-id-pathname
-                                :direction :output
-                                :if-exists :supersede
-                                :external-format :utf-8)
-            (format file "~a" *order-id*))
-          current-order-id)
-        ;;else
-        (progn
-          ;;если в файле шлак, то сбрасываем счетчик заказов до 1
-          (setf *order-id*
-                (handler-case
-                    (parse-integer
-                     (alexandria:read-file-into-string
-                      order-id-pathname))
-                  (SB-INT:SIMPLE-PARSE-ERROR () 1)
-                  (SB-INT:SIMPLE-FILE-ERROR () 1)))
-          (get-order-id)))))
+  "Thread-unsafe. Somebody else may use this id in which case
+  mongo:insert throws an error and you need to get another id."
+  (1+ (order-id
+       (first
+        (eshop.odm:get-list 'order
+                            :sort (son 'eshop.odm::key -1)
+                            :limit 1)))))
 
 ;;проверка заказа на валидность
 ;;TODO сделать полную проверку
@@ -42,7 +24,7 @@
           (stream filename :direction :output :if-exists :supersede)
         (format stream "~a" body)))))
 
-(defun make-order-obj (order-id phone email city address username userfamily ekk bonuscount
+(defun make-order-obj (phone email city address username userfamily ekk bonuscount
                        comment delivery products)
   (let ((address (make-instance 'address :city city :address address))
         (products (mapcar #'(lambda (product)
@@ -56,17 +38,23 @@
                                                :site-price (@ :siteprice)
                                                :bonuscount (@ :bonuscount))))
                           products)))
-    (make-instance 'order
-                   :key order-id
-                   :user (current-user)
-                   :phone phone
-                   :email email
-                   :address address
-                   :username username
-                   :userfamily userfamily
-                   :bonuscard ekk
-                   :bonuscount bonuscount
-                   :comment comment
-                   :delivery delivery
-                   :items products
-                   :state 0)))
+    (loop :until order
+       :for order-id := (get-order-id)
+       :for order := (handler-case
+                         (make-instance 'order
+                                        :key order-id
+                                        :user (current-user)
+                                        :phone phone
+                                        :email email
+                                        :address address
+                                        :username username
+                                        :userfamily userfamily
+                                        :bonuscard ekk
+                                        :bonuscount bonuscount
+                                        :comment comment
+                                        :delivery delivery
+                                        :items products
+                                        :state 0
+                                        :force-unique t)
+                       (eshop.odm:duplicate-key-error () nil))
+       :finally (return order))))

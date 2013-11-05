@@ -400,32 +400,32 @@
   (ensure-process *db-proc*))
 
 (defun ensure-indexes ()
-  (let ((cnt 0))
-    (dolist (class (list-persistent-classes))
-      (c2mop:finalize-inheritance class)
-      (process-exec (*db-proc* :reply nil)
-        (let ((collection (obj-collection (class-name class))))
-          (dolist (slot (class-slots class))
-            (flet ((make-index (dir)
-                     (let ((index-name (symbol-fqn (slot-definition-name slot))))
-                       #+log4cl (log:info "Ensuring index over class ~A; slot: ~A"
-                                          (symbol-fqn (class-name class))
-                                          index-name)
-                       (incf cnt)
-                       (mongo:ensure-index collection
-                                           (son index-name dir)))))
-              (case (slot-index slot)
-                (nil nil)
-                (:asc (make-index 1))
-                (:desc (make-index -1))
-                (:both (make-index 1)
-                       (make-index -1))))))))
-    #+log4cl (log:info "~A indexes ensured" cnt)))
+  (dolist (class (list-persistent-classes))
+    (c2mop:finalize-inheritance class)
+    (process-exec (*db-proc* :reply nil)
+      (let ((collection (obj-collection (class-name class))))
+        (mongo:ensure-index collection
+                            (son (symbol-fqn 'key) 1)
+                            (son "unique" t))
+        (dolist (slot (class-slots class))
+          (flet ((make-index (dir)
+                   (let ((index-name (symbol-fqn (slot-definition-name slot))))
+                     #+log4cl (log:info "Ensuring index over class ~A; slot: ~A"
+                                        (symbol-fqn (class-name class))
+                                        index-name)
+                     (mongo:ensure-index collection
+                                         (son index-name dir)))))
+            (case (slot-index slot)
+              (nil nil)
+              (:asc (make-index 1))
+              (:desc (make-index -1))
+              (:both (make-index 1)
+                     (make-index -1)))))))))
 
 (defmethod initialize-instance :before ((obj persistent-object) &key &allow-other-keys)
   (setf (slot-value obj 'state) :rw))
 
-(defmethod initialize-instance :around ((obj persistent-object) &key &allow-other-keys)
+(defmethod initialize-instance :around ((obj persistent-object) &key force-unique &allow-other-keys)
   "Stores newly created persistent object in the database"
   (call-next-method)
   (cond (*deserializing* ; Fetching a persistent object
@@ -433,7 +433,7 @@
         (t ; Actually making a new one
          (if *transaction*
              (setf (slot-value obj 'modified) t)
-             (update-instance obj))
+             (update-instance obj :force-unique force-unique))
          (new-transaction-object obj))))
 
 (defun delete-instance (obj)
@@ -442,7 +442,7 @@
     (mongo:delete-op (obj-collection obj)
                      (son (symbol-fqn 'key) (serializable-object-key obj)))))
 
-(defun update-instance (obj)
+(defun update-instance (obj &key force-unique)
   (getobj-remcache obj)
   (let ((class (class-of obj)))
     (let ((ht (serialize obj))
@@ -450,12 +450,14 @@
           (version-collection (obj-collection obj t))
           (slot-changes (when (persistent-class-versioned class)
                           (collect-slot-changes obj))))
-      (process-exec (*db-proc* :reply nil)
-        (mongo:update-op collection
-                         (son (symbol-fqn 'key)
-                              (serializable-object-key obj))
-                         ht
-                         :upsert t)
+      (process-exec (*db-proc*) ; Sync because we need to catch errors
+        (when force-unique
+            (mongo:insert-op collection ht)
+            (mongo:update-op collection
+                             (son (symbol-fqn 'key)
+                                  (serializable-object-key obj))
+                             ht
+                             :upsert t))
         (when slot-changes
           (mongo:insert-op version-collection slot-changes))))))
 

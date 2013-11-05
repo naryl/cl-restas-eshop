@@ -7,7 +7,6 @@
         (mail-file)
         (filename)
         (tks-mail)
-        (order-id (get-order-id))
         (count)
         (pricesum)
         (products)
@@ -18,55 +17,56 @@
       (setf pricesum sm))
     (when (zerop pricesum)
       (setf pricesum ""))
-    (let ((real-comment (format nil "Заказ через форму один клик ~@[!!! Предзаказ !!!~]"
-                                (preorder (getobj articul 'product)))))
-      (make-order-obj order-id phone email "" "" name "" ""
-                      0 real-comment 0 products))
-    (setf client-mail
-          (soy.sendmail:clientmail
-           (list :datetime (time.get-date-time)
-                 :order_id order-id
-                 :name (report.convert-name name)
-                 :family "" ;; Фамилия не передается отдельно
-                 :paytype "Наличными"
-                 :deliverytype "Самовывоз"
-                 :addr "Левашовский пр., д.12"
-                 :bankaccount ""
-                 :phone phone
-                 :email email
-                 :comment (format nil "Заказ через форму один клик ~@[!!! Предзаказ !!!~]"
-                                  (preorder (getobj articul 'product)))
-                 :products products
-                 :deliverysum 0
-                 :itogo pricesum)))
-    (setf mail-file
-          (list :order_id order-id
-                :ekk ""
-                :name (report.convert-name name)
-                :family ""
-                :addr "Левашовский пр., д.12"
-                :phone phone
-                :email email
-                :isdelivery "Самовывоз"
-                :date (time.get-date)
-                :time (time.get-time)
-                :comment (format nil "Заказ через форму один клик ~@[!!! Предзаказ !!!~]"
-                                 (preorder (getobj articul 'product)))
-                :products products))
-    (setf filename (format nil "~a_~a.txt" (time.get-short-date) order-id))
-    ;;сорханение заказа
-    (save-order-text order-id client-mail)
-    ;; удаление страных символов
-    (setf client-mail (remove-if #'(lambda(c) (< 10000 (char-code c))) client-mail))
-    (setf tks-mail (remove-if #'(lambda(c) (< 10000 (char-code c))) (soy.sendmail:mailfile mail-file)))
-    (email.send-order-details order-id (soy.sendmail:tks-clientmail-wrapper
-                                        (list :body client-mail
-                                              :ip (tbnl:real-remote-addr)
-                                              :agent (tbnl:user-agent)))
-                              filename tks-mail)
-    (when (email.valid-email-p email)
-      (email.send-client-mail email order-id client-mail))
-    order-id))
+    (let ((order-id (order-id
+                     (let ((real-comment (format nil "Заказ через форму один клик ~@[!!! Предзаказ !!!~]"
+                                                 (preorder (getobj articul 'product)))))
+                       (make-order-obj phone email "" "" name "" ""
+                                       0 real-comment 0 products)))))
+      (setf client-mail
+            (soy.sendmail:clientmail
+             (list :datetime (time.get-date-time)
+                   :order_id order-id
+                   :name (report.convert-name name)
+                   :family "" ;; Фамилия не передается отдельно
+                   :paytype "Наличными"
+                   :deliverytype "Самовывоз"
+                   :addr "Левашовский пр., д.12"
+                   :bankaccount ""
+                   :phone phone
+                   :email email
+                   :comment (format nil "Заказ через форму один клик ~@[!!! Предзаказ !!!~]"
+                                    (preorder (getobj articul 'product)))
+                   :products products
+                   :deliverysum 0
+                   :itogo pricesum)))
+      (setf mail-file
+            (list :order_id order-id
+                  :ekk ""
+                  :name (report.convert-name name)
+                  :family ""
+                  :addr "Левашовский пр., д.12"
+                  :phone phone
+                  :email email
+                  :isdelivery "Самовывоз"
+                  :date (time.get-date)
+                  :time (time.get-time)
+                  :comment (format nil "Заказ через форму один клик ~@[!!! Предзаказ !!!~]"
+                                   (preorder (getobj articul 'product)))
+                  :products products))
+      (setf filename (format nil "~a_~a.txt" (time.get-short-date) order-id))
+      ;;сорханение заказа
+      (save-order-text order-id client-mail)
+      ;; удаление страных символов
+      (setf client-mail (remove-if #'(lambda(c) (< 10000 (char-code c))) client-mail))
+      (setf tks-mail (remove-if #'(lambda(c) (< 10000 (char-code c))) (soy.sendmail:mailfile mail-file)))
+      (email.send-order-details order-id (soy.sendmail:tks-clientmail-wrapper
+                                          (list :body client-mail
+                                                :ip (tbnl:real-remote-addr)
+                                                :agent (tbnl:user-agent)))
+                                filename tks-mail)
+      (when (email.valid-email-p email)
+        (email.send-client-mail email order-id client-mail))
+      order-id)))
 
 
 (defclass oneclickcartanswer ()
