@@ -116,25 +116,41 @@
     (setf (aref result 0) (list 'error error))
     (open-gate gate)))
 
-(defun process-call (process func)
+(defun process-call (process func &key (reply :sync))
   (with-slots (mailbox thread) process
     (if thread
         (let ((result (make-array 1))
               (gate (make-gate :name "PROCESS-CALL GATE" :open nil)))
           (send-message mailbox (list result gate func))
-          (wait-on-gate gate)
-          (let ((result (aref result 0)))
-            (if (and (listp result)
-                     (eq (first result) 'error))
-                (error (second result))
-                result)))
+          (if reply
+              (flet ((get-reply ()
+                       (wait-on-gate gate)
+                       (let ((result (aref result 0)))
+                         (if (and (listp result)
+                                  (eq (first result) 'error))
+                             (error (second result))
+                             result))))
+                (ecase reply
+                  (:sync (get-reply))
+                  (:async #'get-reply)))
+              nil))
         (error 'noproc :process process))))
 
-(defmacro process-exec ((process) &body body)
-  `(process-call ,process #'(lambda ()
-                             ,@body)))
+(defmacro process-exec ((process &key (reply :sync)) &body body)
+  "Evaluates code in the process.
+  REPLY is the type of result.
+  :SYNC (default) waits for the return value and return it.
+  :ASYNC returns a lambda which can be called to retrieve the result
+  NIL ignores the result and any errors thrown from the code"
+  `(process-call ,process
+                 #'(lambda ()
+                     ,@body)
+                 :reply ,reply))
 
 (defmacro proc-vars ((&rest vars) &body body)
+  "Evaluate code using current process's variables.
+  VARS is a list of symbols.
+  Only valid inside PROCESS-EXEC or PROCESS-CALL"
   (alexandria:with-gensyms (proc-vars)
     `(let ((,proc-vars (process-vars *process*)))
        (symbol-macrolet ,(loop :for var :in vars

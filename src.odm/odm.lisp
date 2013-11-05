@@ -35,11 +35,6 @@
 
 (in-package eshop.odm)
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (defmacro db-eval (&body body)
-    `(process-exec (*db-proc*)
-       ,@body)))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; SERIALIZABLE
 
 ;;;; Metaclasses
@@ -408,7 +403,7 @@
   (let ((cnt 0))
     (dolist (class (list-persistent-classes))
       (c2mop:finalize-inheritance class)
-      (db-eval
+      (process-exec (*db-proc* :reply nil)
         (let ((collection (obj-collection (class-name class))))
           (dolist (slot (class-slots class))
             (flet ((make-index (dir)
@@ -443,7 +438,7 @@
 
 (defun delete-instance (obj)
   (getobj-remcache obj)
-  (db-eval
+  (process-exec (*db-proc* :reply nil)
     (mongo:delete-op (obj-collection obj)
                      (son (symbol-fqn 'key) (serializable-object-key obj)))))
 
@@ -455,7 +450,7 @@
           (version-collection (obj-collection obj t))
           (slot-changes (when (persistent-class-versioned class)
                           (collect-slot-changes obj))))
-      (db-eval
+      (process-exec (*db-proc* :reply nil)
         (mongo:update-op collection
                          (son (symbol-fqn 'key)
                               (serializable-object-key obj))
@@ -546,7 +541,7 @@
 
 (defun fetch-object (class key)
   (let ((ht (let ((collection (obj-collection class)))
-              (db-eval
+              (process-exec (*db-proc*)
                 (mongo:find-one collection
                                 :query (son (symbol-fqn 'key) key)
                                 :selector (son "_id" 0))))))
@@ -654,7 +649,7 @@
           obj)))))
 
 (defun instance-count (class &key query)
-  (db-eval
+  (process-exec (*db-proc*)
     (truncate (mongo:$count (obj-collection class)
                             (when query (cook-query query))))))
 
@@ -668,7 +663,7 @@
             (class-direct-subclasses (find-class 'persistent-object))))))
 
 (defun all-keys (class)
-  (db-eval
+  (process-exec (*db-proc*)
     (mapcar #'(lambda (obj)
                 (gethash (symbol-fqn 'key) obj))
             (mongo:find-list (obj-collection class)
@@ -705,7 +700,7 @@
 (defun get-one (class query)
   "Fetches an object by mongo query and stores it in cache by key"
   (let* ((cooked-query (cook-query query))
-         (key-ht (db-eval
+         (key-ht (process-exec (*db-proc*)
                    (mongo:find-one (obj-collection class)
                                    :query cooked-query
                                    :selector (son (symbol-fqn 'key) 1
@@ -724,7 +719,7 @@ collection"))
                                      (when sort (son "$sort" cooked-sort))
                                      (when skip (son "$skip" skip))
                                      (when limit (son "$limit" limit)))))
-         (hts (db-eval
+         (hts (process-exec (*db-proc*)
                 (apply #'mongo:aggregate
                        (obj-collection class)
                        pipeline))))
@@ -740,7 +735,7 @@ collection"))
 
 (defun object-slot-history (class key slot)
   (let ((raw-data
-         (db-eval
+         (process-exec (*db-proc*)
            (mongo:find-list (obj-collection class t)
                             :query (son (symbol-fqn 'key) key
                                         "SLOT" (symbol-fqn slot))
