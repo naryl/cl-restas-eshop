@@ -65,31 +65,31 @@
     {/template} //warranty-text
 
     {template likes-block}
-	    {literal}
+	    /* {literal} */
 	      <div class="social_buttons">
 		      <div class="vkontakte like">
 			      <div id="vk_like"></div>
-			      <script type="text/javascript"> VK.Widgets.Like("vk_like", {type: "vertical"}, {/literal}"{$key}"{literal});</script>
+			      /* <script type="text/javascript"> VK.Widgets.Like("vk_like", {type: "vertical"}, {/literal}"{$key}"{literal});</script> */
 		          </div><!-- vkontakte -->
 		      <div class="google_plus like">
-			      <script type="text/javascript" src="https://apis.google.com/js/plusone.js">
-			        {lang: 'ru'}
-			      </script>
-			      <g:plusone size="tall" href={/literal}"/{$key}"{literal}></g:plusone>
+			      /* <script type="text/javascript" src="https://apis.google.com/js/plusone.js"> */
+			        /* {lang: 'ru'} */
+			      /* </script> */
+			      /* <g:plusone size="tall" href={/literal}"/{$key}"{literal}></g:plusone> */
 		          </div><!-- google -->
 		      <div class="facebook like">
-			      <div id="fb-root"></div>
-			      <script>(function(d, s, id) {
-			        var js, fjs = d.getElementsByTagName(s)[0];
-			        if (d.getElementById(id)) return;
-			        js = d.createElement(s); js.id = id;
-			        js.src = "//connect.facebook.net/ru_RU/all.js#xfbml=193818717336934";
-			        fjs.parentNode.insertBefore(js, fjs);
-			        }(document, 'script', 'facebook-jssdk'));</script>
-			      <div class="fb-like" data-href={/literal}"/{$key}"{literal} data-send="false" data-layout="box_count" data-show-faces="true"></div>
+			      /* <div id="fb-root"></div> */
+			      /* <script>(function(d, s, id) { */
+			      /*   var js, fjs = d.getElementsByTagName(s)[0]; */
+			      /*   if (d.getElementById(id)) return; */
+			      /*   js = d.createElement(s); js.id = id; */
+			      /*   js.src = "//connect.facebook.net/ru_RU/all.js#xfbml=193818717336934"; */
+			      /*   fjs.parentNode.insertBefore(js, fjs); */
+			      /*   }(document, 'script', 'facebook-jssdk'));</script> */
+			      /* <div class="fb-like" data-href={/literal}"/{$key}"{literal} data-send="false" data-layout="box_count" data-show-faces="true"></div> */
 		          </div><!-- facebook-->
 	      </div>
-	    {/literal}
+	    /* {/literal} */
     {/template} //likes-block
 
 
