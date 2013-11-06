@@ -5,6 +5,7 @@
   :components ((:file "package")
                (:file "avail")
                (:file "servo")
+               (:file "proc")
                (:file "odm-serialize")
                (:file "odm-persist")
                (:file "users")

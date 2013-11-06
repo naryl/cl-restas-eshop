@@ -402,7 +402,7 @@
 (defun ensure-indexes ()
   (dolist (class (list-persistent-classes))
     (c2mop:finalize-inheritance class)
-    (proc:exec (*db-proc* :ignore) ()
+    (proc:exec (*db-proc*) ()
       (let ((collection (obj-collection (class-name class))))
         (mongo:ensure-index collection
                             (son (symbol-fqn 'key) 1)
@@ -451,7 +451,7 @@
           (slot-changes (when (persistent-class-versioned class)
                           (collect-slot-changes obj))))
       (proc:exec (*db-proc*) ()         ; Sync because we need to catch errors
-        (when force-unique
+        (if force-unique
             (mongo:insert-op collection ht)
             (mongo:update-op collection
                              (son (symbol-fqn 'key)

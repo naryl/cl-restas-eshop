@@ -11,7 +11,8 @@
                                   indexed versioned
                                   updates)))
             (mongo:drop-collection eshop.odm::*db* coll)
-            (function-cache:clear-cache-all-function-caches))))
+            (function-cache:clear-cache-all-function-caches))
+          (eshop.odm:connect "zifry-test")))
 
 (defclass persistent (eshop.odm:persistent-object)
   ((slot :serializable t :initarg :slot :reader persistent-slot))
@@ -36,6 +37,10 @@
     (ensure (search (princ-to-string (eshop.odm:serializable-object-key obj)) str))
     (eshop.odm::remobj obj)
     (ensure (search "DELETED" (princ-to-string obj)))))
+
+(addtest force-unique
+  (make-instance 'persistent :key 1 :force-unique t)
+  (ensure-error (make-instance 'persistent :key 1 :force-unique t)))
 
 (addtest modify
   (let* ((obj (make-instance 'persistent :slot 42))
