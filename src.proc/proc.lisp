@@ -32,10 +32,10 @@
              (format stream "Process not running: ~S"
                      (slot-value condition 'process)))))
 
-(defun process-running (process)
+(defun running-p (process)
   (not (null (process-thread process))))
 
-(defun ensure-process (process)
+(defun ensure-running (process)
   (with-slots (name vars thread mailbox mutex) process
     (unless thread
       (bt:with-lock-held (mutex)
@@ -48,12 +48,16 @@
             (wait-on-gate gate)
             t))))))
 
-(defun stop-process (process)
+(defun stop (process)
   (with-slots (mailbox thread) process
     (when thread
       (send-message mailbox :stop)
       (bt:join-thread thread)
       t)))
+
+(defun kill (process)
+  (with-slots (thread) process
+    (bordeaux-threads:destroy-thread thread)))
 
 (defun process-message (proc-name result gate func)
   (handler-case
@@ -62,7 +66,8 @@
               (funcall func))
         (open-gate gate))
     (error (e)
-      (setf (aref result 0) (list 'error e))
+      (setf (aref result 0)
+            (list 'error e))
       (open-gate gate)
       #+log4cl #-debug (log:error "Error in process ~A: ~S" proc-name e)
       #+debug (invoke-debugger e))))
@@ -84,9 +89,7 @@
               (restart-case
                   (apply #'process-message process message)
                 (continue ()
-                  :report "Report error to caller and continue"
-                  (flush-message (make-instance 'noproc :process process)
-                                 message))))))))
+                  nil)))))))
 
 (defun process-init (process)
   (with-slots (mailbox vars thread) process
@@ -107,22 +110,22 @@
   (loop
      :until (mailbox-empty-p mailbox)
      :for message = (receive-message mailbox)
-     :do (flush-message (make-instance 'nopoc :process process) message)))
+     :do (flush-message (make-instance 'noproc :process process) message)))
 
 (defun flush-message (error message)
-  (destructuring-bind (result gate proc)
-      message
-    (declare (ignore proc))
-    (setf (aref result 0) (list 'error error))
+  (let+ (((result gate _) message))
+    (setf (aref result 0)
+          (list 'error error))
     (open-gate gate)))
 
-(defun process-call (process func &key (reply :sync))
+(defun call (process func &key (reply :sync))
   (with-slots (mailbox thread) process
     (if thread
         (let ((result (make-array 1))
               (gate (make-gate :name "PROCESS-CALL GATE" :open nil)))
           (send-message mailbox (list result gate func))
-          (if reply
+          (if (eq reply :ignore)
+              nil
               (flet ((get-reply ()
                        (wait-on-gate gate)
                        (let ((result (aref result 0)))
@@ -132,27 +135,31 @@
                              result))))
                 (ecase reply
                   (:sync (get-reply))
-                  (:async #'get-reply)))
-              nil))
+                  (:async #'get-reply)))))
         (error 'noproc :process process))))
 
-(defmacro process-exec ((process &key (reply :sync)) &body body)
+(defmacro exec ((process &optional (reply :sync)) (&rest vars) &body body)
   "Evaluates code in the process.
   REPLY is the type of result.
   :SYNC (default) waits for the return value and return it.
   :ASYNC returns a lambda which can be called to retrieve the result
-  NIL ignores the result and any errors thrown from the code"
-  `(process-call ,process
-                 #'(lambda ()
-                     ,@body)
-                 :reply ,reply))
+  :IGNORE ignores the result *and any errors thrown from the code*"
+  `(call ,process
+         #'(lambda ()
+             (proc-vars ,vars
+               ,@body))
+         :reply ,reply))
 
 (defmacro proc-vars ((&rest vars) &body body)
   "Evaluate code using current process's variables.
   VARS is a list of symbols.
   Only valid inside PROCESS-EXEC or PROCESS-CALL"
-  (alexandria:with-gensyms (proc-vars)
-    `(let ((,proc-vars (process-vars *process*)))
-       (symbol-macrolet ,(loop :for var :in vars
-                            :collect `(,var (gethash ',var ,proc-vars)))
-         ,@body))))
+  `(progn
+     ,@(if vars
+           (list (alexandria:with-gensyms (proc-vars)
+                   `(let ((,proc-vars (process-vars *process*)))
+                      (symbol-macrolet
+                          ,(loop :for var :in vars
+                              :collect `(,var (gethash ',var ,proc-vars)))
+                        ,@body))))
+           body)))

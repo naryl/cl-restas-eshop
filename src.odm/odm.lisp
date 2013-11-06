@@ -367,7 +367,7 @@
 (defvar *mongo-client*)
 (defvar *db*)
 
-(defvar *db-proc* (make-instance 'process :name "DB"))
+(defvar *db-proc* (make-instance 'proc:process :name "DB"))
 
 (defvar *transaction* nil)
 
@@ -389,20 +389,20 @@
   #+log4cl (log:info "Connecting to mongo...")
   (unless (and *db-name* *server-config*)
     (error "Can't reconnect before making initial connection using CONNECT"))
-  (when (process-running *db-proc*)
-    (stop-process *db-proc*))
+  (when (proc:running-p *db-proc*)
+    (proc:kill *db-proc*))
   (ignore-errors
     (mongo-cl-driver.adapters:mongo-client-close *mongo-client*))
   (setf *mongo-client* (make-instance 'mongo.usocket:mongo-client :server *server-config*))
   (setf *db* (make-instance 'mongo:database
                             :name *db-name*
                             :mongo-client *mongo-client*))
-  (ensure-process *db-proc*))
+  (proc:ensure-running *db-proc*))
 
 (defun ensure-indexes ()
   (dolist (class (list-persistent-classes))
     (c2mop:finalize-inheritance class)
-    (process-exec (*db-proc* :reply nil)
+    (proc:exec (*db-proc* :ignore) ()
       (let ((collection (obj-collection (class-name class))))
         (mongo:ensure-index collection
                             (son (symbol-fqn 'key) 1)
@@ -438,7 +438,7 @@
 
 (defun delete-instance (obj)
   (getobj-remcache obj)
-  (process-exec (*db-proc* :reply nil)
+  (proc:exec (*db-proc* :ignore) ()
     (mongo:delete-op (obj-collection obj)
                      (son (symbol-fqn 'key) (serializable-object-key obj)))))
 
@@ -450,7 +450,7 @@
           (version-collection (obj-collection obj t))
           (slot-changes (when (persistent-class-versioned class)
                           (collect-slot-changes obj))))
-      (process-exec (*db-proc*) ; Sync because we need to catch errors
+      (proc:exec (*db-proc*) ()         ; Sync because we need to catch errors
         (when force-unique
             (mongo:insert-op collection ht)
             (mongo:update-op collection
@@ -543,7 +543,7 @@
 
 (defun fetch-object (class key)
   (let ((ht (let ((collection (obj-collection class)))
-              (process-exec (*db-proc*)
+              (proc:exec (*db-proc*) ()
                 (mongo:find-one collection
                                 :query (son (symbol-fqn 'key) key)
                                 :selector (son "_id" 0))))))
@@ -651,7 +651,7 @@
           obj)))))
 
 (defun instance-count (class &key query)
-  (process-exec (*db-proc*)
+  (proc:exec (*db-proc*) ()
     (truncate (mongo:$count (obj-collection class)
                             (when query (cook-query query))))))
 
@@ -665,7 +665,7 @@
             (class-direct-subclasses (find-class 'persistent-object))))))
 
 (defun all-keys (class)
-  (process-exec (*db-proc*)
+  (proc:exec (*db-proc*) ()
     (mapcar #'(lambda (obj)
                 (gethash (symbol-fqn 'key) obj))
             (mongo:find-list (obj-collection class)
@@ -702,7 +702,7 @@
 (defun get-one (class query)
   "Fetches an object by mongo query and stores it in cache by key"
   (let* ((cooked-query (cook-query query))
-         (key-ht (process-exec (*db-proc*)
+         (key-ht (proc:exec (*db-proc*) ()
                    (mongo:find-one (obj-collection class)
                                    :query cooked-query
                                    :selector (son (symbol-fqn 'key) 1
@@ -721,7 +721,7 @@ collection"))
                                      (when sort (son "$sort" cooked-sort))
                                      (when skip (son "$skip" skip))
                                      (when limit (son "$limit" limit)))))
-         (hts (process-exec (*db-proc*)
+         (hts (proc:exec (*db-proc*) ()
                 (apply #'mongo:aggregate
                        (obj-collection class)
                        pipeline))))
@@ -737,7 +737,7 @@ collection"))
 
 (defun object-slot-history (class key slot)
   (let ((raw-data
-         (process-exec (*db-proc*)
+         (proc:exec (*db-proc*) ()
            (mongo:find-list (obj-collection class t)
                             :query (son (symbol-fqn 'key) key
                                         "SLOT" (symbol-fqn slot))

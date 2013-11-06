@@ -5,4 +5,5 @@
     :components ((:file "packages")
                  (:file "proc"))
     :depends-on (sb-concurrency
+                 let+
                  bordeaux-threads))

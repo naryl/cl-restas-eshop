@@ -3,7 +3,6 @@
   (:use :c2cl
         :anaphora
         :alexandria
-        :eshop.proc
         :function-cache
         :mongo-cl-driver.sugar)
   (:import-from :mongo #:duplicate-key-error)
