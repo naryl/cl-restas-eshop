@@ -38,9 +38,11 @@
     (eshop.odm::remobj obj)
     (ensure (search "DELETED" (princ-to-string obj)))))
 
-(addtest force-unique
-  (make-instance 'persistent :key 1 :force-unique t)
-  (ensure-error (make-instance 'persistent :key 1 :force-unique t)))
+(addtest allow-update
+  (make-instance 'persistent :key 1 :slot 1)
+  (make-instance 'persistent :key 1 :slot 2 :allow-update t)
+  (ensure (eql 2 (persistent-slot (eshop.odm:getobj 'persistent 1))))
+  (ensure-error (make-instance 'persistent :key 1)))
 
 (addtest modify
   (let* ((obj (make-instance 'persistent :slot 42))

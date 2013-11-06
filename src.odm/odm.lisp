@@ -425,7 +425,7 @@
 (defmethod initialize-instance :before ((obj persistent-object) &key &allow-other-keys)
   (setf (slot-value obj 'state) :rw))
 
-(defmethod initialize-instance :around ((obj persistent-object) &key force-unique &allow-other-keys)
+(defmethod initialize-instance :around ((obj persistent-object) &key allow-update &allow-other-keys)
   "Stores newly created persistent object in the database"
   (call-next-method)
   (cond (*deserializing* ; Fetching a persistent object
@@ -433,7 +433,7 @@
         (t ; Actually making a new one
          (if *transaction*
              (setf (slot-value obj 'modified) t)
-             (update-instance obj :force-unique force-unique))
+             (update-instance obj :force-unique (not allow-update)))
          (new-transaction-object obj))))
 
 (defun delete-instance (obj)
