@@ -21,7 +21,7 @@
 
 /* <div id="mouseover">Тестовый текст</div> */
 /* <div class="podlojka"></div> */
-{call changetown /}
+/* {call changetown /} */
 
 {literal}
 <style>
@@ -624,16 +624,16 @@
 		</div>
 		<div style="clear: both;height: 1px;font-size: 1px;"></div>
 		{literal}
-		<script>
+		<script type="text/javascript">
 		$(document).ready(function(){
 			$('#specify-content a').click(function(){
 				$('#specify').hide();
 				$('.podlojka').hide();
 			});
-            $('.popup-call').click(function  () {
-                $('#login-popup').show();
-                $('.podlojka').show();
-            });
+      $('.popup-call').click(function  () {
+        $('#login-popup').show();
+        $('.podlojka').show();
+       });
             /* $('a').tooltip({ */
             /*     title: 'hhh' */
             /* }); */

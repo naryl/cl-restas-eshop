@@ -24,65 +24,83 @@ http://code.google.com/closure/templates/
 ... */
 
 {template content}
-	<div class="content" id="middle">
-		<div class="full">
-			<div class="left">
+	<div class="content" id="middle"> {\n}
+		<div class="full"> {\n}
+			<div class="left"> {\n}
 	      {$menu |noAutoescape}
-			</div>
-			<div class="center">
+			</div> {\n}
+			<div class="center"> {\n}
 				{$dayly |noAutoescape}
 				{$banner |noAutoescape}
-			</div>
-			<div class="right">
+			</div> {\n}
+			<div class="right"> {\n}
 				{$olist |noAutoescape}
 				{$lastreview |noAutoescape}
-			</div>
-		</div>
+			</div> {\n}
+		</div> {\n}
 		{$best |noAutoescape}
-		<div class="full">
-			<div class="sidebar">
+		<div class="full"> {\n}
+			<div class="sidebar"> {\n}
 				{$hit |noAutoescape}
-			</div><!-- sidebar -->
-			<div class="mainbar">
+			</div><!-- sidebar --> {\n}
+			<div class="mainbar"> {\n}
 				{$new |noAutoescape}
-			</div><!-- mainbar -->
-		</div>
-		<div class="full">
-			<div class="sidebar">
-			    <div class="main_title" id="social-groups-main-title">
-                    <h2>
-                        <span class="black">В центре внимания</span>
-                        <img src="/img/arr-right.png" alt="">
-                    </h2>
-                </div>
-                <div class="social-block-full">
+			</div><!-- mainbar --> {\n}
+		</div> {\n}
+		<div class="full"> {\n}
+			<div class="sidebar"> {\n}
+			    <div class="main_title" id="social-groups-main-title"> {\n}
+                    <h2> {\n}
+                        <span class="black">В центре внимания</span> {\n}
+                        <img src="/img/arr-right.png" alt=""> {\n}
+                    </h2> {\n}
+                </div> {\n}
+                <div class="social-block-full"> {\n}
                     {call social-block /}
-                </div>
-			</div>
-			<div class="mainbar">
+                </div> {\n}
+			</div> {\n}
+			<div class="mainbar"> {\n}
 				{$post |noAutoescape}
-			</div>
-		</div>
-		<div class="full">
+			</div> {\n}
+		</div> {\n}
+		<div class="full"> {\n}
 	    {$plus |noAutoescape}
-		</div>
-	</div>
+		</div> {\n}
+	</div> {\n}
 {/template}
 
-/* Google аналитика */
+// Google аналитика
 {template google-analytics}
+		<script type="text/javascript"> {\n}
+			var _gaq = _gaq || []; {\n}
+			_gaq.push(['_setAccount', 'UA-8758024-4']); {\n}
+			_gaq.push(['_trackPageview']); {\n}
+      {call gaProductPage /}
 	{literal}
-		<script type="text/javascript">
-			var _gaq = _gaq || [];
-			_gaq.push(['_setAccount', 'UA-8758024-4']);
-			_gaq.push(['_trackPageview']);
 			(function() {
 			var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
 			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
 			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
 			})();
-		</script>
 	{/literal}
+		</script> {\n}
+{/template}
+
+{template gaProductPage}
+  {if $ij}
+   {if $ij.object}
+     {if $ij.object.active}
+     _gaq.push(['_setCustomVar', 1, 'active', 'yes', 3]); {\n}
+    {else}
+     _gaq.push(['_setCustomVar', 1, 'active', 'no', 3]); {\n}
+    {/if}
+    {if parent($ij.object)}
+     _gaq.push(['_setCustomVar', 2, 'group', '{parent($ij.object).name}', 3]);  {\n}
+    {else}
+    _gaq.push(['_setCustomVar', 2, 'group', 'no', 3]);  {\n}
+    {/if}
+   {/if}
+ {/if}
 {/template}
 
 {template gaTrakingEcommerce}
