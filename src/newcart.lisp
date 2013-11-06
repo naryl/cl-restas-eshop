@@ -213,9 +213,9 @@
         (email         (newcart-get-data-from-alist :email user)) ;; email заказчика
         (city          (newcart-get-data-from-alist :city user))
         (addr          (newcart-get-data-from-alist :addr user)) ;; адрес без города
-        (courier_comment (newcart-get-data-from-alist :courier--comment user)) ;; комментарий курьеру
+        (courier_comment (newcart-get-data-from-alist :courier-comment user)) ;; комментарий курьеру
         (pickup          (newcart-get-data-from-alist :pickup user)) ;; pickup-1 Левашовский
-        (pickup_comment  (newcart-get-data-from-alist :pickup--comment user)) ;; комментарий к заказу
+        (pickup_comment  (newcart-get-data-from-alist :pickup-comment user)) ;; комментарий к заказу
         (payment         (newcart-get-data-from-alist :payment user)) ;; payment_method-1
         (bankaccount     (newcart-get-data-from-alist :bankaccount user)) ;; реквизиты банковского перевода
         (discount-cart   (newcart-get-data-from-alist :discount-card user)) ;; карта ЕКК (true | false)
@@ -327,107 +327,107 @@
                            :articles nil
                            :products products
                            :deliverysum deliverysum
-                           :itogo (+ pricesum deliverysum)))))
-            (setf mail-file (list :order_id order-id
-                                  :ekk ekk
-                                  :name (report.convert-name (format nil "~a ~a" name family))
-                                  :family ""
-                                  :addr addr
-                                  :isdelivery (switch (delivery-type :test #'string=)
-                                                ("express" "Доставка")
-                                                ("pickup" (if (string= "pickup-3" pickup)
-                                                               "PickPoint"
-                                                               "Самовывоз"))
-                                                (t delivery-type))
-                                  :phone phone
-                                  :email email
-                                  :date (time.get-date)
-                                  :time (time.get-time)
-                                  :comment (switch (delivery-type :test #'string=)
-                                             ("express" courier_comment)
-                                             ("pickup" pickup_comment)
-                                             (t ""))
-                                  :products (append products
-                                                    (if (string= delivery-type "express")
-                                                        (list (list :articul "107209"
-                                                                    :cnt "1"
-                                                                    :siteprice 300)))
-                                                    (if (and (string= delivery-type "express")
-                                                             (string= "pickup-3" pickup))
-                                                        (list (list :articul "186039"
-                                                                    :cnt "1"
-                                                                    :siteprice 100))))))
-            (setf filename (format nil "~a_~a.txt" (time.get-short-date) order-id))
-            ;;сорханение заказа
-            (save-order-text order-id client-mail)
-            ;; удаление страных символов
-            (setf client-mail (remove-if #'(lambda(c) (< 10000 (char-code c))) client-mail))
-            (setf tks-mail (remove-if #'(lambda(c) (< 10000 (char-code c))) (soy.sendmail:mailfile mail-file)))
-            (email.send-order-details order-id (soy.sendmail:tks-clientmail-wrapper
-                                                (list :body client-mail
-                                                      :ip (tbnl:real-remote-addr)
-                                                      :city city
-                                                      :agent (tbnl:user-agent)))
-                                      filename tks-mail)
-            (unless (or (null email)
-                        (equal "" email))
-              (when (email.valid-email-p email)
-                (email.send-client-mail email order-id client-mail)))
-            (soy.newcart:fullpage
-             (list :head (soy.newcart:newcart-head
-                          (list :thanks
-                                (list :orderid order-id
-                                      :total pricesum
-                                      :delivery deliverysum
-                                      :products products)))
-                   :header (soy.newcart:header-linked)
-                   :leftcells (soy.newcart:thanks
-                               (list :sum pricesum
-                                     :deliverysum deliverysum
-                                     :comment  (let ((comment
-                                                      (format nil "~a"
-                                                              (switch (delivery-type
-                                                                       :test #'string=)
-                                                                ("express" courier_comment)
-                                                                ("pickup" pickup_comment)
-                                                                (t "")))))
-                                                 (when (valid-string-p comment) comment))
-                                     :email (if (equal email "") nil email)
-                                     :name (if (equal name "") nil (report.convert-name name))
-                                     :bonuscount (if (or (equal ekk t)
-                                                         (valid-string-p ekk))
-                                                      bonuscount)
-                                     :bonusname (if bonuscount
-                                                    (nth (skls.get-count-skls bonuscount)
-                                                         (list "бонус" "бонуса" "бонусов")))
-                                     :pickup pickup
-                                     :courier (equal delivery-type "express")
-                                     :oplata (switch (payment :test #'string=)
-                                               ("payment_method-1"
-                                                "<p class=\"h2\">Оплата наличными</p><p>Вы получите кассовый товарный чек</p>")
-                                               ("payment_method-2"
-                                                "<p class=\"h2\">Оплата кредитной картой</p>")
-                                               ("payment_method-3"
-                                                "<p class=\"h2\">Покупка в кредит</p>")
-                                               ("payment_method-4"
-                                                (format nil "<p class=\"h2\">Оплата по безналичному расчету</p>
+                           :itogo (+ pricesum deliverysum))))
+              (setf mail-file (list :order_id order-id
+                                    :ekk ekk
+                                    :name (report.convert-name (format nil "~a ~a" name family))
+                                    :family ""
+                                    :addr addr
+                                    :isdelivery (switch (delivery-type :test #'string=)
+                                                  ("express" "Доставка")
+                                                  ("pickup" (if (string= "pickup-3" pickup)
+                                                                "PickPoint"
+                                                                "Самовывоз"))
+                                                  (t delivery-type))
+                                    :phone phone
+                                    :email email
+                                    :date (time.get-date)
+                                    :time (time.get-time)
+                                    :comment (switch (delivery-type :test #'string=)
+                                               ("express" courier_comment)
+                                               ("pickup" pickup_comment)
+                                               (t ""))
+                                    :products (append products
+                                                      (if (string= delivery-type "express")
+                                                          (list (list :articul "107209"
+                                                                      :cnt "1"
+                                                                      :siteprice 300)))
+                                                      (if (and (string= delivery-type "express")
+                                                               (string= "pickup-3" pickup))
+                                                          (list (list :articul "186039"
+                                                                      :cnt "1"
+                                                                      :siteprice 100))))))
+              (setf filename (format nil "~a_~a.txt" (time.get-short-date) order-id))
+              ;;сорханение заказа
+              (save-order-text order-id client-mail)
+              ;; удаление страных символов
+              (setf client-mail (remove-if #'(lambda(c) (< 10000 (char-code c))) client-mail))
+              (setf tks-mail (remove-if #'(lambda(c) (< 10000 (char-code c))) (soy.sendmail:mailfile mail-file)))
+              (email.send-order-details order-id (soy.sendmail:tks-clientmail-wrapper
+                                                  (list :body client-mail
+                                                        :ip (tbnl:real-remote-addr)
+                                                        :city city
+                                                        :agent (tbnl:user-agent)))
+                                        filename tks-mail)
+              (unless (or (null email)
+                          (equal "" email))
+                (when (email.valid-email-p email)
+                  (email.send-client-mail email order-id client-mail)))
+              (soy.newcart:fullpage
+               (list :head (soy.newcart:newcart-head
+                            (list :thanks
+                                  (list :orderid order-id
+                                        :total pricesum
+                                        :delivery deliverysum
+                                        :products products)))
+                     :header (soy.newcart:header-linked)
+                     :leftcells (soy.newcart:thanks
+                                 (list :sum pricesum
+                                       :deliverysum deliverysum
+                                       :comment  (let ((comment
+                                                        (format nil "~a"
+                                                                (switch (delivery-type
+                                                                         :test #'string=)
+                                                                  ("express" courier_comment)
+                                                                  ("pickup" pickup_comment)
+                                                                  (t "")))))
+                                                   (when (valid-string-p comment) comment))
+                                       :email (if (equal email "") nil email)
+                                       :name (if (equal name "") nil (report.convert-name name))
+                                       :bonuscount (if (or (equal ekk t)
+                                                           (valid-string-p ekk))
+                                                       bonuscount)
+                                       :bonusname (if bonuscount
+                                                      (nth (skls.get-count-skls bonuscount)
+                                                           (list "бонус" "бонуса" "бонусов")))
+                                       :pickup pickup
+                                       :courier (equal delivery-type "express")
+                                       :oplata (switch (payment :test #'string=)
+                                                 ("payment_method-1"
+                                                  "<p class=\"h2\">Оплата наличными</p><p>Вы получите кассовый товарный чек</p>")
+                                                 ("payment_method-2"
+                                                  "<p class=\"h2\">Оплата кредитной картой</p>")
+                                                 ("payment_method-3"
+                                                  "<p class=\"h2\">Покупка в кредит</p>")
+                                                 ("payment_method-4"
+                                                  (format nil "<p class=\"h2\">Оплата по безналичному расчету</p>
                                          <p>Реквизиты:<br/>~a</p>" bankaccount))
-                                               (t nil))
-                                     :addr (if (string= delivery-type "pickup")
-                                               addr
-                                               "Левашовский пр., д.12")
-                                     :ekk ekk
-                                     :map (if (and (equal delivery-type "pickup")
-                                                   (equal pickup "pickup-2"))
-                                              (soy.newcart:map-botanicheskaya-img)
-                                              (soy.newcart:map-levashovskii-img))
-                                     :order_id order-id))
-                   :rightcells (soy.newcart:rightcells
-                                (list :pricesum pricesum
-                                      :deliverysum deliverysum
-                                      :productscount count
-                                      :tovar (newcart-tovar count)
-                                      :products (mapcar #'soy.newcart:product-item  products)))))))
+                                                 (t nil))
+                                       :addr (if (string= delivery-type "pickup")
+                                                 addr
+                                                 "Левашовский пр., д.12")
+                                       :ekk ekk
+                                       :map (if (and (equal delivery-type "pickup")
+                                                     (equal pickup "pickup-2"))
+                                                (soy.newcart:map-botanicheskaya-img)
+                                                (soy.newcart:map-levashovskii-img))
+                                       :order_id order-id))
+                     :rightcells (soy.newcart:rightcells
+                                  (list :pricesum pricesum
+                                        :deliverysum deliverysum
+                                        :productscount count
+                                        :tovar (newcart-tovar count)
+                                        :products (mapcar #'soy.newcart:product-item  products))))))))
         (progn
           (soy.newcart:fullpage (list :head (soy.newcart:head-redirect (list :timeout 5
                                                                              :url "/"))
