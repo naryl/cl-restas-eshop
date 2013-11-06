@@ -54,7 +54,6 @@
                                         :comment comment
                                         :delivery delivery
                                         :items products
-                                        :state 0
-                                        :force-unique t)
+                                        :state 0)
                        (eshop.odm:duplicate-key-error () nil))
        :finally (return order))))
