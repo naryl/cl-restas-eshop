@@ -213,9 +213,9 @@
         (email         (newcart-get-data-from-alist :email user)) ;; email заказчика
         (city          (newcart-get-data-from-alist :city user))
         (addr          (newcart-get-data-from-alist :addr user)) ;; адрес без города
-        (courier_comment (newcart-get-data-from-alist :courier-comment user)) ;; комментарий курьеру
+        (courier_comment (newcart-get-data-from-alist :courier_comment user)) ;; комментарий курьеру
         (pickup          (newcart-get-data-from-alist :pickup user)) ;; pickup-1 Левашовский
-        (pickup_comment  (newcart-get-data-from-alist :pickup-comment user)) ;; комментарий к заказу
+        (pickup_comment  (newcart-get-data-from-alist :pickup_comment user)) ;; комментарий к заказу
         (payment         (newcart-get-data-from-alist :payment user)) ;; payment_method-1
         (bankaccount     (newcart-get-data-from-alist :bankaccount user)) ;; реквизиты банковского перевода
         (discount-cart   (newcart-get-data-from-alist :discount-card user)) ;; карта ЕКК (true | false)
