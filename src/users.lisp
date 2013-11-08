@@ -240,7 +240,7 @@
       (error 'account-error :msg "Учётная запись не была подтверждена вовремя. Попробуйте восстановить пароль."))
     (error 'account-error :msg "Неправильный логин или пароль")))
 
-(defun register (email password &key name phone bonuscard &allow-other-keys)
+(defun register (email password name &key phone bonuscard &allow-other-keys)
   "Create a new user with EMAIL and PASSWORD if one doesn't exist.
 Otherwise throw ACCOUNT-ERROR"
   (when (eshop.odm:getobj 'user email)
@@ -269,7 +269,8 @@ Otherwise throw ACCOUNT-ERROR"
 (defun apply-password-reset (reset new-password)
   "Resets a user's password using data created by MAKE-PASSWORD-RESET"
   (eshop.odm:with-transaction
-    (let ((user (password-reset-user reset)))
+    (let* ((reset (eshop.odm:regetobj reset))
+           (user (password-reset-user reset)))
       (setf (user-pass user) new-password)
       (eshop.odm:remobj reset))
     t))
@@ -421,13 +422,13 @@ Otherwise throw ACCOUNT-ERROR"
                  :token (make-token slot)))
 
 (defun make-token (slot)
-  (case slot
+  (ecase slot
     (email (create-random-string 36 36))
     (phone (create-random-string 8 10))))
 
 (defun send-validation (validation &key (domain (hunchentoot:header-in* "HOST")))
   (let ((user (validation-object validation)))
-    (case (validation-slot validation)
+    (ecase (validation-slot validation)
       ;; TODO: send proper email
       (email
        (let ((mail (user-email user))

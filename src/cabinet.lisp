@@ -18,7 +18,7 @@
 (defun try-to-registration ()
   (with-hunchentoot-parameters (username password name @bonuscard @phone)
     (when (hunchentoot:parameter "reg")
-      (when-let ((user (register username password :name name :phone @phone :bonuscard @bonuscard)))
+      (when-let ((user (register username password name :phone @phone :bonuscard @bonuscard)))
         (new-session :persistent t)
         (setf (current-user) user)))))
 
