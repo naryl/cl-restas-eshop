@@ -1,6 +1,8 @@
 
 (in-package eshop.proc)
 
+(defvar *break-on-errors* nil)
+
 (defclass process ()
   ((name :type string
          :initarg :name
@@ -69,8 +71,8 @@
       (setf (aref result 0)
             (list 'error e))
       (open-gate gate)
-      #+log4cl #-debug (log:error "Error in process ~A: ~S" proc-name e)
-      #+debug (invoke-debugger e))))
+      #+log4cl (log:error "Error in process ~A: ~S" proc-name e)
+      (when *break-on-errors* (invoke-debugger e)))))
 
 (defun start-process (process finished-gate)
   (process-init process)

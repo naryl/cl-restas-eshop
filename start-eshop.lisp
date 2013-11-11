@@ -17,7 +17,6 @@
     (restrict-compiler-policy 'speed 3)
     (restrict-compiler-policy 'space 3)
     (asdf:load-system :mongo-cl-driver :force t)
-    (push :debug *features*)
     (restrict-compiler-policy 'debug 3)
     (restrict-compiler-policy 'safety 3)
     (restrict-compiler-policy 'speed 1)
