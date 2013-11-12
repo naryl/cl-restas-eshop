@@ -47,6 +47,10 @@
                      type
                      #'serialize-p)))
 
+(defun backup.serialize-all-to-mongo (&optional (db *db*))
+  (mapcar #'(lambda (type) (backup.serialize-storage-to-mongo type db))
+          '(product filter vendor group)))
+
 (defun backup.serialize-all (&key (backup-dir (config.get-option :paths :path-to-backups))
                              (make-copy (config.get-option :start-options :release))
                              (copy-path
