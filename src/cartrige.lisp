@@ -22,10 +22,11 @@
                     printers))))
 
 (restas:define-route cartrige-select-type-route ("/cartriges-select-type")
-  (let* ((get-data (alist-plist (hunchentoot:get-parameters hunchentoot:*request*)))
+  (let* ((get-data (servo.alist-to-plist (hunchentoot:get-parameters hunchentoot:*request*)))
          (vendor (getf get-data :vendor)))
-    (when vendor
-      (format nil "[~{\"~a\"~^,~}]" (cartrige.get-types-by-vendor vendor)))))
+    (if vendor
+        (format nil "[~{\"~a\"~^,~}]" (cartrige.get-types-by-vendor vendor))
+        "[]")))
 
 (defun cartrige.add-printer (storage articul original-cartriges other-cartriges
                              &optional vendor name printer-type)
