@@ -43,7 +43,10 @@
   (declare (symbol type) (mongo:database db))
   (let ((coll (mongo:collection db (string type))))
     (process-storage #'(lambda (obj)
-                         (mongo:insert-op coll (backup.serialize-entity-to-hashtable obj)))
+                         (mongo:update-op coll
+                                          (son "KEY" (key obj))
+                                          (backup.serialize-entity-to-hashtable obj)
+                                          :upsert t))
                      type
                      #'serialize-p)))
 
